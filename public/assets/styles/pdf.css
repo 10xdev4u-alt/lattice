@@ -1,0 +1,37 @@
+/* PDF viewer */
+.paper-viewer-pages {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-4);
+  align-items: center;
+}
+.pdf-page-canvas {
+  background: white;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  max-width: 100%;
+  height: auto;
+}
+.pdf-text-layer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+  color: transparent;
+  font-family: var(--font-sans);
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  line-height: 1.4;
+}
+.pdf-text-layer::selection {
+  background: var(--accent-soft);
+  color: transparent;
+}
+.paper-viewer-pages > .pdf-page-canvas,
+.paper-viewer-pages > .pdf-text-layer {
+  position: relative;
+}
+.pdf-loading {
+  color: var(--fg-muted);
+  font-size: var(--text-sm);
+  padding: var(--sp-4);
+}
