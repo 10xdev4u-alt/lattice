@@ -76,3 +76,30 @@
 }
 .trail-step-detail-actions { margin-top: var(--sp-2); }
 .trail-step-detail button { font-size: var(--text-xs); padding: var(--sp-1) var(--sp-2); }
+.trail-step-anchored { background: rgba(124, 108, 255, 0.08); border-left: 3px solid var(--accent); }
+.trail-step-anchor {
+  display: inline-flex;
+  align-items: center;
+  font-size: 10px;
+  font-family: var(--font-mono);
+  padding: 1px 6px;
+  background: var(--accent-soft);
+  color: var(--accent);
+  border-radius: var(--r-sm);
+}
+.trail-step-anchor[data-anchor-color="ok"] { background: rgba(16, 185, 129, 0.15); color: var(--ok); }
+.trail-step-anchor[data-anchor-color="warn"] { background: rgba(217, 119, 6, 0.15); color: var(--warn); }
+.trail-step-anchor[data-anchor-color="err"] { background: rgba(239, 68, 68, 0.15); color: var(--err); }
+.trail-step-anchor-btn {
+  font-size: 14px;
+  width: 20px;
+  height: 20px;
+  background: transparent;
+  border: none;
+  color: var(--fg-muted);
+  padding: 0;
+  cursor: pointer;
+  border-radius: 50%;
+  margin-left: 4px;
+}
+.trail-step-anchor-btn:hover { background: var(--bg-elev-2); color: var(--accent); }
