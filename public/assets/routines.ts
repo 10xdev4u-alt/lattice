@@ -52,6 +52,20 @@ export function listRoutines(): Routine[] {
   return read();
 }
 
+export function getRoutine(id: string): Routine | null {
+  return read().find((r) => r.id === id) ?? null;
+}
+
+export function updateRoutine(id: string, patch: Partial<Routine>): Routine | null {
+  const all = read();
+  const idx = all.findIndex((r) => r.id === id);
+  if (idx === -1) return null;
+  const next = { ...all[idx]!, ...patch, id: all[idx]!.id };
+  all[idx] = next;
+  write(all);
+  return next;
+}
+
 export function saveRoutineFromTrail(name: string, description: string): Routine {
   const session = getSession();
   const steps: RoutineStep[] = session.steps
@@ -154,6 +168,7 @@ function render(root: HTMLElement): void {
                 <div class="routines-meta">${r.steps.length} step${r.steps.length === 1 ? '' : 's'} · ${new Date(r.createdAt).toLocaleString()}</div>
               </div>
               <div class="routines-actions">
+                <button data-routine-action="edit" data-routine-id="${r.id}">Edit</button>
                 <button data-routine-action="export" data-routine-id="${r.id}">Export</button>
                 <button data-routine-action="delete" data-routine-id="${r.id}">Delete</button>
               </div>
@@ -161,6 +176,15 @@ function render(root: HTMLElement): void {
                 <input data-routine-paper-id="${r.id}" placeholder="paper_id to run on" />
                 <button data-routine-action="run" data-routine-id="${r.id}">Run</button>
               </div>
+              ${r.steps
+                .map(
+                  (s, i) => `<div class="routines-step" data-step-index="${i}">
+                    <span class="routines-step-num">${i + 1}.</span>
+                    <code>${escapeHtml(s.tool)}</code>
+                    <span class="routines-step-args">${escapeHtml(JSON.stringify(s.args).slice(0, 60))}</span>
+                  </div>`,
+                )
+                .join('')}
             </li>`,
           )
           .join('')}
@@ -183,6 +207,16 @@ function render(root: HTMLElement): void {
     btn.addEventListener('click', () => {
       const next = routines.filter((x) => x.id !== btn.dataset.routineId);
       write(next);
+    });
+  });
+  root.querySelectorAll<HTMLButtonElement>('[data-routine-action="edit"]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const r = routines.find((x) => x.id === btn.dataset.routineId);
+      if (!r) return;
+      const newName = window.prompt('Rename routine (or cancel):', r.name);
+      if (newName === null) return;
+      updateRoutine(r.id, { name: newName || r.name });
+      render(root);
     });
   });
   root.querySelectorAll<HTMLButtonElement>('[data-routine-action="run"]').forEach((btn) => {
