@@ -16,6 +16,7 @@ import { setPeerReviewerActive, isPeerReviewerActive } from './peer-reviewer';
 import { decorateCitations } from '../citation-chips';
 import { runAgentLoop, buildHistoryFromChat, type AgentLoopResult } from '../agent-loop';
 import { inferConfidence, renderConfidenceDot } from '../confidence';
+import { recordFeedback, getFeedbackForMessage } from '../feedback';
 
 interface RegisteredTool {
   name: string;
@@ -200,6 +201,36 @@ function appendMessage(root: HTMLElement, role: 'user' | 'agent', text: string, 
       void regenerateLast(root, text);
     });
     actions.appendChild(regen);
+    // Feedback buttons
+    const feedbackActions = document.createElement('div');
+    feedbackActions.className = 'feedback-actions';
+    const session = getSession();
+    const messages = Array.from(chat?.querySelectorAll<HTMLDivElement>('.agent-message') ?? []);
+    const messageIndex = messages.indexOf(div);
+    const existing = getFeedbackForMessage(session.session_id, messageIndex);
+    const upBtn = document.createElement('button');
+    upBtn.className = `feedback-btn${existing === 'up' ? ' active-up' : ''}`;
+    upBtn.textContent = '👍';
+    upBtn.title = 'Helpful';
+    upBtn.setAttribute('aria-label', 'Helpful');
+    upBtn.addEventListener('click', () => {
+      recordFeedback({ sessionId: session.session_id, messageIndex, text, feedback: 'up' });
+      upBtn.classList.add('active-up');
+      downBtn.classList.remove('active-down');
+    });
+    const downBtn = document.createElement('button');
+    downBtn.className = `feedback-btn${existing === 'down' ? ' active-down' : ''}`;
+    downBtn.textContent = '👎';
+    downBtn.title = 'Not helpful';
+    downBtn.setAttribute('aria-label', 'Not helpful');
+    downBtn.addEventListener('click', () => {
+      recordFeedback({ sessionId: session.session_id, messageIndex, text, feedback: 'down' });
+      downBtn.classList.add('active-down');
+      upBtn.classList.remove('active-up');
+    });
+    feedbackActions.appendChild(upBtn);
+    feedbackActions.appendChild(downBtn);
+    actions.appendChild(feedbackActions);
     div.appendChild(actions);
   }
   chat.appendChild(div);
