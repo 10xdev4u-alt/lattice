@@ -35,6 +35,9 @@ async function main(): Promise<void> {
   // Peer-reviewer preview: hover a citation chip, see the challenge.
   void import('./peer-preview').then(({ mountPeerPreview }) => mountPeerPreview());
 
+  // Smart session hint: appears after 90 seconds with a suggestion.
+  void import('./session-hint').then(({ mountSessionHint }) => mountSessionHint(document.body));
+
   // Report-a-problem button: copy a diagnostic bundle to the clipboard.
   document.querySelector<HTMLButtonElement>('[data-action="report-problem"]')?.addEventListener('click', async () => {
     const { copyDiagnosticBundleToClipboard } = await import('./diagnostics');

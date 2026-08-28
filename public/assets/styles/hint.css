@@ -1,0 +1,32 @@
+/* Session hint */
+.session-hint {
+  position: fixed;
+  bottom: var(--sp-6);
+  right: var(--sp-6);
+  max-width: 320px;
+  padding: var(--sp-3) var(--sp-4);
+  background: var(--bg-elev-1);
+  border: 1px solid var(--accent);
+  border-radius: var(--r-md);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+  z-index: 50;
+}
+.hint-cta { font-size: var(--text-sm); font-weight: 500; margin: 0 0 4px; color: var(--accent); }
+.hint-reason { font-size: var(--text-xs); color: var(--fg-muted); margin: 0 0 var(--sp-2); line-height: 1.4; }
+.session-hint button {
+  position: absolute;
+  top: 4px;
+  right: 8px;
+  font-size: 14px;
+  background: transparent;
+  border: none;
+  color: var(--fg-muted);
+  cursor: pointer;
+  padding: 0;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.session-hint button:hover { color: var(--fg); }
