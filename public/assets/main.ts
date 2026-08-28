@@ -38,6 +38,12 @@ async function main(): Promise<void> {
   // Smart session hint: appears after 90 seconds with a suggestion.
   void import('./session-hint').then(({ mountSessionHint }) => mountSessionHint(document.body));
 
+  // Context budget bar: estimated tokens used vs window.
+  void import('./context-budget').then(({ mountContextBudgetBar }) => {
+    const rail = document.querySelector('.agent-rail-tab[data-tab-content="chat"]');
+    if (rail) mountContextBudgetBar(rail);
+  });
+
   // Report-a-problem button: copy a diagnostic bundle to the clipboard.
   document.querySelector<HTMLButtonElement>('[data-action="report-problem"]')?.addEventListener('click', async () => {
     const { copyDiagnosticBundleToClipboard } = await import('./diagnostics');
