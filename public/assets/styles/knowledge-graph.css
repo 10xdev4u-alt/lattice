@@ -1,0 +1,11 @@
+/* Knowledge graph */
+.knowledge-graph-svg {
+  width: 100%;
+  height: 100%;
+  background: var(--bg-elev-1);
+  border-radius: var(--r-md);
+}
+.kg-node circle { transition: r 150ms var(--ease); }
+.kg-node:hover circle { r: 16; fill: var(--agent); }
+.kg-edge { transition: opacity 150ms var(--ease); }
+.kg-edge:hover { opacity: 1; stroke-width: 3; }

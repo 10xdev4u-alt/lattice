@@ -81,7 +81,7 @@ function installKeyboardShortcuts(root: HTMLElement): void {
       e.preventDefault();
       showHelp(workspace);
     } else if (e.key === 'g' && !e.metaKey && !e.ctrlKey) {
-      // 'g' starts a 2-key sequence (g then w/l/t). Wait for the second key.
+      // 'g' starts a 2-key sequence (g then w/l/t/k). Wait for the second key.
       const onNext = (e2: KeyboardEvent): void => {
         document.removeEventListener('keydown', onNext);
         if (e2.key === 'w') {
@@ -96,6 +96,10 @@ function installKeyboardShortcuts(root: HTMLElement): void {
           // Jump to the tools tab
           document.querySelector<HTMLElement>('[data-tab="tools"]')?.click();
           announce('Live Tool Array opened');
+        } else if (e2.key === 'k') {
+          // Open the knowledge graph overlay
+          void openKnowledgeGraphOverlay();
+          announce('Knowledge graph opened');
         }
       };
       document.addEventListener('keydown', onNext, { once: true });
@@ -115,6 +119,20 @@ function toggleSettings(root: HTMLElement): void {
   }
 }
 
+async function openKnowledgeGraphOverlay(): Promise<void> {
+  const { mountKnowledgeGraph } = await import('../knowledge-graph');
+  const overlay = document.createElement('div');
+  overlay.className = 'kg-overlay';
+  overlay.innerHTML = `<div class="kg-modal" role="dialog" aria-modal="true"><button data-action="close">Close</button><div data-kg-host style="height: 60vh"></div></div>`;
+  overlay.addEventListener('click', (e) => {
+    const t = e.target as HTMLElement;
+    if (t.dataset.action === 'close' || t === overlay) overlay.remove();
+  });
+  document.body.appendChild(overlay);
+  const inner = overlay.querySelector<HTMLElement>('[data-kg-host]');
+  if (inner) await mountKnowledgeGraph(inner);
+}
+
 function showHelp(_root: HTMLElement): void {
   const overlay = document.createElement('div');
   overlay.className = 'help-overlay';
@@ -128,6 +146,8 @@ function showHelp(_root: HTMLElement): void {
         <dd>Toggle the agent rail</dd>
         <dt><kbd>Ctrl/Cmd</kbd> + <kbd>,</kbd></dt>
         <dd>Open the settings panel</dd>
+        <dt><kbd>g</kbd> <kbd>k</kbd></dt>
+        <dd>Open the knowledge graph</dd>
         <dt><kbd>?</kbd></dt>
         <dd>Open this help</dd>
         <dt><kbd>Esc</kbd></dt>
