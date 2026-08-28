@@ -36,3 +36,24 @@
   cursor: pointer;
 }
 .routines-actions button:hover { background: var(--bg-elev-2); border-color: var(--accent); color: var(--accent); }
+.routines-run {
+  display: flex;
+  gap: var(--sp-1);
+  margin-top: 2px;
+}
+.routines-run input {
+  flex: 1;
+  font: inherit;
+  font-size: 10px;
+  background: var(--bg);
+  color: var(--fg);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  padding: 2px 4px;
+}
+.routines-run button {
+  font-size: 10px;
+  background: var(--accent);
+  color: white;
+  border: 1px solid var(--accent);
+}
