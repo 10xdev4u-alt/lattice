@@ -45,3 +45,24 @@
   cursor: pointer;
 }
 .tool-tryit:hover { background: var(--accent); color: white; }
+
+/* Pin paper */
+.paper-row { position: relative; padding-right: 32px; }
+.paper-row-pin {
+  position: absolute;
+  top: var(--sp-2);
+  right: var(--sp-2);
+  width: 24px;
+  height: 24px;
+  background: transparent;
+  border: none;
+  color: var(--fg-muted);
+  font-size: 16px;
+  padding: 0;
+  cursor: pointer;
+  border-radius: var(--r-sm);
+}
+.paper-row-pin:hover { color: var(--accent); background: var(--bg-elev-2); }
+.paper-row-pin[aria-pressed="true"] { color: var(--accent); }
+.paper-row-pinned { background: var(--accent-soft); border-left: 2px solid var(--accent); }
+
