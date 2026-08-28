@@ -1,0 +1,9 @@
+node_modules
+dist
+.netlify
+coverage
+.git
+.mimosa
+.DS_Store
+*.log
+.vite
