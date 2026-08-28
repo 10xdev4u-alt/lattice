@@ -1,0 +1,7 @@
+node_modules
+dist
+.netlify
+coverage
+public/vendor
+*.md
+LICENSE

@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="color-scheme" content="light dark" />
+    <meta name="description" content="Lattice: research papers, in conversation. A WebMCP-powered workspace." />
+    <title>Lattice</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="stylesheet" href="/assets/styles/tokens.css" />
+    <link rel="stylesheet" href="/assets/styles/base.css" />
+  </head>
+  <body>
+    <div id="app" data-state="loading">
+      <header class="app-header" role="banner">
+        <h1 class="app-title">Lattice</h1>
+        <p class="app-tagline" id="webmcp-status">Checking WebMCP&hellip;</p>
+      </header>
+      <main class="app-main" id="app-main" role="main">
+        <p class="empty-state">Loading the workspace&hellip;</p>
+      </main>
+    </div>
+    <script type="module" src="/assets/main.ts"></script>
+  </body>
+</html>

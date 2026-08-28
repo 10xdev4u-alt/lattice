@@ -1,0 +1,47 @@
+{
+  "name": "lattice",
+  "version": "0.1.0",
+  "description": "Research papers, in conversation. A WebMCP-powered workspace.",
+  "type": "module",
+  "private": true,
+  "license": "Apache-2.0",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint . --ext .ts,.tsx,.js,.mjs",
+    "lint:fix": "eslint . --ext .ts,.tsx,.js,.mjs --fix",
+    "format": "prettier --write \"**/*.{ts,tsx,js,mjs,json,md,css,html}\"",
+    "format:check": "prettier --check \"**/*.{ts,tsx,js,mjs,json,md,css,html}\"",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "lint:tools": "node scripts/lint-tools.mjs",
+    "netlify:dev": "netlify dev",
+    "docker:build": "docker build -t lattice:dev .",
+    "docker:run": "docker run --rm -p 8888:8888 lattice:dev"
+  },
+  "dependencies": {
+    "openai": "^4.67.0",
+    "pdfjs-dist": "^4.7.76",
+    "citeproc": "^2.4.63",
+    "@citation-js/core": "^0.7.14",
+    "@citation-js/plugin-csl": "^0.7.14"
+  },
+  "devDependencies": {
+    "@netlify/functions": "^2.8.2",
+    "@types/node": "^22.7.5",
+    "@typescript-eslint/eslint-plugin": "^8.8.1",
+    "@typescript-eslint/parser": "^8.8.1",
+    "eslint": "^9.12.0",
+    "eslint-config-prettier": "^9.1.0",
+    "netlify-cli": "^17.38.1",
+    "prettier": "^3.3.3",
+    "typescript": "^5.6.3",
+    "vite": "^5.4.9",
+    "vitest": "^2.1.3"
+  }
+}
