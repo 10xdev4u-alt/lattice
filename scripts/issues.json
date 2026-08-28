@@ -1,0 +1,557 @@
+[
+  {
+    "title": "[feat] Bootstrap Vite + TypeScript + Netlify Functions project layout",
+    "epic": "foundation", "type": "feature", "priority": "high", "area": "deploy",
+    "body": "## What\n\nScaffold the Vite + TS + Netlify Functions project so subsequent issues have a place to land.\n\n## Why\n\nEvery other issue assumes the project layout exists. Without this, no work can begin.\n\n## How\n\n- `package.json` with `dev`, `build`, `typecheck`, `lint`, `test` scripts\n- `tsconfig.json` strict mode, target ES2022, bundler resolution\n- `vite.config.ts` (Vite, vanilla-ts preset)\n- `netlify.toml` with the WebMCP-required headers\n- `public/index.html` shell with the Lattice title\n- `netlify/functions/` empty placeholder\n- ESLint + Prettier config\n\n## Acceptance\n\n- [ ] `netlify dev` serves the index page on http://localhost:8888\n- [ ] `npm run typecheck` passes\n- [ ] `npm run lint` passes\n- [ ] `curl -I http://localhost:8888` returns the WebMCP headers\n- [ ] Site is deployable to Netlify"
+  },
+  {
+    "title": "[feat] Wire CI: typecheck, lint, and a deploy preview on every PR",
+    "epic": "foundation", "type": "feature", "priority": "high", "area": "deploy",
+    "body": "## What\n\nAdd a GitHub Actions workflow that runs `npm run typecheck`, `npm run lint`, and `npm run build` on every push and PR. Optionally deploy a preview on PRs.\n\n## Acceptance\n\n- [ ] Pushing to a branch triggers CI\n- [ ] PR from that branch shows a deploy preview URL in the comments\n- [ ] Failing CI blocks merge (via branch protection)"
+  },
+  {
+    "title": "[feat] Set up Netlify branch protection and required-status rules",
+    "epic": "foundation", "type": "feature", "priority": "medium", "area": "deploy",
+    "body": "## What\n\nConfigure branch protection on `main` so that PRs require 1 approval, CI to be green, and branches to be up-to-date before merge.\n\n## Acceptance\n\n- [ ] Direct pushes to main are blocked\n- [ ] PRs without a green CI cannot be merged\n- [ ] PRs without an approval cannot be merged"
+  },
+  {
+    "title": "[chore] Add netlify.toml headers required by the WebMCP spec",
+    "epic": "foundation", "type": "chore", "priority": "medium", "area": "deploy",
+    "body": "## What\n\nEvery Netlify response must include the headers the WebMCP spec requires for tool registration to succeed.\n\n## How\n\nIn `netlify.toml`:\n\n```toml\n[[headers]]\n  for = \"/*\"\n  [headers.values]\n    Origin-Agent-Cluster = \"?1\"\n    Permissions-Policy = \"tools=(self)\"\n```\n\n## Why\n\nWithout these, `registerTool` rejects with `NotAllowedError`. A judge who runs the demo will see this and dock the score.\n\n## Acceptance\n\n- [ ] `curl -I http://localhost:8888/` shows both headers\n- [ ] The dev server is verified to register a test tool successfully"
+  },
+  {
+    "title": "[docs] Author AGENTS.md as a context primer for AI coding agents",
+    "epic": "foundation", "type": "docs", "priority": "medium", "area": "content",
+    "body": "## What\n\nAGENTS.md is a context file that AI coding agents (Claude Code, Codex, Cursor, Copilot) read automatically. We need a primer that tells any incoming agent what Lattice is, where to start, and what not to do.\n\n## How\n\n- One-page primer\n- Links to research/ briefs\n- Lists the non-negotiable spec rules (document.modelContext, untrustedContentHint, AbortSignal)\n- Lists the non-negotiable style rules (snake_case, <= 30 char names, 6-word commit titles, co-author trailer)\n\n## Acceptance\n\n- [ ] AGENTS.md exists at repo root\n- [ ] It is referenced from README and CONTRIBUTING\n- [ ] A new agent, given only the file, can produce a valid first commit"
+  },
+  {
+    "title": "[chore] Pin Node 20+ via .nvmrc",
+    "epic": "foundation", "type": "chore", "priority": "low", "area": "deploy",
+    "body": "## What\n\nPin the Node version for the team.\n\n## Acceptance\n\n- [ ] `.nvmrc` contains the major version\n- [ ] README and CONTRIBUTING mention the required version"
+  },
+  {
+    "title": "[chore] Add a pre-commit hook that runs typecheck and lint",
+    "epic": "foundation", "type": "chore", "priority": "low", "area": "deploy",
+    "body": "## What\n\nLocal-only pre-commit hook that runs `npm run typecheck` and `npm run lint` before allowing a commit.\n\n## How\n\n- husky + lint-staged\n- Skip-able with `--no-verify` only by team convention\n\n## Acceptance\n\n- [ ] A commit with a type error is blocked locally\n- [ ] A commit with a lint error is blocked locally\n- [ ] `--no-verify` works for emergency fixups (documented)"
+  },
+  {
+    "title": "[chore] Add a CODE_OF_CONDUCT.md based on the Contributor Covenant",
+    "epic": "foundation", "type": "chore", "priority": "low", "area": "content",
+    "body": "## What\n\nStandard Contributor Covenant adapted for a 6-day hackathon. Links to the canonical text.\n\n## Acceptance\n\n- [ ] CODE_OF_CONDUCT.md at repo root, links Contributor Covenant v2.1\n- [ ] Referenced from README"
+  },
+  {
+    "title": "[feat] Implement list_papers (read) tool",
+    "epic": "tool-surface", "type": "feature", "priority": "critical", "area": "webmcp",
+    "body": "## What\n\nThe first tool a judge will see. Returns the user's library as a list.\n\n## Schema (proposed)\n\n```\nname: \"list_papers\"\ndescription: \"List all papers in the user's library. Use to ground any subsequent action.\"\ninputSchema: { type: \"object\", properties: {}, additionalProperties: false }\nannotations: { readOnlyHint: true }\n```\n\n## Acceptance\n\n- [ ] Returns CSL JSON for every paper in the library\n- [ ] Returns empty array if library is empty (not an error)\n- [ ] Returns within 200ms on a 50-paper library\n- [ ] Tool is registered in the global session (not per-paper)\n- [ ] Unit test: empty library, single paper, 50 papers"
+  },
+  {
+    "title": "[feat] Implement open_paper (action) tool",
+    "epic": "tool-surface", "type": "feature", "priority": "critical", "area": "webmcp",
+    "body": "## What\n\nOpens a paper by ID. Triggers per-paper tool (re)registration via AbortSignal.\n\n## Schema\n\n```\nname: \"open_paper\"\ndescription: \"Open a paper by its library ID. After calling, several per-paper tools become available (compare_claims, extract_quote, summarize_paper, explain_evidence, peer_review_invite).\"\ninputSchema: {\n  type: \"object\",\n  properties: {\n    paper_id: { type: \"string\", description: \"The library ID of the paper to open\" }\n  },\n  required: [\"paper_id\"]\n}\n```\n\n## Side effect\n\nRe-registers a set of per-paper tools (or aborts/updates the previous open paper's tools).\n\n## Acceptance\n\n- [ ] Opens a paper and re-registers per-paper tools\n- [ ] Aborts the previously open paper's tools\n- [ ] `toolchange` event fires\n- [ ] Returns the paper's metadata (title, authors, year, doi)\n- [ ] Throws a structured error if the paper_id is unknown"
+  },
+  {
+    "title": "[feat] Implement search_library (search) tool",
+    "epic": "tool-surface", "type": "feature", "priority": "critical", "area": "webmcp",
+    "body": "## What\n\nFull-text search across the user's library. Returns snippets with paper_id, page, span.\n\n## Schema\n\n```\nname: \"search_library\"\ndescription: \"Search the user's library of papers by free-text query. Returns up to N matches per paper.\"\ninputSchema: {\n  type: \"object\",\n  properties: {\n    query: { type: \"string\" },\n    max_results_per_paper: { type: \"integer\", default: 3, minimum: 1, maximum: 10 }\n  },\n  required: [\"query\"]\n}\nannotations: { readOnlyHint: true }\n```\n\n## Return\n\n```\n{ query, total_hits, per_paper: [{ paper_id, hits: [{ page, snippet, score }] }] }\n```\n\n## Acceptance\n\n- [ ] Indexes ingested papers\n- [ ] Returns within 500ms for a 50-paper library\n- [ ] Snippets are verbatim from the PDF text\n- [ ] Returns `total_hits` even if `per_paper` is truncated"
+  },
+  {
+    "title": "[feat] Implement summarize_paper (read) tool",
+    "epic": "tool-surface", "type": "feature", "priority": "critical", "area": ["webmcp", "ai"],
+    "body": "## What\n\nLLM-summarize a paper at a given audience level.\n\n## Schema\n\n```\nname: \"summarize_paper\"\ndescription: \"Summarize a single paper at a chosen audience level.\"\ninputSchema: {\n  type: \"object\",\n  properties: {\n    paper_id: { type: \"string\" },\n    audience: { type: \"string\", enum: [\"undergrad\", \"grad\", \"phd\", \"lay\"] },\n    max_words: { type: \"integer\", default: 200, minimum: 50, maximum: 800 }\n  },\n  required: [\"paper_id\", \"audience\"]\n}\nannotations: { readOnlyHint: true, untrustedContentHint: true }\n```\n\n## Acceptance\n\n- [ ] Returns a summary that respects the audience level\n- [ ] Stays under `max_words` +/- 10%\n- [ ] Includes a confidence indicator at the end\n- [ ] Cites the section(s) the summary drew on"
+  },
+  {
+    "title": "[feat] Implement extract_quote (read) tool",
+    "epic": "tool-surface", "type": "feature", "priority": "critical", "area": "webmcp",
+    "body": "## What\n\nPull a verbatim quote matching a concept from a paper.\n\n## Schema\n\n```\nname: \"extract_quote\"\ndescription: \"Extract a verbatim quote from a paper that supports, refutes, or mentions a given concept.\"\ninputSchema: {\n  type: \"object\",\n  properties: {\n    paper_id: { type: \"string\" },\n    concept: { type: \"string\" },\n    stance: { type: \"string\", enum: [\"supporting\", \"refuting\", \"mentioning\", \"any\"], default: \"any\" },\n    max_quotes: { type: \"integer\", default: 2, minimum: 1, maximum: 5 }\n  },\n  required: [\"paper_id\", \"concept\"]\n}\nannotations: { readOnlyHint: true, untrustedContentHint: true }\n```\n\n## Acceptance\n\n- [ ] Quotes are verbatim from the paper (not paraphrased)\n- [ ] Each quote has its page number\n- [ ] Stance filter works\n- [ ] If no match, returns structured error: `no_quote_found`"
+  },
+  {
+    "title": "[feat] Implement compare_claims (read) tool",
+    "epic": "tool-surface", "type": "feature", "priority": "critical", "area": ["webmcp", "ai"],
+    "body": "## What\n\nCompare two open papers on a topic, returning agreements and conflicts with sources.\n\n## Schema\n\n```\nname: \"compare_claims\"\ndescription: \"Compare the claims made by two open papers on a given topic.\"\ninputSchema: {\n  type: \"object\",\n  properties: {\n    paper_id_a: { type: \"string\" },\n    paper_id_b: { type: \"string\" },\n    topic: { type: \"string\" },\n    max_claims: { type: \"integer\", default: 5, minimum: 1, maximum: 10 }\n  },\n  required: [\"paper_id_a\", \"paper_id_b\", \"topic\"]\n}\nannotations: { readOnlyHint: true, untrustedContentHint: true }\n```\n\n## Acceptance\n\n- [ ] Returns at least one agreement and one conflict (when they exist)\n- [ ] Each claim has a quote and a page number from both papers\n- [ ] Topic filtering changes the result\n- [ ] Tool is registered ONLY when two papers are open (AbortSignal-based)"
+  },
+  {
+    "title": "[feat] Implement cite_paper (read) tool",
+    "epic": "tool-surface", "type": "feature", "priority": "critical", "area": "webmcp",
+    "body": "## What\n\nGenerate a citation in a chosen style.\n\n## Schema\n\n```\nname: \"cite_paper\"\ndescription: \"Generate a formatted citation for a paper in a chosen style.\"\ninputSchema: {\n  type: \"object\",\n  properties: {\n    paper_id: { type: \"string\" },\n    style: { type: \"string\", enum: [\"bibtex\", \"apa\", \"mla\", \"chicago\", \"csl-json\", \"ris\"], default: \"bibtex\" }\n  },\n  required: [\"paper_id\"]\n}\nannotations: { readOnlyHint: true }\n```\n\n## Acceptance\n\n- [ ] BibTeX is valid (round-trips through citeproc-js or JabRef)\n- [ ] CSL-JSON matches the Zotero data model\n- [ ] APA / MLA / Chicago match the CSL project output\n- [ ] RIS has all standard fields"
+  },
+  {
+    "title": "[feat] Implement add_to_bibliography (write) tool",
+    "epic": "tool-surface", "type": "feature", "priority": "critical", "area": "webmcp",
+    "body": "## What\n\nAdd a paper to the user's export list. Triggers a confirmation modal.\n\n## Schema\n\n```\nname: \"add_to_bibliography\"\ndescription: \"Add a paper to the current bibliography export. Requires user confirmation on first call per session.\"\ninputSchema: {\n  type: \"object\",\n  properties: {\n    paper_id: { type: \"string\" },\n    note: { type: \"string\" }\n  },\n  required: [\"paper_id\"]\n}\nannotations: { destructiveHint: false, idempotentHint: true }\n```\n\n## Acceptance\n\n- [ ] Confirmation modal appears on first call in a session\n- [ ] \"Always allow for this session\" toggle works\n- [ ] Adding a paper twice is a no-op (idempotent)\n- [ ] The bibliography export list is updated"
+  },
+  {
+    "title": "[feat] Implement remove_from_bibliography (write) tool",
+    "epic": "tool-surface", "type": "feature", "priority": "critical", "area": "webmcp",
+    "body": "## What\n\nInverse of add_to_bibliography.\n\n## Schema\n\n```\nname: \"remove_from_bibliography\"\ndescription: \"Remove a paper from the current bibliography export.\"\ninputSchema: {\n  type: \"object\",\n  properties: { paper_id: { type: \"string\" } },\n  required: [\"paper_id\"]\n}\nannotations: { destructiveHint: true, idempotentHint: true }\n```\n\n## Acceptance\n\n- [ ] Confirmation modal appears\n- [ ] Removing a non-present paper is a no-op\n- [ ] Bibliography list is updated"
+  },
+  {
+    "title": "[feat] Implement export_bibliography (write) tool",
+    "epic": "tool-surface", "type": "feature", "priority": "critical", "area": "webmcp",
+    "body": "## What\n\nExport the bibliography in a chosen format. Triggers a download.\n\n## Schema\n\n```\nname: \"export_bibliography\"\ndescription: \"Export the current bibliography as a file in the chosen format.\"\ninputSchema: {\n  type: \"object\",\n  properties: {\n    format: { type: \"string\", enum: [\"bibtex\", \"csl-json\", \"ris\", \"apa-md\", \"mla-md\"], default: \"csl-json\" },\n    filename: { type: \"string\" }\n  },\n  required: []\n}\nannotations: { destructiveHint: false }\n```\n\n## Acceptance\n\n- [ ] File downloads with the correct MIME type\n- [ ] File contents are valid (round-trip through Zotero or JabRef)\n- [ ] Confirmation modal appears\n- [ ] Empty bibliography is rejected with a structured error"
+  },
+  {
+    "title": "[feat] Implement explain_evidence (read) tool",
+    "epic": "tool-surface", "type": "feature", "priority": "high", "area": "webmcp",
+    "body": "## What\n\nFor a given claim, list every paper in the library that supports or refutes it.\n\n## Schema\n\n```\nname: \"explain_evidence\"\ndescription: \"For a given claim, list every paper in the library that supports or refutes it, with verbatim quotes.\"\ninputSchema: {\n  type: \"object\",\n  properties: {\n    claim: { type: \"string\" },\n    max_papers: { type: \"integer\", default: 5, minimum: 1, maximum: 10 }\n  },\n  required: [\"claim\"]\n}\nannotations: { readOnlyHint: true, untrustedContentHint: true }\n```\n\n## Acceptance\n\n- [ ] At least one paper is found for typical claims\n- [ ] Each result has a quote and a stance (supporting / refuting / mentioning)\n- [ ] Stance is calibrated (verified on 5 hand-labeled claims)"
+  },
+  {
+    "title": "[feat] Implement show_workflow_trail (read) tool",
+    "epic": "tool-surface", "type": "feature", "priority": "critical", "area": ["webmcp", "workflow-trail"],
+    "body": "## What\n\nReturn the full audit log of tool calls for the current session. The killer feature.\n\n## Schema\n\n```\nname: \"show_workflow_trail\"\ndescription: \"Return the audit log of every tool call the agent has made in this session.\"\ninputSchema: {\n  type: \"object\",\n  properties: {\n    format: { type: \"string\", enum: [\"summary\", \"jsonl\", \"markdown\"], default: \"summary\" },\n    since_step: { type: \"integer\" }\n  },\n  required: []\n}\nannotations: { readOnlyHint: true }\n```\n\n## Notes\n\nAnswers WebMCP open issue #261 (preserve completed tasks as reviewable workflow documents).\n\n## Acceptance\n\n- [ ] Every tool call in the current session appears in the log\n- [ ] Each entry has: timestamp, tool name, args, result, model interpretation\n- [ ] `since_step` correctly filters\n- [ ] Returns within 200ms for a 100-step session"
+  },
+  {
+    "title": "[feat] Implement peer_review_invite (write) tool",
+    "epic": "tool-surface", "type": "feature", "priority": "high", "area": ["webmcp", "peer-review"],
+    "body": "## What\n\nOpen the page to a second agent (a peer-reviewer persona) via `exposedTo`.\n\n## Schema\n\n```\nname: \"peer_review_invite\"\ndescription: \"Invite the peer-reviewer agent into the current page.\"\ninputSchema: {\n  type: \"object\",\n  properties: {\n    persona: { type: \"string\", enum: [\"skeptic\", \"methodologist\", \"statistician\", \"reviewer-2\"], default: \"skeptic\" },\n    scope: { type: \"string\", enum: [\"current_session\", \"current_paper_only\"], default: \"current_paper_only\" }\n  },\n  required: []\n}\nannotations: { destructiveHint: false }\n```\n\n## Side effects\n\n- Registers the second agent's tools (via `exposedTo` + a new AbortController)\n- Adds a banner to the UI showing the second agent is present\n\n## Acceptance\n\n- [ ] Confirmation modal appears\n- [ ] Second agent can call read tools on the open papers\n- [ ] Second agent's calls appear in the workflow trail (color-coded)\n- [ ] \"Dismiss reviewer\" button removes the second agent (abort)"
+  },
+  {
+    "title": "[feat] Implement compose_review (write) tool",
+    "epic": "tool-surface", "type": "feature", "priority": "high", "area": ["webmcp", "ai"],
+    "body": "## What\n\nDraft a structured peer review from the library.\n\n## Schema\n\n```\nname: \"compose_review\"\ndescription: \"Draft a structured peer review (summary, strengths, weaknesses, score) of the currently open paper.\"\ninputSchema: {\n  type: \"object\",\n  properties: {\n    paper_id: { type: \"string\" },\n    tone: { type: \"string\", enum: [\"constructive\", \"critical\", \"neutral\"], default: \"constructive\" },\n    audience: { type: \"string\", enum: [\"author\", \"editor\", \"lab-meeting\"], default: \"editor\" }\n  },\n  required: [\"paper_id\"]\n}\nannotations: { destructiveHint: false, openWorldHint: false }\n```\n\n## Acceptance\n\n- [ ] Returns a draft with the four sections\n- [ ] Each claim is grounded in a paper from the library\n- [ ] Draft is added to a Drafts pane in the UI"
+  },
+  {
+    "title": "[feat] Build the Live Tool Array UI panel",
+    "epic": "tool-surface", "type": "feature", "priority": "high", "area": "webmcp",
+    "body": "## What\n\nA UI panel that shows every registered tool in real time. The DevTools Network tab for agents.\n\n## How\n\n- Reads `document.modelContext.getTools()` on mount\n- Subscribes to `toolchange` events to re-render\n- Each row: name, description, schema (collapsed), in-use indicator, last-called timestamp\n- Filter by read-only / write / origin\n\n## Acceptance\n\n- [ ] Panel renders all 14 tools when registered\n- [ ] Updates live when `open_paper` re-registers per-paper tools\n- [ ] Each tool has a \"Try it\" button that invokes the tool with sample args\n- [ ] The panel itself is keyboard-navigable"
+  },
+  {
+    "title": "[feat] Build the Tool Call Log UI panel",
+    "epic": "tool-surface", "type": "feature", "priority": "high", "area": ["webmcp", "workflow-trail"],
+    "body": "## What\n\nA vertical log of every tool call, append-only, with expand/collapse, search, and export.\n\n## Acceptance\n\n- [ ] Every call is logged with timestamp, tool name, args, status, duration\n- [ ] Search works in real time\n- [ ] Export downloads valid JSONL\n- [ ] The log persists across page reloads (via Netlify Blobs)"
+  },
+  {
+    "title": "[feat] Build the Agent Status Bar UI",
+    "epic": "tool-surface", "type": "feature", "priority": "high", "area": "webmcp",
+    "body": "## What\n\nA persistent status bar showing what the agent is doing right now.\n\n## Design\n\n- A dot (violet, the agent color) + tool name + arguments in a tiny pill + duration\n- Hover for full schema + \"Learn more\" link\n- [pause] and [take over] buttons\n- An animated chevron (linear progress, not spinner) for in-flight tools\n\n## Acceptance\n\n- [ ] Bar appears on every tool call\n- [ ] Bar updates within 50ms of the tool call\n- [ ] \"Take over\" disables the agent for the next call"
+  },
+  {
+    "title": "[chore] Audit every tool: name <= 30 chars, description <= 500 chars",
+    "epic": "tool-surface", "type": "chore", "priority": "high", "area": "webmcp",
+    "body": "## What\n\nLint-time check that every tool definition respects the spec character budgets.\n\n## How\n\nA `npm run lint:tools` script that scans `public/assets/webmcp.ts` and reports any tool with a too-long name, description, or param description. Add it to CI.\n\n## Acceptance\n\n- [ ] Script exists, runnable via `npm run lint:tools`\n- [ ] CI runs it and fails the build on violation\n- [ ] Currently all 14 tools pass"
+  },
+  {
+    "title": "[chore] Adopt outputSchema on every tool (PR #254)",
+    "epic": "tool-surface", "type": "chore", "priority": "high", "area": "webmcp",
+    "body": "## What\n\nAdd `outputSchema` to every tool definition, even though it's not yet standardized in WebMCP. The spec PR is in flight; we'll be future-proof.\n\n## How\n\n- Define a return-shape schema for each tool\n- Validate the actual return against the schema in `execute`\n- Surface validation errors as structured `{ error: { code, message, retry_hint } }`\n\n## Acceptance\n\n- [ ] Every tool has an `outputSchema`\n- [ ] `execute` returns are validated against the schema\n- [ ] Validation failures are structured errors, not thrown strings"
+  },
+  {
+    "title": "[chore] Add structured errors with retry hints to every tool",
+    "epic": "tool-surface", "type": "chore", "priority": "medium", "area": "webmcp",
+    "body": "## What\n\nPer the secure-tools guide: errors should help the model self-correct.\n\n## Convention\n\n```\nthrow { error: { code: \"PAPER_NOT_FOUND\", message: \"Paper 'arxiv:2401.01234' is not in the library.\", retry_hint: \"Call list_papers to see available papers.\" } }\n```\n\n## Acceptance\n\n- [ ] Every `execute` function returns or throws structured errors\n- [ ] Error codes are documented in `research/error-codes.md`"
+  },
+  {
+    "title": "[chore] Build a tool registration harness for unit tests",
+    "epic": "tool-surface", "type": "chore", "priority": "medium", "area": "webmcp",
+    "body": "## What\n\nA test harness that lets us call a tool's `execute` function in isolation, without a browser, without `document.modelContext`.\n\n## How\n\n- Pure-TS wrapper that holds the tool definitions in a module\n- Test imports the module, calls `execute` directly\n- The browser registration lives in a separate `register.ts` that the harness does not import\n\n## Acceptance\n\n- [ ] Harness exists at `tests/tools/`\n- [ ] At least one test per tool (happy path)\n- [ ] At least one test per write tool (confirmation flow)"
+  },
+  {
+    "title": "[chore] Write a polyfill that no-ops when document.modelContext is absent",
+    "epic": "tool-surface", "type": "chore", "priority": "medium", "area": "webmcp",
+    "body": "## What\n\nA minimal polyfill so the page is fully usable when WebMCP is not enabled (Safari, Firefox, older Chrome).\n\n## How\n\n- If `document.modelContext` is undefined, expose a no-op API: `registerTool` returns a resolved promise, `getTools` returns an empty array, `executeTool` throws \"WebMCP not available\"\n- The page reads this state to hide the agent rail or render a friendly \"Open in Chrome 149+ for the agent\" message\n\n## Acceptance\n\n- [ ] Polyfill is in `public/assets/model-context-polyfill.ts`\n- [ ] Page is fully usable in Safari (verified manually)\n- [ ] A status pill says \"WebMCP not detected in this browser\" when absent"
+  },
+  {
+    "title": "[research] Decide: should we expose MCP resources alongside tools?",
+    "epic": "tool-surface", "type": "research", "priority": "medium", "area": "webmcp",
+    "body": "## What\n\nThe MCP spec has three primitives: tools, prompts, resources. WebMCP demos almost exclusively use tools. Resources are a different model: server-pushed, addressable by URI, the agent reads them.\n\n## Question\n\nShould Lattice expose `lattice://papers/{id}/page/{n}` as a resource? It would let the agent \"read\" a paper page the way it reads a tool result, with a different trust boundary.\n\n## Why it matters\n\nResources are underused in WebMCP. If we use them well, the demo reads differently to a judge. If we use them poorly, it's complexity for no gain.\n\n## Deliverable\n\nA 200-word recommendation: do we ship resources? If yes, which ones, and what do they enable? If no, why not?"
+  },
+  {
+    "title": "[research] Decide: do we adopt the in-PR icons annotation on tools?",
+    "epic": "tool-surface", "type": "research", "priority": "low", "area": "webmcp",
+    "body": "## What\n\nNewer MCP versions support an `icons` field on tool definitions. The Chrome WebMCP UI may render them.\n\n## Question\n\nIs it worth the work to add 14 icons (one per tool) for a 10-day demo?\n\n## Deliverable\n\nA one-paragraph recommendation."
+  },
+  {
+    "title": "[feat] Design the main workspace layout",
+    "epic": "workspace-ui", "type": "feature", "priority": "critical", "area": "design",
+    "body": "## What\n\nThe default workspace view: left rail (papers), main canvas (PDF or extracted content), right rail (agent).\n\n## How\n\n- 240px left rail (paper list, search, status)\n- flex main canvas (PDF viewer, currently open paper)\n- 360px right rail (agent chat, tool call log, draft)\n- All three resize-aware\n\n## Acceptance\n\n- [ ] Layout renders correctly at 1280x800 (judge's screen)\n- [ ] Layout collapses to a single column at < 800px width\n- [ ] The three rails can be hidden / shown via keyboard shortcuts"
+  },
+  {
+    "title": "[feat] Build the paper list component (left rail)",
+    "epic": "workspace-ui", "type": "feature", "priority": "critical", "area": "design",
+    "body": "## What\n\nA list of every paper in the library. Sortable. Filterable. Multi-select.\n\n## Acceptance\n\n- [ ] Renders 50 papers in < 100ms\n- [ ] Sort by 4 fields\n- [ ] Filter by 4 fields\n- [ ] Selection state is visible"
+  },
+  {
+    "title": "[feat] Build the PDF viewer component",
+    "epic": "workspace-ui", "type": "feature", "priority": "critical", "area": ["design", "pdf"],
+    "body": "## What\n\nThe main canvas PDF viewer. Two-column papers are the most common case.\n\n## Acceptance\n\n- [ ] Renders a 20-page arXiv paper in < 1s\n- [ ] Selection is per-page and survives zoom\n- [ ] \"Read with agent\" passes the selected text as context\n- [ ] Two-column read order is preserved"
+  },
+  {
+    "title": "[feat] Build the currently open papers toolbar",
+    "epic": "workspace-ui", "type": "feature", "priority": "high", "area": "design",
+    "body": "## What\n\nA toolbar showing the papers currently open in the canvas. Up to N papers at a time.\n\n## Acceptance\n\n- [ ] Tabs render with title, status, close button\n- [ ] Closing a tab unregisters the per-paper tools\n- [ ] The keyboard shortcut cycles in document order"
+  },
+  {
+    "title": "[feat] Build the agent rail (right rail) component",
+    "epic": "workspace-ui", "type": "feature", "priority": "high", "area": "design",
+    "body": "## What\n\nThe right rail: agent chat, tool call log, drafts, peer-reviewer presence.\n\n## Acceptance\n\n- [ ] Chat supports multi-turn conversation\n- [ ] Tool calls render inline as the agent makes them\n- [ ] The peer-reviewer banner appears when `peer_review_invite` is called\n- [ ] The rail is resizable"
+  },
+  {
+    "title": "[feat] Build the empty state and the first-run experience",
+    "epic": "workspace-ui", "type": "feature", "priority": "medium", "area": "design",
+    "body": "## What\n\nThe first time a user opens Lattice, the library is empty. We need a beautiful empty state that explains what Lattice is, shows sample papers to drag in, has a Load sample library button, and a Drop PDFs here target.\n\n## Acceptance\n\n- [ ] Empty state renders with the right copy\n- [ ] Load sample library populates 5 well-known papers\n- [ ] Drop targets are visible and animated"
+  },
+  {
+    "title": "[feat] Build the show my work timeline view",
+    "epic": "workspace-ui", "type": "feature", "priority": "medium", "area": ["design", "workflow-trail"],
+    "body": "## What\n\nA full-page timeline view of the audit log. Click any step to see the args, result, and the model's interpretation.\n\n## Acceptance\n\n- [ ] Renders 100 steps without lag\n- [ ] Each step is keyboard-navigable\n- [ ] Export downloads a valid Markdown file"
+  },
+  {
+    "title": "[feat] Build a settings panel for tool confirmation preferences",
+    "epic": "workspace-ui", "type": "feature", "priority": "low", "area": "design",
+    "body": "## What\n\nA settings panel where the user can toggle the confirmation modal on/off per write tool, choose the default audience for `summarize_paper`, set the default max_results for `search_library`, and reset the workflow trail.\n\n## Acceptance\n\n- [ ] Settings persist in Netlify Blobs\n- [ ] Settings are read at tool-registration time"
+  },
+  {
+    "title": "[chore] Build the keyboard shortcut map and help overlay",
+    "epic": "workspace-ui", "type": "chore", "priority": "low", "area": "design",
+    "body": "## What\n\nA `?` keypress opens a help overlay listing every keyboard shortcut.\n\n## Acceptance\n\n- [ ] Help overlay is modal, dismissable, and searchable\n- [ ] All shortcuts are listed with their current keybindings"
+  },
+  {
+    "title": "[feat] Build the custom confirmation modal component",
+    "epic": "agent-experience", "type": "feature", "priority": "high", "area": "webmcp",
+    "body": "## What\n\nThe modal that appears before any write tool. Per the secure-tools guide.\n\n## Design\n\n- Title: \"The agent wants to <action>\"\n- Body: 1-2 sentences explaining what and why\n- A View full args expander\n- Three buttons: [Allow] [Allow for this session] [Deny]\n\n## Acceptance\n\n- [ ] Modal appears on first call to any write tool\n- [ ] \"Allow for this session\" persists for the session\n- [ ] Deny throws a structured error the model can read\n- [ ] The modal is keyboard-navigable"
+  },
+  {
+    "title": "[feat] Build the agent is thinking indicator",
+    "epic": "agent-experience", "type": "feature", "priority": "high", "area": "webmcp",
+    "body": "## What\n\nA subtle, calm indicator that the agent is between actions. Not a spinner.\n\n## Design\n\n- A pulsing dot in the agent color\n- A 1-line ETA based on recent tool durations\n- A \"take over\" button\n\n## Acceptance\n\n- [ ] Appears within 100ms of the agent starting to think\n- [ ] Disappears within 100ms of the next tool call\n- [ ] Has a graceful state for slow APIs"
+  },
+  {
+    "title": "[feat] Build the I don't know affordance",
+    "epic": "agent-experience", "type": "feature", "priority": "medium", "area": "design",
+    "body": "## What\n\nWhen the agent returns \"no source found\" or \"I'm not sure\", surface this as a calm, visible state, not a failure.\n\n## Acceptance\n\n- [ ] The state is distinct from errors\n- [ ] The \"search the web\" button opens a new search"
+  },
+  {
+    "title": "[chore] Define the agent personas: research vs. peer-reviewer",
+    "epic": "agent-experience", "type": "chore", "priority": "medium", "area": "webmcp",
+    "body": "## What\n\nTwo distinct agent personas for the cross-agent demo.\n\n## Research agent\n\n- Reads the user's library, drafts claims, cites sources\n- Conservative on tool use (always echoes the query)\n- Surfaces confidence per claim\n\n## Peer-reviewer agent\n\n- Reads the same papers, but challenges the research agent's claims\n- Skeptical by default; demands citations\n- Does not write to the document; only speaks\n\n## Acceptance\n\n- [ ] Personas documented in `research/personas.md`\n- [ ] The cross-agent demo script in `research/peer-review-script.md`"
+  },
+  {
+    "title": "[chore] Build the agent has a take UI pattern",
+    "epic": "agent-experience", "type": "chore", "priority": "low", "area": "design",
+    "body": "## What\n\nWhen the agent disagrees with the user or the other agent, surface the disagreement as a first-class UI element, not buried in the chat.\n\n## Acceptance\n\n- [ ] The pattern is documented in `design/disagreement.md`\n- [ ] The peer-reviewer demo uses it"
+  },
+  {
+    "title": "[feat] Build the workflow-trail persistence layer",
+    "epic": "workflow-trail", "type": "feature", "priority": "critical", "area": ["webmcp", "storage"],
+    "body": "## What\n\nEvery tool call is logged to Netlify Blobs.\n\n## Schema (per session)\n\n```\n{\n  session_id: \"sess_...\",\n  created_at: ISO,\n  user_id: \"anon-<random>\",\n  steps: [\n    {\n      step_id: int,\n      timestamp: ISO,\n      tool_name: string,\n      args: object,\n      result_summary: string,\n      result_full: object,\n      model_interpretation: string,\n      duration_ms: int,\n      status: \"ok\" | \"err\" | \"denied\"\n    }\n  ]\n}\n```\n\n## Storage\n\n- One blob per session, key `sessions/<session_id>.json`\n- Append-only on the client; updated atomically server-side\n\n## Acceptance\n\n- [ ] Every tool call is logged within 100ms\n- [ ] The log persists across page reloads\n- [ ] `show_workflow_trail` reads from this layer"
+  },
+  {
+    "title": "[feat] Build the methods-appendix exporter",
+    "epic": "workflow-trail", "type": "feature", "priority": "critical", "area": "webmcp",
+    "body": "## What\n\nExports the workflow trail as a PRISMA-flavored Markdown methods appendix.\n\n## Acceptance\n\n- [ ] Export downloads a valid .md file\n- [ ] Every claim has a citation\n- [ ] File opens cleanly in Obsidian / VS Code"
+  },
+  {
+    "title": "[feat] Build the timeline scrubber",
+    "epic": "workflow-trail", "type": "feature", "priority": "high", "area": "webmcp",
+    "body": "## What\n\nA horizontal scrubber at the top of the workflow-trail timeline. Drag it back to rewind the session to any step.\n\n## Why\n\nThe killer use case: \"Why did the agent conclude X? Let me rewind to the moment it cited paper Y.\" One drag away.\n\n## Acceptance\n\n- [ ] Scrubber is keyboard-controllable\n- [ ] Drag smoothly updates the timeline\n- [ ] \"Resume from here\" works"
+  },
+  {
+    "title": "[feat] Build the branch session feature",
+    "epic": "workflow-trail", "type": "feature", "priority": "medium", "area": "webmcp",
+    "body": "## What\n\nAt any point in a session, the user can branch: \"what if the agent had cited paper Z instead?\"\n\n## Acceptance\n\n- [ ] Branches persist independently\n- [ ] The tree view renders up to 10 branches without lag\n- [ ] Switching branches restores the full context"
+  },
+  {
+    "title": "[feat] Build the share-by-URL feature",
+    "epic": "workflow-trail", "type": "feature", "priority": "medium", "area": ["webmcp", "content"],
+    "body": "## What\n\nGenerate a URL that another user can open to see a read-only view of a Lattice session.\n\n## Acceptance\n\n- [ ] URL is shareable and works in incognito\n- [ ] The read-only view is clearly marked as such\n- [ ] Citations are clickable in the viewer"
+  },
+  {
+    "title": "[chore] Document the workflow-trail data model",
+    "epic": "workflow-trail", "type": "chore", "priority": "high", "area": "webmcp",
+    "body": "## What\n\nA spec document for the workflow-trail data model. This is what other tools will interop with.\n\n## Where\n\n`research/workflow-trail-spec.md`\n\n## Acceptance\n\n- [ ] Spec covers the JSON shape, the storage layer, the privacy model\n- [ ] Reviewed by a peer before the demo"
+  },
+  {
+    "title": "[feat] Build the cross-agent orchestration layer",
+    "epic": "peer-review", "type": "feature", "priority": "high", "area": "webmcp",
+    "body": "## What\n\nA second agent joins the page via `exposedTo`. The orchestration layer renders the second agent's chat in a different color, allows the two agents to talk, and color-codes the second agent's tool calls in the log.\n\n## Acceptance\n\n- [ ] Second agent is visible in the right rail\n- [ ] Tool calls are color-coded\n- [ ] The \"Dismiss reviewer\" button removes the second agent"
+  },
+  {
+    "title": "[feat] Build the peer-reviewer persona prompt",
+    "epic": "peer-review", "type": "feature", "priority": "high", "area": "webmcp",
+    "body": "## What\n\nThe prompt that defines the second agent. The default is \"skeptic\": always challenge claims, demand citations, never write to the document.\n\n## Where\n\n`netlify/functions/agents/peer-reviewer.ts`\n\n## Acceptance\n\n- [ ] The persona is documented\n- [ ] The prompt is testable (run it on a sample claim; verify it challenges)"
+  },
+  {
+    "title": "[chore] Write the 30-second peer-review demo script",
+    "epic": "peer-review", "type": "chore", "priority": "high", "area": "webmcp",
+    "body": "## What\n\nThe exact words and clicks for the cross-agent demo in the 3-minute video.\n\n## Where\n\n`research/demo-script.md` (peer-review section)\n\n## Acceptance\n\n- [ ] Script exists\n- [ ] Rehearsed end-to-end in < 30s"
+  },
+  {
+    "title": "[research] Decide: how do the two agents share the page context?",
+    "epic": "peer-review", "type": "research", "priority": "medium", "area": "webmcp",
+    "body": "## What\n\nThe spec is unclear on whether `exposedTo` is sufficient for full context sharing, or if we need a separate signaling layer.\n\n## Question\n\n- Can the peer-reviewer agent call the same tools (read_paper, search_library)?\n- Does the workflow trail merge calls from both agents?\n- How does the second agent know which paper to review?\n\n## Deliverable\n\nA 300-word design doc answering these questions. The code follows."
+  },
+  {
+    "title": "[feat] Implement PDF ingestion via Netlify Function",
+    "epic": "pdf-pipeline", "type": "feature", "priority": "critical", "area": "pdf",
+    "body": "## What\n\nA user drags a PDF into the library. The Function validates the file, stores it in Netlify Blobs, extracts text via pdf.js, and computes basic metadata.\n\n## Acceptance\n\n- [ ] A 20-page arXiv PDF ingests in < 5s\n- [ ] The text.json has per-page text\n- [ ] Two-column read order is preserved\n- [ ] A duplicate paper is detected (SHA-256)"
+  },
+  {
+    "title": "[feat] Implement two-column read-order reconstruction",
+    "epic": "pdf-pipeline", "type": "feature", "priority": "critical", "area": "pdf",
+    "body": "## What\n\nThe headline problem for academic PDFs. Two-column papers interleave left-column-bottom with right-column-top in pdf.js's textContent output. Fix it.\n\n## Approach\n\n1. Detect column count per page (look for a horizontal gap in the y-distribution of glyphs)\n2. If single column: sort by y descending, then x ascending\n3. If two columns: split glyphs at the column boundary, sort within each column by y descending, then concatenate left-column then right-column\n4. Recombine paragraphs by detecting line breaks (y jumps > 1.5 line height)\n\n## Acceptance\n\n- [ ] A 5-paper test set has correct read order (verified by a human)\n- [ ] Single-column papers are not regressed\n- [ ] Equations and tables are skipped"
+  },
+  {
+    "title": "[feat] Implement arXiv source ingestion as a fallback",
+    "epic": "pdf-pipeline", "type": "feature", "priority": "high", "area": "pdf",
+    "body": "## What\n\nFor papers with an arXiv ID, fetch the LaTeX source (vastly more accurate than PDF parsing) and parse it instead.\n\n## Acceptance\n\n- [ ] An arXiv paper with a known source ingests via .tex\n- [ ] The fallback to PDF works\n- [ ] Citations are extracted"
+  },
+  {
+    "title": "[feat] Implement per-paper search index",
+    "epic": "pdf-pipeline", "type": "feature", "priority": "high", "area": ["pdf", "storage"],
+    "body": "## What\n\nFor each ingested paper, build a simple search index (per-page inverted index).\n\n## Acceptance\n\n- [ ] A 20-page paper indexes in < 200ms\n- [ ] A 50-paper library searches in < 500ms (median query)"
+  },
+  {
+    "title": "[feat] Implement page-level text caching",
+    "epic": "pdf-pipeline", "type": "feature", "priority": "high", "area": ["pdf", "storage"],
+    "body": "## What\n\nCache extracted text per page. Avoid re-extracting on every search.\n\n## Acceptance\n\n- [ ] A re-search on a cached page is < 10ms\n- [ ] Cache is invalidated when the PDF is re-ingested"
+  },
+  {
+    "title": "[chore] Build a sample-papers test fixture",
+    "epic": "pdf-pipeline", "type": "chore", "priority": "medium", "area": "pdf",
+    "body": "## What\n\nA test set of 5-10 well-known arXiv papers with hand-verified read order, used to regression-test the PDF pipeline.\n\n## Where\n\n`tests/fixtures/sample-papers/`\n\n## Acceptance\n\n- [ ] 5 papers bundled\n- [ ] A snapshot of expected read order per page"
+  },
+  {
+    "title": "[research] Decide: do we use a hosted OCR fallback for scanned PDFs?",
+    "epic": "pdf-pipeline", "type": "research", "priority": "low", "area": "pdf",
+    "body": "## What\n\nSome PDFs (especially older ones) are scanned, not digital. pdf.js textContent returns nothing for these.\n\n## Question\n\nFor the 10-day demo, is it worth integrating a hosted OCR (Mistral OCR, Nougat, AWS Textract)? Or do we just say \"scanned PDFs are out of scope\"?\n\n## Deliverable\n\nA 100-word recommendation."
+  },
+  {
+    "title": "[feat] Implement CSL-JSON export",
+    "epic": "bibliography", "type": "feature", "priority": "high", "area": "webmcp",
+    "body": "## What\n\nGenerate a CSL-JSON file for the bibliography. The lingua franca of reference managers.\n\n## Acceptance\n\n- [ ] File downloads with the correct MIME type\n- [ ] File validates against the CSL JSON schema\n- [ ] Round-trips through Zotero (drag the file in, papers appear)\n- [ ] Round-trips through Pandoc (pandoc --citeproc)\n- [ ] Includes all standard fields"
+  },
+  {
+    "title": "[feat] Implement BibTeX export",
+    "epic": "bibliography", "type": "feature", "priority": "high", "area": "webmcp",
+    "body": "## What\n\nGenerate a .bib file for the bibliography.\n\n## Acceptance\n\n- [ ] File downloads with the correct MIME type\n- [ ] File imports cleanly into JabRef\n- [ ] Cite keys are stable (deterministic per paper)\n- [ ] Special characters are escaped correctly\n- [ ] Page numbers, DOIs, and URLs are included"
+  },
+  {
+    "title": "[feat] Implement RIS export",
+    "epic": "bibliography", "type": "feature", "priority": "medium", "area": "webmcp",
+    "body": "## What\n\nGenerate a .ris file for legacy tools (EndNote, RefWorks, Web of Science).\n\n## Acceptance\n\n- [ ] File downloads with the correct MIME type\n- [ ] TY/AU/TI/PY/DO/ER tags are correct\n- [ ] Round-trips through Zotero"
+  },
+  {
+    "title": "[feat] Implement arXiv metadata enrichment",
+    "epic": "bibliography", "type": "feature", "priority": "high", "area": ["webmcp", "ai"],
+    "body": "## What\n\nWhen a user drops a paper, attempt to enrich its metadata via the arXiv API.\n\n## Acceptance\n\n- [ ] arXiv ID detection works for both `YYMM.NNNNN` and old-style IDs\n- [ ] Metadata is enriched within 1s\n- [ ] The enriched fields are visible in the paper list"
+  },
+  {
+    "title": "[feat] Implement DOI resolution via Crossref",
+    "epic": "bibliography", "type": "feature", "priority": "medium", "area": "webmcp",
+    "body": "## What\n\nFor papers with a known DOI, fetch the canonical metadata from Crossref.\n\n## Acceptance\n\n- [ ] DOI enrichment works for 10/10 hand-tested DOIs\n- [ ] Failure modes (404, 5xx) are handled with structured errors\n- [ ] The metadata is cached for 7 days"
+  },
+  {
+    "title": "[feat] Implement TLDR fetching from Semantic Scholar",
+    "epic": "bibliography", "type": "feature", "priority": "low", "area": "webmcp",
+    "body": "## What\n\nFor papers indexed in Semantic Scholar, fetch the auto-generated TLDR.\n\n## Acceptance\n\n- [ ] TLDR appears for ~60% of CS papers (the S2 coverage rate)\n- [ ] The UI handles missing TLDRs gracefully"
+  },
+  {
+    "title": "[feat] Establish the Lattice design tokens",
+    "epic": "design-system", "type": "feature", "priority": "high", "area": "design",
+    "body": "## What\n\nCSS custom properties for the entire app. Calm, restrained, \"Linear for researchers.\"\n\n## Tokens\n\n- Colors: --bg, --fg, --muted, --border, --accent (one), --agent (reserved for the agent color, violet), --warn, --err\n- Type: --font-sans (Inter), --font-mono (JetBrains Mono), scale 12/14/16/20/24/32\n- Radii: --r-sm (4px), --r-md (8px)\n- Spacing: 4px grid, tokens 1-12\n- Motion: --ease (ease-out), --dur-fast (150ms), --dur (200ms), --dur-slow (300ms)\n- Light + dark modes (dark default for the agent aesthetic)\n\n## Acceptance\n\n- [ ] All colors are defined as variables, no inline values\n- [ ] Light + dark both work\n- [ ] Contrast meets WCAG AA\n- [ ] The tokens are documented in `design/tokens.md`"
+  },
+  {
+    "title": "[feat] Build the type system and mono-pairing",
+    "epic": "design-system", "type": "feature", "priority": "high", "area": "design",
+    "body": "## What\n\nInter for prose, JetBrains Mono for data. The pairing is the visual signal that this is for technical work.\n\n## Acceptance\n\n- [ ] Both fonts self-host\n- [ ] No FOUT\n- [ ] The mono-sans pairing is applied consistently"
+  },
+  {
+    "title": "[feat] Build the motion language",
+    "epic": "design-system", "type": "feature", "priority": "medium", "area": "design",
+    "body": "## What\n\nSubtle, calm motion. 150-200ms ease-out. No bounces, no parallax.\n\n## Acceptance\n\n- [ ] No motion > 300ms\n- [ ] Respects prefers-reduced-motion\n- [ ] Documented in `design/motion.md`"
+  },
+  {
+    "title": "[chore] Build a small component library",
+    "epic": "design-system", "type": "chore", "priority": "medium", "area": "design",
+    "body": "## What\n\nA tiny, opinionated set of components. Not a design system; just enough to be consistent.\n\n## Components\n\n- Button (primary, secondary, ghost, danger)\n- Modal (with confirmation variant)\n- Pill (status, with 4 colors)\n- Chip (citation, with hover card)\n- Toast (transient notifications)\n- Tabs (for the open-papers toolbar)\n\n## Acceptance\n\n- [ ] Each component is in `public/assets/components/`\n- [ ] Each has a single TS file and a single CSS file\n- [ ] Each is documented in `design/components.md`"
+  },
+  {
+    "title": "[chore] Build the accessibility audit checklist",
+    "epic": "design-system", "type": "chore", "priority": "low", "area": "design",
+    "body": "## What\n\nBefore the demo, run a manual accessibility audit.\n\n## Acceptance\n\n- [ ] Keyboard navigation works for every interactive element\n- [ ] Focus is visible\n- [ ] ARIA roles on the agent rail\n- [ ] Screen reader announces tool calls and confirmations\n- [ ] Color contrast meets WCAG AA\n- [ ] prefers-reduced-motion is respected\n- [ ] The page works at 200% zoom"
+  },
+  {
+    "title": "[docs] Write the design rationale doc",
+    "epic": "design-system", "type": "docs", "priority": "low", "area": "content",
+    "body": "## What\n\nA 1-page doc explaining the design choices. Why this palette, why this motion, why this layout.\n\n## Where\n\n`design/rationale.md`"
+  },
+  {
+    "title": "[feat] Build the landing page hero with a live demo",
+    "epic": "landing-page", "type": "feature", "priority": "high", "area": ["design", "content"],
+    "body": "## What\n\nThe single most important asset for the submission. A landing page where the hero IS a working demo of Lattice.\n\n## How\n\n- The left half: a real research paper (e.g., \"Attention Is All You Need\")\n- The right half: a live Lattice session summarizing it\n- Below the fold: 3-column \"what Lattice does\" with screenshots\n- Footer: the team, the GitHub link, the WebMCP standard link\n\n## Acceptance\n\n- [ ] Hero is interactive\n- [ ] Below-fold sections are static\n- [ ] The page loads in < 1s on a 4G connection\n- [ ] The hero is a real, working Lattice instance, not a mockup"
+  },
+  {
+    "title": "[feat] Build the live-demo embed for the landing page",
+    "epic": "landing-page", "type": "feature", "priority": "high", "area": "design",
+    "body": "## What\n\nThe hero's right half is an embedded Lattice. Needs to be lightweight.\n\n## Acceptance\n\n- [ ] The embedded demo works without auth\n- [ ] The demo loads in < 500ms (gzipped)\n- [ ] Canned prompts respond in < 2s"
+  },
+  {
+    "title": "[feat] Write the landing page copy",
+    "epic": "landing-page", "type": "feature", "priority": "medium", "area": ["design", "content"],
+    "body": "## What\n\nPlain prose. No marketing voice. One sentence per section.\n\n## Acceptance\n\n- [ ] Passes the unslop skill (no AI tells, no puffery)\n- [ ] One sentence per section\n- [ ] Reads at a 10th-grade level"
+  },
+  {
+    "title": "[feat] Build the favicon and Open Graph card",
+    "epic": "landing-page", "type": "feature", "priority": "low", "area": "design",
+    "body": "## What\n\nA 32x32 favicon and a 1200x630 Open Graph card.\n\n## Acceptance\n\n- [ ] Favicon appears in the tab and in search results\n- [ ] OG card renders correctly when shared on Twitter / LinkedIn"
+  },
+  {
+    "title": "[chore] Set up the landing-page deploy to a separate Netlify site",
+    "epic": "landing-page", "type": "chore", "priority": "medium", "area": "content",
+    "body": "## What\n\nThe landing page is a separate Netlify site from the demo.\n\n## Acceptance\n\n- [ ] `lattice-app.netlify.app` is the demo\n- [ ] A separate site is the landing\n- [ ] The two are independently deployable"
+  },
+  {
+    "title": "[feat] Write the 3-minute demo video script",
+    "epic": "demo-and-submit", "type": "feature", "priority": "critical", "area": "content",
+    "body": "## What\n\nA word-for-word script for the demo video. 5 scenes, < 3 minutes total. Audio is required.\n\n## Scenes\n\n1. (0:00-0:20) Title + 3 PDFs being dragged in\n2. (0:20-0:50) Search + compare with side panel\n3. (0:50-1:20) Challenge a claim\n4. (1:20-1:50) Add to bibliography + export\n5. (1:50-2:20) Show my work\n6. (2:20-2:50) Cross-agent peer review\n7. (2:50-3:00) End card\n\n## Acceptance\n\n- [ ] Script written, time-stamped, with shot list per scene\n- [ ] Rehearsed end-to-end in < 3 minutes"
+  },
+  {
+    "title": "[feat] Shoot the demo video",
+    "epic": "demo-and-submit", "type": "feature", "priority": "critical", "area": "content",
+    "body": "## What\n\nRecord the demo. Use OBS or ScreenFlow. Audio is a USB mic, not the laptop mic.\n\n## Acceptance\n\n- [ ] Video is on YouTube, public\n- [ ] Video is < 3 minutes\n- [ ] Audio is clear\n- [ ] Captions are accurate"
+  },
+  {
+    "title": "[feat] Write the submission text (400 words)",
+    "epic": "demo-and-submit", "type": "feature", "priority": "critical", "area": "content",
+    "body": "## What\n\nThe text that goes in the Devpost submission form.\n\n## Acceptance\n\n- [ ] < 400 words\n- [ ] Names the user, the problem, the fix, the standard\n- [ ] Passes the unslop skill"
+  },
+  {
+    "title": "[feat] Polish the README for the public submission",
+    "epic": "demo-and-submit", "type": "feature", "priority": "critical", "area": "content",
+    "body": "## What\n\nThe README is the first thing a judge reads after the demo video.\n\n## Acceptance\n\n- [ ] One-paragraph summary\n- [ ] A live demo link\n- [ ] A 30-second GIF of the hero flow\n- [ ] The tool list (full, with descriptions)\n- [ ] How to run locally\n- [ ] License, contributing, team"
+  },
+  {
+    "title": "[chore] Dry-run the submission checklist",
+    "epic": "demo-and-submit", "type": "chore", "priority": "critical", "area": "content",
+    "body": "## What\n\nBefore submitting, run through the Devpost checklist.\n\n## Checklist\n\n- [ ] Live URL is publicly accessible\n- [ ] Video is on YouTube, public\n- [ ] Code repo is public, with the open-source license visible\n- [ ] Submission text is < 400 words\n- [ ] The site loads in Chrome 149+ with the flag\n- [ ] All 14 tools are visible in the Live Tool Array\n- [ ] The peer-reviewer demo works end-to-end\n- [ ] The show-my-work export produces a valid methods appendix\n\n## Acceptance\n\n- [ ] All checks pass\n- [ ] Submission goes in by Sept 3, 1pm PT"
+  },
+  {
+    "title": "[chore] Pre-write social posts for the announcement",
+    "epic": "demo-and-submit", "type": "chore", "priority": "medium", "area": "content",
+    "body": "## What\n\nIf we win, we need a tweet within an hour. Drafted in advance.\n\n## Acceptance\n\n- [ ] All drafts in `content/announcement.md`\n- [ ] Screenshots are ready"
+  },
+  {
+    "title": "[chore] Thank the open-source projects we depend on",
+    "epic": "demo-and-submit", "type": "chore", "priority": "low", "area": "content",
+    "body": "## What\n\nAcknowledge pdf.js, the CSL project, Pandoc / citeproc-js, OpenAlex, Crossref, arXiv, Semantic Scholar, Netlify, the Chrome WebMCP team.\n\n## Acceptance\n\n- [ ] All listed\n- [ ] Linked where appropriate"
+  },
+  {
+    "title": "[chore] Set up Netlify env vars and secrets",
+    "epic": "ops", "type": "chore", "priority": "high", "area": "deploy",
+    "body": "## What\n\nThe Netlify AI Gateway key and any other secrets.\n\n## Vars\n\n- `NETLIFY_AI_GATEWAY_KEY` (for the model)\n- `SESSION_SECRET` (for cookie signing, if we add auth later)\n\n## Acceptance\n\n- [ ] Vars set in the Netlify dashboard\n- [ ] Documented in `.env.example` (without the values)\n- [ ] Never committed"
+  },
+  {
+    "title": "[chore] Add a /healthz endpoint to the Functions",
+    "epic": "ops", "type": "chore", "priority": "medium", "area": "deploy",
+    "body": "## What\n\nA simple health check that returns 200 if all dependencies are reachable.\n\n## Acceptance\n\n- [ ] `/api/healthz` returns 200\n- [ ] Returns 503 if the AI Gateway is unreachable\n- [ ] Cheap to call (no model spend)"
+  },
+  {
+    "title": "[chore] Add a rate limiter to the Functions",
+    "epic": "ops", "type": "chore", "priority": "medium", "area": "deploy",
+    "body": "## What\n\nThe tool call rate is unbounded. We need a basic rate limit per session.\n\n## Acceptance\n\n- [ ] Rate limit triggers after the threshold\n- [ ] The error is structured (the model can read it)\n- [ ] No false positives on cold starts"
+  },
+  {
+    "title": "[chore] Add request logging to the Functions",
+    "epic": "ops", "type": "chore", "priority": "medium", "area": "deploy",
+    "body": "## What\n\nEvery Function call logs timestamp, session_id, tool_name, duration_ms, status_code, model_tokens.\n\n## Acceptance\n\n- [ ] Logs are queryable in the Netlify dashboard\n- [ ] A 5xx error is visible in the logs with the args"
+  },
+  {
+    "title": "[chore] Document the deploy process",
+    "epic": "ops", "type": "chore", "priority": "low", "area": "deploy",
+    "body": "## What\n\n`docs/deploy.md`: how to deploy, how to roll back, how to set env vars, how to add a custom domain.\n\n## Acceptance\n\n- [ ] Doc exists and is current\n- [ ] A new contributor can deploy from a fresh clone in < 5 min"
+  },
+  {
+    "title": "[chore] Add a SECURITY.md for vulnerability reports",
+    "epic": "ops", "type": "chore", "priority": "low", "area": "deploy",
+    "body": "## What\n\nPer the GitHub community standards: a `SECURITY.md` at the repo root with a contact email.\n\n## Acceptance\n\n- [ ] File exists\n- [ ] Email is monitored"
+  },
+  {
+    "title": "[research] Decide: do we need real auth, or is the demo anonymous?",
+    "epic": "ops", "type": "research", "priority": "medium", "area": "deploy",
+    "body": "## What\n\nA user can lose their library if they close the browser (we'd persist via Blobs but the cookie is session-scoped).\n\n## Question\n\n- For the 10-day demo, is anonymous + cookie OK?\n- If we add auth, do we use Netlify Identity, Clerk, or a magic link?\n\n## Deliverable\n\nA 200-word recommendation. The code follows."
+  },
+  {
+    "title": "[docs] Write an executive README aimed at a judge in 90 seconds",
+    "epic": "demo-and-submit", "type": "docs", "priority": "high", "area": "content",
+    "body": "## What\n\nA judge who clicks the GitHub link has 90 seconds to understand what Lattice is and why it wins.\n\n## Acceptance\n\n- [ ] First paragraph names the user, the problem, and the fix in one breath\n- [ ] A 30-second GIF is embedded\n- [ ] The tool surface is visible at a glance\n- [ ] The team section is human, not corporate\n- [ ] A judge who reads only this can write a coherent review"
+  },
+  {
+    "title": "[feat] Add a Try with sample papers button to the empty state",
+    "epic": "workspace-ui", "type": "feature", "priority": "high", "area": "content",
+    "body": "## What\n\nWhen the library is empty, the user can click \"Load sample library\" to populate 5 well-known arXiv papers. This makes the demo one-click.\n\n## Acceptance\n\n- [ ] Button visible in the empty state\n- [ ] Click populates the library in < 3s\n- [ ] The 5 papers are real, well-known, and span enough topics to demo\n- [ ] The button hides after first use"
+  },
+  {
+    "title": "[feat] Add the Sources of trust panel",
+    "epic": "agent-experience", "type": "feature", "priority": "medium", "area": "design",
+    "body": "## What\n\nA list of every source the agent has touched in this session, classified by trust level (workspace / signed / unsigned / fetched).\n\n## Acceptance\n\n- [ ] Panel visible in the right rail\n- [ ] Trust levels are color-coded\n- [ ] User can toggle a source's trust\n- [ ] The agent's next call respects the new trust levels"
+  },
+  {
+    "title": "[feat] Build the agent disagrees UI element",
+    "epic": "agent-experience", "type": "feature", "priority": "medium", "area": ["design", "peer-review"],
+    "body": "## What\n\nWhen the peer-reviewer agent disagrees with the research agent, surface the disagreement as a first-class UI element in the right rail.\n\n## Acceptance\n\n- [ ] The element is visible and distinct\n- [ ] The user can click \"Resolve\" to make a call\n- [ ] The decision is logged in the workflow trail"
+  },
+  {
+    "title": "[feat] Add a PRISMA flow diagram view",
+    "epic": "workflow-trail", "type": "feature", "priority": "high", "area": "design",
+    "body": "## What\n\nA visualization of the systematic-review flow: search -> screen -> include/exclude -> extract. Generated from the workflow trail.\n\n## Why\n\nThis is the WebMCP #261 \"reviewable workflow document\" feature. A PRISMA diagram is the academic-norm-shaped output of the audit log.\n\n## Acceptance\n\n- [ ] The diagram renders from the trail data\n- [ ] Each node is clickable (jumps to the corresponding tool call)\n- [ ] The diagram exports as SVG or PNG"
+  },
+  {
+    "title": "[chore] Add a CHANGELOG.md to track the 10-day sprint",
+    "epic": "foundation", "type": "chore", "priority": "low", "area": "content",
+    "body": "## What\n\nA human-readable changelog of what was done each day of the sprint.\n\n## Acceptance\n\n- [ ] File exists at repo root\n- [ ] One entry per day\n- [ ] Written in first-person plural (\"we\")"
+  },
+  {
+    "title": "[research] Decide: which 5 papers ship in the sample library?",
+    "epic": "tool-surface", "type": "research", "priority": "medium", "area": "content",
+    "body": "## What\n\nThe sample library is the first thing a judge sees. The 5 papers need to:\n- Be well-known (so the judge recognizes them)\n- Span enough topics to demo cross-paper reasoning\n- Have full text on arXiv (for the source-ingestion path)\n- Be small enough to ingest in < 5s total\n\n## Deliverable\n\nA list of 5 papers with DOI, arXiv ID, and a 1-sentence pitch for why it's in the sample."
+  },
+  {
+    "title": "[feat] Build a /share/<session_id> public viewer page",
+    "epic": "workflow-trail", "type": "feature", "priority": "medium", "area": ["webmcp", "content"],
+    "body": "## What\n\nA read-only page that anyone can open to see a Lattice session. Used for the \"share your work\" feature.\n\n## Acceptance\n\n- [ ] URL is shareable and works in incognito\n- [ ] The audit log is visible\n- [ ] Citations are clickable\n- [ ] The page is clearly marked as read-only"
+  },
+  {
+    "title": "[feat] Add the WebMCP tool inspector link to the dev tools menu",
+    "epic": "tool-surface", "type": "feature", "priority": "medium", "area": "webmcp",
+    "body": "## What\n\nA button in the Lattice UI that opens the official Chrome \"Model Context Tool Inspector\" extension. Power users get one-click access to the inspector.\n\n## Acceptance\n\n- [ ] Button visible when the extension is installed\n- [ ] Button hidden when the extension is not installed (with a tooltip explaining why)"
+  },
+  {
+    "title": "[feat] Add a compare with another paper UI flow",
+    "epic": "workspace-ui", "type": "feature", "priority": "high", "area": "design",
+    "body": "## What\n\nThe user can multi-select two papers in the left rail and click \"Compare\" to register the `compare_claims` tool with the two papers pre-filled.\n\n## Acceptance\n\n- [ ] Multi-select works in the paper list\n- [ ] \"Compare\" button appears when 2 papers are selected\n- [ ] Click registers `compare_claims` (or pre-fills the next call to it)\n- [ ] The right rail shows the comparison request"
+  },
+  {
+    "title": "[feat] Build a per-paper annotation/highlight UI",
+    "epic": "workspace-ui", "type": "feature", "priority": "medium", "area": ["design", "storage"],
+    "body": "## What\n\nThe user can highlight text in the PDF and add a margin note. Highlights and notes are stored in W3C Web Annotation format and exposed as MCP resources.\n\n## Acceptance\n\n- [ ] Highlight in any color (Zotero-style: yellow, blue, red, green)\n- [ ] Margin note on any highlight\n- [ ] Highlights survive page reload\n- [ ] Highlights are addressable as MCP resources"
+  },
+  {
+    "title": "[chore] Add a Makefile or justfile for the common dev commands",
+    "epic": "foundation", "type": "chore", "priority": "low", "area": "deploy",
+    "body": "## What\n\nA simple make target / just recipe for the common commands (dev, build, test, lint, typecheck, deploy).\n\n## Acceptance\n\n- [ ] `make dev`, `make test`, `make lint`, `make typecheck`, `make deploy` all work\n- [ ] A new contributor can run `make` to see the available targets"
+  },
+  {
+    "title": "[docs] Write a one-page FAQ for judges",
+    "epic": "demo-and-submit", "type": "docs", "priority": "medium", "area": "content",
+    "body": "## What\n\nA FAQ in the README or the docs/ directory that anticipates the 10 most likely judge questions.\n\n## Suggested questions\n\n- Does this work without the WebMCP flag?\n- How is this different from Elicit?\n- Where does the data live?\n- Is the AI work reproducible?\n- How do I run it locally?"
+  },
+  {
+    "title": "[feat] Add a Re-run with same prompt button",
+    "epic": "workflow-trail", "type": "feature", "priority": "low", "area": "webmcp",
+    "body": "## What\n\nFor any step in the workflow trail, the user can click \"Re-run with same prompt\" to re-issue the tool call with the same args.\n\n## Acceptance\n\n- [ ] Button visible on every step in the trail\n- [ ] Click re-issues the tool call\n- [ ] The new call's result is added to the trail"
+  },
+  {
+    "title": "[feat] Add citation chip with hover card",
+    "epic": "workspace-ui", "type": "feature", "priority": "high", "area": "design",
+    "body": "## What\n\nWhen the agent cites a paper, the citation appears as a chip in the chat. Hover reveals a card with author, year, journal, and a Read button.\n\n## Acceptance\n\n- [ ] Citation chip appears in agent responses\n- [ ] Hover card has the right fields\n- [ ] Click opens the paper in the canvas\n- [ ] A bibliography panel aggregates all chips"
+  },
+  {
+    "title": "[feat] Add a paste arXiv ID input to the library toolbar",
+    "epic": "workspace-ui", "type": "feature", "priority": "high", "area": "content",
+    "body": "## What\n\nA user can paste an arXiv ID (or URL) and the paper is ingested from the source. Faster than dragging a PDF.\n\n## Acceptance\n\n- [ ] Input is visible in the library toolbar\n- [ ] Paste + Enter ingests the paper in < 3s\n- [ ] The paper appears in the list with enriched metadata\n- [ ] An error is shown for invalid IDs"
+  },
+  {
+    "title": "[feat] Add a challenge this claim affordance on every claim",
+    "epic": "agent-experience", "type": "feature", "priority": "high", "area": "design",
+    "body": "## What\n\nEvery claim the agent makes in the chat has a small \"challenge\" button. Click it and the agent re-runs the analysis to defend or retract.\n\n## Acceptance\n\n- [ ] Button visible on every claim\n- [ ] Click triggers a re-run\n- [ ] The re-run result is added to the trail\n- [ ] The user can mark the claim as accepted / retracted"
+  }
+]
