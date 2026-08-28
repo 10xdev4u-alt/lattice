@@ -89,6 +89,22 @@ button:disabled {
   cursor: not-allowed;
 }
 
+.app-footer {
+  display: flex;
+  justify-content: center;
+  padding: var(--sp-2);
+  border-top: 1px solid var(--border);
+  background: var(--bg-elev-1);
+}
+
+.report-problem {
+  font-size: var(--text-xs);
+  color: var(--fg-muted);
+  background: transparent;
+  border: 1px solid var(--border);
+}
+.report-problem:hover { color: var(--accent); border-color: var(--accent); }
+
 a {
   color: var(--accent);
   text-decoration: none;
