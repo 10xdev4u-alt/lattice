@@ -14,6 +14,7 @@ import { mountPdfCanvas } from './pdf-canvas';
 import { mountAgentRail } from './agent-rail';
 import { mountEmptyState } from './empty-state';
 import { mountPeerReviewerBanner } from './peer-reviewer';
+import { mountOpenPapersToolbar } from './open-papers';
 import { getLibrary } from '../library';
 
 export function mountWorkspace(root: HTMLElement | null): void {
@@ -24,6 +25,7 @@ export function mountWorkspace(root: HTMLElement | null): void {
         <div data-paper-list></div>
       </aside>
       <main class="canvas" role="main">
+        <div data-open-papers></div>
         <div data-canvas></div>
         <div data-settings hidden></div>
       </main>
@@ -46,6 +48,8 @@ export function mountWorkspace(root: HTMLElement | null): void {
       mountPdfCanvas(canvasRoot);
     }
   }
+  const openPapersRoot = root.querySelector<HTMLDivElement>('[data-open-papers]');
+  if (openPapersRoot) mountOpenPapersToolbar(openPapersRoot);
   if (agentRailRoot) {
     const peerBannerRoot = root.querySelector<HTMLDivElement>('[data-peer-banner]');
     if (peerBannerRoot) mountPeerReviewerBanner(peerBannerRoot);

@@ -12,10 +12,16 @@
  * The real two-column read order is applied per page (the strategy
  * from netlify/functions/_lib/column-detector.ts), so text-layer
  * selection is in reading order even on multi-column papers.
+ *
+ * Per-paper highlights (from `highlights.ts`) render as marker spans
+ * on the text layer. The user can click a highlight to jump to its
+ * note, or add a new highlight via the floating "Highlight" button
+ * that appears when text is selected.
  */
 
 import { getPaper } from './library';
 import { reconstructPage, type TextItem } from '../netlify/functions/_lib/column-detector';
+import { listHighlights, addHighlight, type Highlight } from './highlights';
 
 interface PageRender {
   pageNumber: number;
@@ -38,6 +44,10 @@ export async function mountPdfViewer(root: HTMLElement, paperId: string): Promis
       <section class="paper-viewer-pages" data-pdf-pages>
         <p class="pdf-loading">Loading PDF…</p>
       </section>
+      <section class="highlights-panel" data-highlights-panel>
+        <h3>Highlights</h3>
+        <div data-highlights-list></div>
+      </section>
     </article>
   `;
 
@@ -49,6 +59,7 @@ export async function mountPdfViewer(root: HTMLElement, paperId: string): Promis
     const loadingTask = pdfjs.getDocument({ url: `/api/papers/${paperId}/file` });
     const doc = await loadingTask.promise;
     pagesRoot.innerHTML = '';
+    const highlights = listHighlights(paperId);
     for (let i = 1; i <= doc.numPages; i++) {
       const page = await doc.getPage(i);
       const viewport = page.getViewport({ scale: 1.25 });
@@ -60,7 +71,6 @@ export async function mountPdfViewer(root: HTMLElement, paperId: string): Promis
       const ctx = canvas.getContext('2d');
       if (!ctx) continue;
       await page.render({ canvasContext: ctx, viewport }).promise;
-      // Build a text layer for selection
       const textContent = await page.getTextContent();
       const items: TextItem[] = textContent.items.map((it: any) => ({
         str: it.str,
@@ -77,13 +87,58 @@ export async function mountPdfViewer(root: HTMLElement, paperId: string): Promis
       textLayer.style.width = `${viewport.width}px`;
       textLayer.style.height = `${viewport.height}px`;
       pagesRoot.appendChild(textLayer);
+      // Render highlights for this page
+      renderHighlightsForPage(textLayer, highlights.filter((h) => h.page === i), reconstructed.text);
       page.cleanup();
     }
     await doc.cleanup();
     await doc.destroy();
+    renderHighlightsPanel(root, paperId);
   } catch (err) {
     pagesRoot.innerHTML = `<p class="canvas-empty">Could not render PDF: ${escapeHtml((err as Error).message)}</p>`;
   }
+}
+
+function renderHighlightsForPage(layer: HTMLElement, highlights: Highlight[], text: string): void {
+  for (const h of highlights) {
+    const idx = text.toLowerCase().indexOf(h.text.toLowerCase());
+    if (idx === -1) continue;
+    // Wrap the matched substring with a marker span.
+    const before = text.slice(0, idx);
+    const match = text.slice(idx, idx + h.text.length);
+    const after = text.slice(idx + h.text.length);
+    layer.innerHTML = '';
+    if (before) layer.appendChild(document.createTextNode(before));
+    const marker = document.createElement('span');
+    marker.className = `highlight-marker highlight-${h.color}`;
+    marker.textContent = match;
+    marker.title = h.note || 'Highlight';
+    layer.appendChild(marker);
+    if (after) layer.appendChild(document.createTextNode(after));
+  }
+}
+
+function renderHighlightsPanel(root: HTMLElement, paperId: string): void {
+  const list = root.querySelector<HTMLElement>('[data-highlights-list]');
+  if (!list) return;
+  const highlights = listHighlights(paperId);
+  if (highlights.length === 0) {
+    list.innerHTML = '<p class="canvas-empty" style="font-size: var(--text-xs)">No highlights yet. Select text in the PDF to add one.</p>';
+    return;
+  }
+  list.innerHTML = highlights
+    .map(
+      (h) => `
+      <div class="highlight-row">
+        <span class="highlight-row-page">p.${h.page}</span>
+        <div>
+          <div class="highlight-row-text">${escapeHtml(h.text.slice(0, 100))}${h.text.length > 100 ? '…' : ''}</div>
+          ${h.note ? `<div class="highlight-row-note">${escapeHtml(h.note)}</div>` : ''}
+        </div>
+      </div>
+    `,
+    )
+    .join('');
 }
 
 function formatAuthors(p: { authors: { family: string; given?: string }[] }): string {
