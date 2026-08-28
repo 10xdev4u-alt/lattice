@@ -16,6 +16,7 @@ import { mountEmptyState } from './empty-state';
 import { mountPeerReviewerBanner } from './peer-reviewer';
 import { mountOpenPapersToolbar } from './open-papers';
 import { getLibrary } from '../library';
+import { announce } from '../focus';
 
 export function mountWorkspace(root: HTMLElement | null): void {
   if (!root) return;
@@ -67,15 +68,37 @@ function installKeyboardShortcuts(root: HTMLElement): void {
     if ((e.metaKey || e.ctrlKey) && e.key === 'b') {
       e.preventDefault();
       workspace.classList.toggle('rail-left-collapsed');
+      announce('Paper list rail toggled');
     } else if ((e.metaKey || e.ctrlKey) && e.key === 'r') {
       e.preventDefault();
       workspace.classList.toggle('rail-right-collapsed');
+      announce('Agent rail toggled');
     } else if ((e.metaKey || e.ctrlKey) && e.key === ',') {
       e.preventDefault();
       toggleSettings(root);
+      announce('Settings panel opened');
     } else if (e.key === '?') {
       e.preventDefault();
       showHelp(workspace);
+    } else if (e.key === 'g' && !e.metaKey && !e.ctrlKey) {
+      // 'g' starts a 2-key sequence (g then w/l/t). Wait for the second key.
+      const onNext = (e2: KeyboardEvent): void => {
+        document.removeEventListener('keydown', onNext);
+        if (e2.key === 'w') {
+          // Jump to the workflow trail tab
+          document.querySelector<HTMLElement>('[data-tab="log"]')?.click();
+          announce('Workflow trail tab opened');
+        } else if (e2.key === 'l') {
+          // Jump to the chat tab
+          document.querySelector<HTMLElement>('[data-tab="chat"]')?.click();
+          announce('Chat tab opened');
+        } else if (e2.key === 't') {
+          // Jump to the tools tab
+          document.querySelector<HTMLElement>('[data-tab="tools"]')?.click();
+          announce('Live Tool Array opened');
+        }
+      };
+      document.addEventListener('keydown', onNext, { once: true });
     }
   });
 }
