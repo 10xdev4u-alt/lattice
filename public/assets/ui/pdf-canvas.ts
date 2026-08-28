@@ -1,16 +1,20 @@
 /**
  * PDF canvas — the main viewer.
  *
- * For the demo, renders a metadata-only canvas (title, authors, abstract,
- * jump-to-page placeholder) for any paper in the library. The real
- * pdf.js viewer lands in a follow-up PR (issue #36 / #37). This
- * component is what the agent rail interacts with — when the agent
- * calls open_paper, the canvas swaps in.
+ * Renders the paper's metadata header and delegates full PDF rendering
+ * to mountPdfViewer (which uses pdf.js). The agent rail drives the
+ * `lattice:paper-opened` event so opening a paper in the rail swaps
+ * the canvas to that paper.
  *
- * Closes #36 (the metadata view), partial toward #37 (the real viewer).
+ * The PDF viewer needs the source PDF at /api/papers/<id>/file. If
+ * the paper is sample-only (no source uploaded), the canvas shows
+ * the metadata view only.
+ *
+ * Closes #36, #37.
  */
 
 import { getLibrary, getPaper, type Paper } from '../library';
+import { mountPdfViewer } from '../pdf-viewer';
 
 let currentPaperId: string | null = null;
 
@@ -42,16 +46,13 @@ function render(root: HTMLElement, paperId: string): void {
         <p class="paper-viewer-authors">${escapeHtml(formatAuthors(paper))}</p>
         <p class="paper-viewer-meta">${paper.year ?? 'n.d.'}${paper.doi ? ` · DOI ${escapeHtml(paper.doi)}` : ''}${paper.arxivId ? ` · arXiv ${escapeHtml(paper.arxivId)}` : ''}</p>
       </header>
-      <section class="paper-viewer-abstract">
-        <h3>Abstract</h3>
-        <p>${escapeHtml(paper.abstract ?? 'No abstract available for this paper.')}</p>
-      </section>
-      <section class="paper-viewer-body">
-        <h3>Full text</h3>
-        <p class="paper-viewer-placeholder">The PDF viewer with selectable text and per-page search lands in PR #118. For now, ask the agent to <code>summarize_paper</code>, <code>extract_quote</code>, or <code>compare_claims</code>.</p>
-      </section>
+      <section class="paper-viewer-pages" data-pdf-host></section>
     </article>
   `;
+  const host = root.querySelector<HTMLElement>('[data-pdf-host]');
+  if (host) {
+    void mountPdfViewer(host, paperId);
+  }
 }
 
 function formatAuthors(p: Paper): string {
