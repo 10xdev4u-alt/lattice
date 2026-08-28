@@ -32,6 +32,9 @@ async function main(): Promise<void> {
   // Trail watcher: badges the Log tab with the count of new steps.
   void import('./trail-watcher').then(({ initTrailWatcher }) => initTrailWatcher());
 
+  // What-just-changed toast: surfaces the last 2 steps on each new tool call.
+  void import('./what-just-changed').then(({ mountWhatJustChanged }) => mountWhatJustChanged());
+
   // Peer-reviewer preview: hover a citation chip, see the challenge.
   void import('./peer-preview').then(({ mountPeerPreview }) => mountPeerPreview());
 

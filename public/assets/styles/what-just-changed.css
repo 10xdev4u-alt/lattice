@@ -1,0 +1,42 @@
+/* What just changed toast */
+.what-just-changed {
+  position: fixed;
+  bottom: var(--sp-6);
+  right: var(--sp-6);
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  padding: var(--sp-2) var(--sp-3);
+  background: var(--bg-elev-1);
+  border: 1px solid var(--accent);
+  border-radius: var(--r-md);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  z-index: 50;
+  animation: wjc-slide-in var(--dur) var(--ease);
+}
+@keyframes wjc-slide-in {
+  from { transform: translateY(20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+.wjc-title { font-size: var(--text-xs); color: var(--fg-muted); }
+.wjc-steps { font-size: var(--text-sm); color: var(--fg); display: flex; align-items: center; gap: var(--sp-1); }
+.wjc-steps code { font-family: var(--font-mono); color: var(--accent); }
+.wjc-meta { color: var(--fg-muted); font-family: var(--font-mono); font-size: var(--text-xs); margin-left: 4px; }
+.what-just-changed button[data-action="open"] {
+  font-size: var(--text-xs);
+  padding: 2px 8px;
+  background: var(--accent);
+  color: white;
+  border: none;
+  border-radius: var(--r-sm);
+  cursor: pointer;
+}
+.what-just-changed button[data-action="dismiss"] {
+  font-size: 14px;
+  width: 20px;
+  height: 20px;
+  background: transparent;
+  border: none;
+  color: var(--fg-muted);
+  cursor: pointer;
+}
