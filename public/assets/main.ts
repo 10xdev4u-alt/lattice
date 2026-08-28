@@ -35,6 +35,12 @@ async function main(): Promise<void> {
   // What-just-changed toast: surfaces the last 2 steps on each new tool call.
   void import('./what-just-changed').then(({ mountWhatJustChanged }) => mountWhatJustChanged());
 
+  // Session timer pill: shows how long the user has been on the page.
+  void import('./session-timer').then(({ mountSessionTimer }) => {
+    const host = document.getElementById('session-timer-host');
+    if (host) mountSessionTimer(host);
+  });
+
   // Peer-reviewer preview: hover a citation chip, see the challenge.
   void import('./peer-preview').then(({ mountPeerPreview }) => mountPeerPreview());
 

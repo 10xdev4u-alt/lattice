@@ -1,0 +1,22 @@
+/* Session timer */
+.session-timer {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  padding: 2px 8px;
+  background: transparent;
+  color: var(--fg-muted);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  cursor: pointer;
+  margin-left: var(--sp-2);
+}
+.session-timer:hover { color: var(--accent); border-color: var(--accent); }
+.session-timer [data-timer-state] {
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--fg-muted);
+}
