@@ -32,6 +32,9 @@ async function main(): Promise<void> {
   // Trail watcher: badges the Log tab with the count of new steps.
   void import('./trail-watcher').then(({ initTrailWatcher }) => initTrailWatcher());
 
+  // Peer-reviewer preview: hover a citation chip, see the challenge.
+  void import('./peer-preview').then(({ mountPeerPreview }) => mountPeerPreview());
+
   // Report-a-problem button: copy a diagnostic bundle to the clipboard.
   document.querySelector<HTMLButtonElement>('[data-action="report-problem"]')?.addEventListener('click', async () => {
     const { copyDiagnosticBundleToClipboard } = await import('./diagnostics');
