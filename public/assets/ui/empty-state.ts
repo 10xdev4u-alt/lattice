@@ -21,8 +21,9 @@ export function mountEmptyState(root: HTMLElement): void {
         <button data-action="load-sample">Load sample library</button>
         <button data-action="paste-arxiv">Paste an arXiv ID</button>
         <button data-action="drop-pdf">Drop a PDF</button>
+        <button data-action="start-tour">30-second tour</button>
       </div>
-      <p class="empty-hint">A judge who clicks this should: load the sample library, then watch the Live Tool Array light up as the agent acts. Or paste an arXiv ID (e.g. <code>1706.03762</code>) and see the LaTeX ingest path.</p>
+      <p class="empty-hint">A judge who clicks this should: load the sample library, then watch the Live Tool Array light up as the agent acts. Or click "30-second tour" for an auto-cycled walkthrough.</p>
     </section>
   `;
 
@@ -30,6 +31,12 @@ export function mountEmptyState(root: HTMLElement): void {
   sampleBtn?.addEventListener('click', () => {
     loadSampleLibrary();
     document.dispatchEvent(new CustomEvent('lattice:library-changed'));
+  });
+
+  const tourBtn = root.querySelector<HTMLButtonElement>('[data-action="start-tour"]');
+  tourBtn?.addEventListener('click', async () => {
+    const { mountTour } = await import('../tour');
+    mountTour(root);
   });
 
   const arxivBtn = root.querySelector<HTMLButtonElement>('[data-action="paste-arxiv"]');
