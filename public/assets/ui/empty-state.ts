@@ -37,6 +37,7 @@ export function mountEmptyState(root: HTMLElement): void {
         <button data-action="paste-arxiv">Paste an arXiv ID</button>
         <button data-action="drop-pdf">Drop a PDF</button>
         <button data-action="start-tour">30-second tour</button>
+        <button data-action="compare-ingests">Compare ingests</button>
       </div>
       <p class="empty-hint">A judge who clicks this should: load the sample library, then watch the Live Tool Array light up as the agent acts. Or click "30-second tour" for an auto-cycled walkthrough.</p>
     </section>
@@ -52,6 +53,21 @@ export function mountEmptyState(root: HTMLElement): void {
   tourBtn?.addEventListener('click', async () => {
     const { mountTour } = await import('../tour');
     mountTour(root);
+  });
+
+  const compareBtn = root.querySelector<HTMLButtonElement>('[data-action="compare-ingests"]');
+  compareBtn?.addEventListener('click', async () => {
+    const { mountCompareIngestsOverlay } = await import('./compare-ingests');
+    const overlay = document.createElement('div');
+    overlay.className = 'kg-overlay';
+    overlay.innerHTML = `<div class="kg-modal" role="dialog" aria-modal="true"><button data-action="close">Close</button><div data-compare-host style="height: 70vh; overflow: auto"></div></div>`;
+    overlay.addEventListener('click', (e) => {
+      const t = e.target as HTMLElement;
+      if (t.dataset.action === 'close' || t === overlay) overlay.remove();
+    });
+    document.body.appendChild(overlay);
+    const inner = overlay.querySelector<HTMLElement>('[data-compare-host]');
+    if (inner) await mountCompareIngestsOverlay(inner);
   });
 
   const arxivBtn = root.querySelector<HTMLButtonElement>('[data-action="paste-arxiv"]');
