@@ -38,3 +38,17 @@
 .confidence-high { background: var(--ok); box-shadow: 0 0 4px var(--ok); }
 .confidence-mixed { background: var(--warn); }
 .confidence-speculative { background: var(--err); }
+.feedback-actions { display: inline-flex; gap: 4px; margin-top: 4px; margin-left: 6px; }
+.feedback-btn {
+  font-size: 12px;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  padding: 1px 4px;
+  cursor: pointer;
+  color: var(--fg-muted);
+  line-height: 1;
+}
+.feedback-btn:hover { color: var(--fg); }
+.feedback-btn.active-up { color: var(--ok); border-color: var(--ok); }
+.feedback-btn.active-down { color: var(--err); border-color: var(--err); }
