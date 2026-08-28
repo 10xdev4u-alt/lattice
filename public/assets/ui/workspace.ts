@@ -13,6 +13,7 @@ import { mountPaperList } from './paper-list';
 import { mountPdfCanvas } from './pdf-canvas';
 import { mountAgentRail } from './agent-rail';
 import { mountEmptyState } from './empty-state';
+import { mountPeerReviewerBanner } from './peer-reviewer';
 import { getLibrary } from '../library';
 
 export function mountWorkspace(root: HTMLElement | null): void {
@@ -26,6 +27,7 @@ export function mountWorkspace(root: HTMLElement | null): void {
         <div data-canvas></div>
       </main>
       <aside class="rail rail-right" role="complementary" aria-label="Agent">
+        <div data-peer-banner></div>
         <div data-agent-rail></div>
       </aside>
     </div>
@@ -43,7 +45,11 @@ export function mountWorkspace(root: HTMLElement | null): void {
       mountPdfCanvas(canvasRoot);
     }
   }
-  if (agentRailRoot) mountAgentRail(agentRailRoot);
+  if (agentRailRoot) {
+    const peerBannerRoot = root.querySelector<HTMLDivElement>('[data-peer-banner]');
+    if (peerBannerRoot) mountPeerReviewerBanner(peerBannerRoot);
+    mountAgentRail(agentRailRoot);
+  }
 
   installKeyboardShortcuts(root);
 }
