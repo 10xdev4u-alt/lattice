@@ -14,6 +14,7 @@ import { getSession } from '../workflow-trail';
 import { mountWorkflowTrail } from './workflow-trail';
 import { completePrompt } from '../llm';
 import { setPeerReviewerActive, isPeerReviewerActive } from './peer-reviewer';
+import { decorateCitations } from '../citation-chips';
 
 interface RegisteredTool {
   name: string;
@@ -137,6 +138,14 @@ function appendMessage(root: HTMLElement, role: 'user' | 'agent', text: string, 
   div.innerHTML = `<span class="agent-message-role">${role === 'user' ? 'You' : 'Agent'}</span><p>${escapeHtml(text)}</p>`;
   chat.appendChild(div);
   chat.scrollTop = chat.scrollHeight;
+  if (role === 'agent' && !transient) {
+    decorateCitations(div, (claim) => {
+      const input = root.querySelector<HTMLInputElement>('[data-agent-input]');
+      if (!input) return;
+      input.value = `I want to challenge this claim you made: "${claim.slice(0, 200)}". Defend it with citations, or retract it.`;
+      form?.dispatchEvent(new Event('submit', { cancelable: true }));
+    });
+  }
 }
 
 async function loadTools(): Promise<RegisteredTool[]> {
