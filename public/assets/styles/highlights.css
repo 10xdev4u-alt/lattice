@@ -11,6 +11,21 @@
 .highlight-red { background: rgba(239, 68, 68, 0.3); }
 .highlight-green { background: rgba(34, 197, 94, 0.3); }
 
+.highlight-floating {
+  position: absolute;
+  z-index: 50;
+  font-size: var(--text-xs);
+  padding: 4px 10px;
+  background: var(--accent);
+  color: white;
+  border: none;
+  border-radius: var(--r-sm);
+  cursor: pointer;
+  display: none;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+.highlight-floating:hover { filter: brightness(1.1); }
+
 .highlights-panel {
   margin-top: var(--sp-4);
   border-top: 1px solid var(--border);
