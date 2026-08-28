@@ -112,3 +112,34 @@
 }
 .paper-tag-add:hover { color: var(--accent); border-color: var(--accent); }
 
+/* Tag filter pills */
+.paper-list-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  padding: var(--sp-2) var(--sp-3);
+  border-bottom: 1px solid var(--border);
+}
+.tag-pill {
+  font-size: 10px;
+  font-family: var(--font-mono);
+  padding: 2px 8px;
+  background: var(--bg-elev-1);
+  color: var(--fg-muted);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  cursor: pointer;
+}
+.tag-pill:hover { color: var(--fg); border-color: var(--fg-muted); }
+.tag-pill.tag-included {
+  background: var(--ok);
+  color: var(--bg);
+  border-color: var(--ok);
+}
+.tag-pill.tag-excluded {
+  background: transparent;
+  color: var(--err);
+  border-color: var(--err);
+  text-decoration: line-through;
+}
+

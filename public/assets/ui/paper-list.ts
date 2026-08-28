@@ -12,7 +12,15 @@
 import { getLibrary, type Paper } from '../library';
 import { getModelContext } from '../model-context-polyfill';
 import { isPinned, togglePin } from '../pins';
-import { getTagsFor, addTag, removeTag, getAllTags } from '../tags';
+import { getTagsFor, addTag, removeTag, getAllTags, filterByTags } from '../tags';
+
+interface FilterState {
+  query: string;
+  include: string[];
+  exclude: string[];
+}
+
+const STATE: FilterState = { query: '', include: [], exclude: [] };
 
 type SortKey = 'recency' | 'title' | 'author' | 'year';
 
@@ -28,6 +36,7 @@ export function mountPaperList(root: HTMLElement): void {
 
 function render(root: HTMLElement): void {
   const papers = filteredAndSorted();
+  const allTags = getAllTags();
   root.innerHTML = `
     <div class="paper-list-toolbar">
       <input type="search" data-paper-search placeholder="Filter papers" aria-label="Filter papers" />
@@ -38,6 +47,18 @@ function render(root: HTMLElement): void {
         <option value="year">Year</option>
       </select>
     </div>
+    ${allTags.length > 0 ? `
+    <div class="paper-list-tags" role="group" aria-label="Filter by tag">
+      ${allTags
+        .map((t) => {
+          const isIncluded = STATE.include.includes(t);
+          const isExcluded = STATE.exclude.includes(t);
+          const cls = isIncluded ? 'tag-pill tag-included' : isExcluded ? 'tag-pill tag-excluded' : 'tag-pill';
+          return `<button class="${cls}" data-tag-filter="${escapeHtml(t)}">${escapeHtml(t)}</button>`;
+        })
+        .join('')}
+    </div>
+    ` : ''}
     <form class="paper-list-arxiv" data-arxiv-form>
       <input type="text" data-arxiv-input placeholder="Paste arXiv ID or URL" aria-label="Add an arXiv paper" />
       <button type="submit" aria-label="Add">+</button>
@@ -64,6 +85,20 @@ function render(root: HTMLElement): void {
       render(root);
     });
   }
+  root.querySelectorAll<HTMLButtonElement>('[data-tag-filter]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const tag = btn.dataset.tagFilter!;
+      if (STATE.include.includes(tag)) {
+        STATE.include = STATE.include.filter((t) => t !== tag);
+        STATE.exclude = [...STATE.exclude, tag];
+      } else if (STATE.exclude.includes(tag)) {
+        STATE.exclude = STATE.exclude.filter((t) => t !== tag);
+      } else {
+        STATE.include = [...STATE.include, tag];
+      }
+      render(root);
+    });
+  });
 
   const arxivForm = root.querySelector<HTMLFormElement>('[data-arxiv-form]');
   const arxivInput = root.querySelector<HTMLInputElement>('[data-arxiv-input]');
@@ -141,6 +176,11 @@ function filteredAndSorted(): Paper[] {
       if (p.year?.toString().includes(q)) return true;
       return false;
     });
+  }
+  if (STATE.include.length > 0 || STATE.exclude.length > 0) {
+    const ids = papers.map((p) => p.id);
+    const keep = new Set(filterByTags(ids, STATE.include, STATE.exclude));
+    papers = papers.filter((p) => keep.has(p.id));
   }
   // Pinned first, then sort
   const pinned = papers.filter((p) => isPinned(p.id));
