@@ -1,0 +1,48 @@
+/* Open-papers toolbar */
+.open-papers {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  padding: var(--sp-2) var(--sp-3);
+  background: var(--bg-elev-1);
+  border-bottom: 1px solid var(--border);
+}
+.open-papers-label {
+  font-size: var(--text-xs);
+  color: var(--fg-muted);
+  font-family: var(--font-mono);
+}
+.open-papers-tabs { list-style: none; margin: 0; padding: 0; display: flex; gap: var(--sp-1); flex: 1; }
+.open-papers-tab {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  padding: var(--sp-1) var(--sp-2);
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  cursor: pointer;
+  font-size: var(--text-xs);
+  max-width: 200px;
+}
+.open-papers-tab:hover { border-color: var(--accent); }
+.open-papers-tab-title {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.open-papers-tab button {
+  font-size: 14px;
+  width: 18px;
+  height: 18px;
+  padding: 0;
+  background: transparent;
+  color: var(--fg-muted);
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.open-papers-tab button:hover { background: var(--bg-elev-2); color: var(--fg); }
