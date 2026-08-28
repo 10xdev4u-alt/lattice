@@ -12,6 +12,7 @@
 import { getLibrary, type Paper } from '../library';
 import { getModelContext } from '../model-context-polyfill';
 import { isPinned, togglePin } from '../pins';
+import { getTagsFor, addTag, removeTag, getAllTags } from '../tags';
 
 type SortKey = 'recency' | 'title' | 'author' | 'year';
 
@@ -22,6 +23,7 @@ export function mountPaperList(root: HTMLElement): void {
 
   document.addEventListener('lattice:library-changed', () => render(root));
   document.addEventListener('lattice:pins-changed', () => render(root));
+  document.addEventListener('lattice:tags-changed', () => render(root));
 }
 
 function render(root: HTMLElement): void {
@@ -107,6 +109,18 @@ function render(root: HTMLElement): void {
         togglePin(li.dataset.paperId!);
         return;
       }
+      if (target.dataset.action === 'remove-tag') {
+        const tag = target.dataset.tag;
+        if (tag) removeTag(li.dataset.paperId!, tag);
+        e.stopPropagation();
+        return;
+      }
+      if (target.dataset.action === 'add-tag') {
+        const tag = window.prompt(`Add tag to "${li.dataset.paperId}":`, '');
+        if (tag) addTag(li.dataset.paperId!, tag);
+        e.stopPropagation();
+        return;
+      }
       const id = li.dataset.paperId!;
       const ctx = getModelContext();
       void ctx.executeTool(
@@ -152,12 +166,21 @@ function paperRow(p: Paper): string {
   const more = p.authors.length > 1 ? ` et al.` : '';
   const year = p.year ? ` · ${p.year}` : '';
   const pinned = isPinned(p.id);
+  const tags = getTagsFor(p.id);
   return `
     <li class="paper-row ${pinned ? 'paper-row-pinned' : ''}" data-paper-id="${p.id}" role="button" tabindex="0" aria-label="Open ${escapeHtml(p.title)}">
       <button class="paper-row-pin" data-action="pin" aria-label="${pinned ? 'Unpin' : 'Pin'} ${escapeHtml(p.title)}" aria-pressed="${pinned}">${pinned ? '★' : '☆'}</button>
       <div class="paper-row-title">${escapeHtml(p.title)}</div>
       <div class="paper-row-meta">${escapeHtml(author)}${escapeHtml(more)}${year}</div>
       <div class="paper-row-source">${escapeHtml(p.source)}</div>
+      <div class="paper-row-tags">
+        ${tags
+          .map(
+            (t) => `<span class="paper-tag" data-tag="${escapeHtml(t)}">${escapeHtml(t)}<button data-action="remove-tag" data-tag="${escapeHtml(t)}" aria-label="Remove tag ${escapeHtml(t)}">×</button></span>`,
+          )
+          .join('')}
+        <button class="paper-tag-add" data-action="add-tag">+ tag</button>
+      </div>
     </li>
   `;
 }

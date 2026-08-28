@@ -66,3 +66,49 @@
 .paper-row-pin[aria-pressed="true"] { color: var(--accent); }
 .paper-row-pinned { background: var(--accent-soft); border-left: 2px solid var(--accent); }
 
+/* Paper tags */
+.paper-row-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 4px;
+  align-items: center;
+}
+.paper-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  font-size: 10px;
+  font-family: var(--font-mono);
+  padding: 1px 6px;
+  background: var(--bg-elev-1);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  color: var(--fg-muted);
+}
+.paper-tag button {
+  font-size: 12px;
+  width: 14px;
+  height: 14px;
+  background: transparent;
+  border: none;
+  color: var(--fg-muted);
+  padding: 0;
+  cursor: pointer;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.paper-tag button:hover { background: var(--err); color: white; }
+.paper-tag-add {
+  font-size: 10px;
+  padding: 1px 6px;
+  background: transparent;
+  color: var(--fg-muted);
+  border: 1px dashed var(--border);
+  border-radius: 999px;
+  cursor: pointer;
+}
+.paper-tag-add:hover { color: var(--accent); border-color: var(--accent); }
+
