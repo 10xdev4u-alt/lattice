@@ -23,6 +23,30 @@ interface RegisteredTool {
   annotations?: { readOnlyHint?: boolean };
 }
 
+interface ChatMessage {
+  role: 'user' | 'agent';
+  text: string;
+  transient?: boolean;
+  timestamp: string;
+}
+
+const CHAT_STORAGE_KEY = 'lattice.chat.v1';
+
+function loadChat(): ChatMessage[] {
+  if (typeof localStorage === 'undefined') return [];
+  try {
+    return JSON.parse(localStorage.getItem(CHAT_STORAGE_KEY) ?? '[]') as ChatMessage[];
+  } catch {
+    return [];
+  }
+}
+
+function saveChat(messages: ChatMessage[]): void {
+  if (typeof localStorage === 'undefined') return;
+  const persistable = messages.filter((m) => !m.transient);
+  localStorage.setItem(CHAT_STORAGE_KEY, JSON.stringify(persistable));
+}
+
 export function mountAgentRail(root: HTMLElement): void {
   render(root);
 
@@ -78,6 +102,9 @@ async function render(root: HTMLElement): Promise<void> {
   const tools = await loadTools();
   const session = getSession();
   const peerActive = isPeerReviewerActive();
+  const chat = root.querySelector<HTMLDivElement>('[data-agent-chat]');
+  const existing = chat ? Array.from(chat.querySelectorAll<HTMLDivElement>('.agent-message')).length : 0;
+  const persisted = loadChat();
   root.innerHTML = `
     <div class="agent-rail-tabs" role="tablist">
       <button data-tab="chat" role="tab" aria-selected="true">Chat</button>
@@ -136,6 +163,17 @@ async function render(root: HTMLElement): Promise<void> {
 
   const trailRoot = root.querySelector<HTMLDivElement>('[data-workflow-trail]');
   if (trailRoot) mountWorkflowTrail(trailRoot);
+
+  // Restore persisted messages on first render
+  if (existing === 0 && persisted.length > 0) {
+    const chatRoot = root.querySelector<HTMLDivElement>('[data-agent-chat]');
+    if (chatRoot) {
+      chatRoot.innerHTML = '';
+      for (const m of persisted) {
+        appendMessage(root, m.role, m.text, m.transient);
+      }
+    }
+  }
 }
 
 function appendMessage(root: HTMLElement, role: 'user' | 'agent', text: string, transient = false): void {
@@ -148,6 +186,15 @@ function appendMessage(root: HTMLElement, role: 'user' | 'agent', text: string, 
   div.innerHTML = `<span class="agent-message-role">${role === 'user' ? 'You' : 'Agent'}</span><p>${escapeHtml(text)}</p>`;
   chat.appendChild(div);
   chat.scrollTop = chat.scrollHeight;
+  if (!transient) {
+    const all: ChatMessage[] = Array.from(chat.querySelectorAll<HTMLDivElement>('.agent-message'))
+      .map((el) => {
+        const r = el.classList.contains('agent-message-user') ? 'user' : 'agent';
+        const t = el.querySelector('p')?.textContent ?? '';
+        return { role: r as 'user' | 'agent', text: t, timestamp: new Date().toISOString() };
+      });
+    saveChat(all);
+  }
   if (role === 'agent' && !transient) {
     decorateCitations(div, (claim) => {
       recordStep({
