@@ -1,0 +1,24 @@
+/* Paper diff */
+.paper-diff { padding: var(--sp-4); }
+.paper-diff-header { margin-bottom: var(--sp-3); }
+.paper-diff-header h2 { font-size: var(--text-md); margin: 0 0 var(--sp-2); }
+.paper-diff-stats { display: flex; gap: var(--sp-2); margin: 0; }
+.diff-stat { font-family: var(--font-mono); font-size: var(--text-sm); padding: 2px 8px; border-radius: var(--r-sm); }
+.diff-added { color: var(--ok); background: rgba(16, 185, 129, 0.15); }
+.diff-removed { color: var(--err); background: rgba(239, 68, 68, 0.15); }
+.diff-unchanged { color: var(--fg-muted); background: var(--bg-elev-1); }
+.paper-diff-body {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  line-height: 1.6;
+  background: var(--bg-elev-1);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  padding: var(--sp-3);
+  max-height: 60vh;
+  overflow: auto;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+.paper-diff-body ins { color: var(--ok); background: rgba(16, 185, 129, 0.2); text-decoration: none; }
+.paper-diff-body del { color: var(--err); background: rgba(239, 68, 68, 0.2); text-decoration: none; }
