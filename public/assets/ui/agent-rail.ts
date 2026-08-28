@@ -12,9 +12,9 @@
 import { getModelContext } from '../model-context-polyfill';
 import { getSession, recordStep } from '../workflow-trail';
 import { mountWorkflowTrail } from './workflow-trail';
-import { completePrompt } from '../llm';
 import { setPeerReviewerActive, isPeerReviewerActive } from './peer-reviewer';
 import { decorateCitations } from '../citation-chips';
+import { runAgentLoop, buildHistoryFromChat, type AgentLoopResult } from '../agent-loop';
 
 interface RegisteredTool {
   name: string;
@@ -69,13 +69,17 @@ async function handleSubmit(root: HTMLElement): Promise<void> {
   input.value = '';
   setBusy(root, true);
   try {
-    const system = `You are Lattice, a research-paper assistant. The user is working in a 3-rail workspace. You have ${toolCount()} WebMCP tools available. Always call list_papers first to ground your work, then chain search_library, open_paper, and the per-paper tools. When the user asks you to act, the harness handles the UI side; you just call tools. Be concise. Cite by paper id.`;
-    const reply = await completePrompt(text, {
-      signal: new AbortController().signal,
-      maxTokens: 800,
-      system,
-    });
-    appendMessage(root, 'agent', reply || '(no response)');
+    const chat = root.querySelector<HTMLDivElement>('[data-agent-chat]');
+    const history = chat ? buildHistoryFromChat(chat) : [];
+    const controller = new AbortController();
+    const result = await runAgentLoop(text, history, { signal: controller.signal });
+    if (result.toolCalls.length > 0) {
+      const summary = result.toolCalls
+        .map((c) => `${c.tool}(${JSON.stringify(c.args).slice(0, 80)})`)
+        .join(', ');
+      appendMessage(root, 'agent', `I called ${result.toolCalls.length} tool${result.toolCalls.length === 1 ? '' : 's'}: ${summary}.`);
+    }
+    appendMessage(root, 'agent', result.finalMessage || '(no response)');
   } catch (err) {
     appendMessage(root, 'agent', `Error: ${(err as Error).message}`);
   } finally {
