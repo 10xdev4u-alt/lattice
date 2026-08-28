@@ -13,6 +13,7 @@
  */
 
 import { getSession, toMarkdownAppendix, type WorkflowStep } from '../workflow-trail';
+import { mountTimelineScrubber } from './timeline-scrubber';
 
 export function mountWorkflowTrail(root: HTMLElement): void {
   render(root);
@@ -34,10 +35,14 @@ function render(root: HTMLElement): void {
         <button data-action="export-jsonl">Export as JSONL</button>
       </div>
     </div>
+    <div data-scrubber-host></div>
     ${steps.length === 0
       ? '<p class="trail-empty">No tool calls yet. The audit log fills in as the agent acts.</p>'
       : `<ol class="trail-list" role="list">${steps.map((s) => stepRow(s)).join('')}</ol>`}
   `;
+
+  const scrubberHost = root.querySelector<HTMLElement>('[data-scrubber-host]');
+  if (scrubberHost) mountTimelineScrubber(scrubberHost);
 
   const exportMd = root.querySelector<HTMLButtonElement>('[data-action="export-md"]');
   exportMd?.addEventListener('click', () => downloadFile(toMarkdownAppendix(session), 'lattice-methods-appendix.md', 'text/markdown'));
