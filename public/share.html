@@ -23,13 +23,13 @@
     <script type="module">
       import { mountShareView, decodeSessionFromFragment } from '/assets/share.ts';
       const fragment = window.location.hash.replace(/^#share=/, '');
-      const session = fragment ? decodeSessionFromFragment(fragment) : null;
+      const payload = fragment ? decodeSessionFromFragment(fragment) : null;
       const root = document.getElementById('app-main');
       if (!root) return;
-      if (!session) {
+      if (!payload) {
         root.innerHTML = '<p class="empty-state">Invalid or missing share link.</p>';
       } else {
-        mountShareView(root, session);
+        mountShareView(root, payload);
       }
       document.getElementById('app')?.setAttribute('data-state', 'ready');
     </script>
