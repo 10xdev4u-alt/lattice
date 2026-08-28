@@ -104,6 +104,10 @@ function installKeyboardShortcuts(root: HTMLElement): void {
           // Open the arXiv feed overlay
           void openArxivFeedOverlay();
           announce('arXiv feed opened');
+        } else if (e2.key === 's') {
+          // Open the stats panel
+          void openStatsOverlay();
+          announce('Stats panel opened');
         }
       };
       document.addEventListener('keydown', onNext, { once: true });
@@ -151,6 +155,20 @@ async function openArxivFeedOverlay(): Promise<void> {
   if (inner) await mountArxivFeed(inner);
 }
 
+async function openStatsOverlay(): Promise<void> {
+  const { mountStatsPanel } = await import('../stats');
+  const overlay = document.createElement('div');
+  overlay.className = 'kg-overlay';
+  overlay.innerHTML = `<div class="kg-modal stats-modal" role="dialog" aria-modal="true"><button data-action="close">Close</button><div data-stats-host></div></div>`;
+  overlay.addEventListener('click', (e) => {
+    const t = e.target as HTMLElement;
+    if (t.dataset.action === 'close' || t === overlay) overlay.remove();
+  });
+  document.body.appendChild(overlay);
+  const inner = overlay.querySelector<HTMLElement>('[data-stats-host]');
+  if (inner) mountStatsPanel(inner);
+}
+
 function showHelp(_root: HTMLElement): void {
   const overlay = document.createElement('div');
   overlay.className = 'help-overlay';
@@ -168,6 +186,8 @@ function showHelp(_root: HTMLElement): void {
         <dd>Open the knowledge graph</dd>
         <dt><kbd>g</kbd> <kbd>f</kbd></dt>
         <dd>Open the arXiv feed</dd>
+        <dt><kbd>g</kbd> <kbd>s</kbd></dt>
+        <dd>Open the stats panel</dd>
         <dt><kbd>?</kbd></dt>
         <dd>Open this help</dd>
         <dt><kbd>Esc</kbd></dt>
