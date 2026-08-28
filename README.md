@@ -2,6 +2,11 @@
 
 > Research papers, in conversation. A WebMCP-powered workspace where the AI agent, your open PDF, your library, and your notes share one context — and every claim the agent makes is a re-openable, re-playable, citable event in your own audit log.
 
+[![CI](https://github.com/10xdev4u-alt/lattice/actions/workflows/ci.yml/badge.svg)](https://github.com/10xdev4u-alt/lattice/actions/workflows/ci.yml)
+[![License: Apache 2.0](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](LICENSE)
+[![WebMCP](https://img.shields.io/badge/WebMCP-Challenge_2026-7c6cff)](https://openai.com/webmcp-challenge)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](CONTRIBUTING.md)
+
 Built for the [OpenAI WebMCP Challenge](https://openai.com/webmcp-challenge) (Sept 3, 2026). $35K prize pool, 10 winning teams.
 
 ---
