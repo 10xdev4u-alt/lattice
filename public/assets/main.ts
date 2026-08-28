@@ -44,6 +44,15 @@ async function main(): Promise<void> {
     if (rail) mountContextBudgetBar(rail);
   });
 
+  // "What's in the prompt" debug view (g d).
+  document.addEventListener('keydown', async (e) => {
+    if ((e.metaKey || e.ctrlKey) && e.shiftKey && e.key === 'P') {
+      e.preventDefault();
+      const { mountPromptDebugOverlay } = await import('./prompt-debug');
+      mountPromptDebugOverlay();
+    }
+  });
+
   // Report-a-problem button: copy a diagnostic bundle to the clipboard.
   document.querySelector<HTMLButtonElement>('[data-action="report-problem"]')?.addEventListener('click', async () => {
     const { copyDiagnosticBundleToClipboard } = await import('./diagnostics');
