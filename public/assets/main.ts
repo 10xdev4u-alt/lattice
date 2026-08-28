@@ -29,6 +29,17 @@ async function main(): Promise<void> {
 
   mountWorkspace(document.getElementById('app-main'));
 
+  // Report-a-problem button: copy a diagnostic bundle to the clipboard.
+  document.querySelector<HTMLButtonElement>('[data-action="report-problem"]')?.addEventListener('click', async () => {
+    const { copyDiagnosticBundleToClipboard } = await import('./diagnostics');
+    const ok = await copyDiagnosticBundleToClipboard();
+    if (ok) {
+      window.alert('Diagnostic bundle copied to clipboard. Paste it into the GitHub issue.');
+    } else {
+      window.alert('Could not copy. Press F12, run: await import("/assets/diagnostics.ts").then(m => m.buildDiagnosticBundle())');
+    }
+  });
+
   document.getElementById('app')?.setAttribute('data-state', 'ready');
 }
 
