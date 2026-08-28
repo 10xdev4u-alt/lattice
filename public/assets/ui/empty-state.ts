@@ -8,6 +8,7 @@
  * Closes #37.
  */
 
+import { mountPdfCanvas } from './pdf-canvas';
 import { loadSampleLibrary } from '../sample-library';
 import { addPaper } from '../library';
 import { fetchArxivSource } from '../../netlify/functions/_lib/arxiv';
@@ -17,6 +18,20 @@ export function mountEmptyState(root: HTMLElement): void {
     <section class="empty-state">
       <h2>Welcome to Lattice</h2>
       <p>Bring a research paper. Lattice will surface every tool the AI agent can use on it — and the agent can see every paper you have open, every claim, every source.</p>
+      <ol class="empty-state-steps" aria-label="3-step getting started">
+        <li>
+          <span class="empty-step-num">1</span>
+          <span class="empty-step-text">Load the sample library (5 well-known arXiv papers).</span>
+        </li>
+        <li>
+          <span class="empty-step-num">2</span>
+          <span class="empty-step-text">Open any paper. The Live Tool Array lights up.</span>
+        </li>
+        <li>
+          <span class="empty-step-num">3</span>
+          <span class="empty-step-text">Ask the agent. The audit log fills in as the agent acts.</span>
+        </li>
+      </ol>
       <div class="empty-actions">
         <button data-action="load-sample">Load sample library</button>
         <button data-action="paste-arxiv">Paste an arXiv ID</button>
