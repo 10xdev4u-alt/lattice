@@ -33,6 +33,8 @@ function render(root: HTMLElement): void {
         <button data-action="toggle-prisma">Show PRISMA flow</button>
         <button data-action="export-md">Export as methods appendix</button>
         <button data-action="export-jsonl">Export as JSONL</button>
+        <button data-action="share">Share</button>
+        <button data-action="fork-branch">Fork branch</button>
       </div>
     </div>
     <div data-scrubber-host></div>
@@ -63,6 +65,25 @@ function render(root: HTMLElement): void {
     document.body.appendChild(host);
     const inner = host.querySelector<HTMLElement>('[data-prisma-host]');
     if (inner) mountPrismaDiagram(inner);
+  });
+
+  const shareBtn = root.querySelector<HTMLButtonElement>('[data-action="share"]');
+  shareBtn?.addEventListener('click', () => {
+    void import('../share').then(({ buildShareUrl }) => {
+      const url = buildShareUrl();
+      void navigator.clipboard?.writeText(url);
+      window.prompt('Share URL (copied to clipboard):', url);
+    });
+  });
+
+  const forkBtn = root.querySelector<HTMLButtonElement>('[data-action="fork-branch"]');
+  forkBtn?.addEventListener('click', () => {
+    void import('../branches').then(({ startFreshBranch, listBranches }) => {
+      const name = window.prompt('Name the new branch:', `Branch ${listBranches().length + 1}`);
+      if (!name) return;
+      const branch = startFreshBranch(name);
+      appendBranchRow(root, branch);
+    });
   });
 
   root.querySelectorAll<HTMLLIElement>('[data-step-id]').forEach((li) => {
