@@ -1,0 +1,42 @@
+/* Branches panel */
+.branches-panel { margin-top: var(--sp-3); }
+.branches-panel h3 { font-size: var(--text-sm); margin: 0 0 var(--sp-2); color: var(--fg-muted); }
+.branch-row {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  padding: var(--sp-2);
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  margin-bottom: var(--sp-1);
+  font-size: var(--text-xs);
+}
+.branch-row button {
+  font-size: 10px;
+  padding: 2px 4px;
+}
+.branch-fork {
+  margin-top: var(--sp-2);
+  display: flex;
+  gap: var(--sp-1);
+}
+.branch-fork input {
+  flex: 1;
+  font: inherit;
+  font-size: var(--text-xs);
+  background: var(--bg);
+  color: var(--fg);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  padding: var(--sp-1) var(--sp-2);
+}
+.branch-fork button {
+  font-size: var(--text-xs);
+  background: var(--accent);
+  color: white;
+  border: none;
+  border-radius: var(--r-sm);
+  padding: var(--sp-1) var(--sp-3);
+  cursor: pointer;
+}
