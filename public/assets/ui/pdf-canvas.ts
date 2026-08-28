@@ -48,6 +48,7 @@ function render(root: HTMLElement, paperId: string): void {
         <div class="paper-viewer-toolbar">
           <a class="paper-viewer-action" href="/api/papers/${encodeURIComponent(paper.id)}/file" target="_blank" rel="noopener">Open in new tab</a>
           <a class="paper-viewer-action" href="https://arxiv.org/abs/${encodeURIComponent(paper.arxivId ?? '')}" target="_blank" rel="noopener" ${paper.arxivId ? '' : 'hidden'}>arXiv</a>
+          <button class="paper-viewer-action" data-action="related" type="button">Related</button>
           <button class="paper-viewer-action" data-action="summarize" type="button">Regenerate summary</button>
           <button class="paper-viewer-action" data-action="explain-3" type="button">Explain in 3</button>
           <button class="paper-viewer-action" data-action="ask-agent" type="button">Ask the agent</button>
@@ -66,6 +67,20 @@ function render(root: HTMLElement, paperId: string): void {
       input.value = `Summarize ${paper.title}`;
       const form = input.closest('form');
       form?.dispatchEvent(new Event('submit', { cancelable: true }));
+    }
+  });
+  root.querySelector('[data-action="related"]')?.addEventListener('click', async () => {
+    const target = root.querySelector<HTMLElement>('[data-summarize-host]');
+    if (target) {
+      target.innerHTML = '<p class="canvas-empty">Finding related papers…</p>';
+    }
+    try {
+      const { mountRelatedPanel } = await import('../related-papers');
+      const inner = root.querySelector<HTMLElement>('[data-summarize-host]');
+      if (inner) await mountRelatedPanel(inner, paper.title, paper.arxivId ?? paper.id);
+    } catch (err) {
+      const target2 = root.querySelector<HTMLElement>('[data-summarize-host]');
+      if (target2) target2.innerHTML = `<p class="canvas-empty">Related failed: ${escapeHtml((err as Error).message)}</p>`;
     }
   });
   root.querySelector('[data-action="explain-3"]')?.addEventListener('click', async () => {
