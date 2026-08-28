@@ -157,6 +157,10 @@ function render(root: HTMLElement): void {
                 <button data-routine-action="export" data-routine-id="${r.id}">Export</button>
                 <button data-routine-action="delete" data-routine-id="${r.id}">Delete</button>
               </div>
+              <div class="routines-run">
+                <input data-routine-paper-id="${r.id}" placeholder="paper_id to run on" />
+                <button data-routine-action="run" data-routine-id="${r.id}">Run</button>
+              </div>
             </li>`,
           )
           .join('')}
@@ -181,6 +185,39 @@ function render(root: HTMLElement): void {
       write(next);
     });
   });
+  root.querySelectorAll<HTMLButtonElement>('[data-routine-action="run"]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      void runFromButton(btn);
+    });
+  });
+}
+
+async function runFromButton(btn: HTMLButtonElement): Promise<void> {
+  const id = btn.dataset.routineId!;
+  const input = document.querySelector<HTMLInputElement>(`[data-routine-paper-id="${id}"]`);
+  const paperId = input?.value.trim() ?? '';
+  if (!paperId) {
+    window.alert('Enter a paper_id to run the routine on (e.g. arxiv-170603762).');
+    return;
+  }
+  btn.disabled = true;
+  btn.textContent = 'Running…';
+  try {
+    const { runRoutine } = await import('./routine-runner');
+    const result = await runRoutine({
+      routineId: id,
+      paperId,
+      signal: new AbortController().signal,
+    });
+    const ok = result.steps.filter((s) => s.status === 'ok').length;
+    const err = result.steps.filter((s) => s.status === 'err').length;
+    btn.textContent = `Done (${ok} ok, ${err} err)`;
+  } finally {
+    btn.disabled = false;
+    setTimeout(() => {
+      btn.textContent = 'Run';
+    }, 4000);
+  }
 }
 
 function escapeHtml(s: string): string {
