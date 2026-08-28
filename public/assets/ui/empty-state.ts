@@ -39,6 +39,7 @@ export function mountEmptyState(root: HTMLElement): void {
         <button data-action="start-tour">30-second tour</button>
         <button data-action="compare-ingests">Compare ingests</button>
         <button data-action="load-session">Load saved session</button>
+        <button data-action="annotations">Annotations</button>
       </div>
       <p class="empty-hint">A judge who clicks this should: load the sample library, then watch the Live Tool Array light up as the agent acts. Or click "30-second tour" for an auto-cycled walkthrough.</p>
     </section>
@@ -84,6 +85,30 @@ export function mountEmptyState(root: HTMLElement): void {
     document.body.appendChild(overlay);
     const inner = overlay.querySelector<HTMLElement>('[data-load-host]');
     if (inner) mountLoadSessionOverlay(inner);
+  });
+
+  const annotationsBtn = root.querySelector<HTMLButtonElement>('[data-action="annotations"]');
+  annotationsBtn?.addEventListener('click', async () => {
+    const { mountAnnotationsView } = await import('./annotations');
+    const { getLibrary } = await import('../library');
+    const library = getLibrary();
+    if (library.length === 0) {
+      window.alert('Add some papers first.');
+      return;
+    }
+    const overlay = document.createElement('div');
+    overlay.className = 'kg-overlay';
+    overlay.innerHTML = `<div class="kg-modal" role="dialog" aria-modal="true" style="width: 90vw; max-width: 800px"><button data-action="close">Close</button><div data-annotations-host style="height: 70vh; overflow: auto"></div></div>`;
+    overlay.addEventListener('click', (e) => {
+      const t = e.target as HTMLElement;
+      if (t.dataset.action === 'close' || t === overlay) overlay.remove();
+    });
+    document.body.appendChild(overlay);
+    const inner = overlay.querySelector<HTMLElement>('[data-annotations-host]');
+    if (inner) {
+      // Show first paper by default; in the next PR we'll add a paper selector
+      mountAnnotationsView(inner, library[0]!.id);
+    }
   });
 
   const arxivBtn = root.querySelector<HTMLButtonElement>('[data-action="paste-arxiv"]');
