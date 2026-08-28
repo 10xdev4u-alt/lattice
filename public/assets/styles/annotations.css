@@ -1,0 +1,23 @@
+/* Annotations view */
+.annotations { padding: var(--sp-4); }
+.annotations-header h2 { font-size: var(--text-lg); margin: 0 0 var(--sp-1); }
+.annotations-meta { font-size: var(--text-xs); color: var(--fg-muted); font-family: var(--font-mono); margin: 0 0 var(--sp-4); }
+.annotations-section { margin-bottom: var(--sp-4); }
+.annotations-section h3 { font-size: var(--text-sm); color: var(--fg-muted); margin: 0 0 var(--sp-2); text-transform: uppercase; letter-spacing: 0.05em; }
+.annotations-list { list-style: none; margin: 0; padding: 0; }
+.annotation-highlight {
+  padding: var(--sp-2);
+  margin-bottom: var(--sp-1);
+  border-left: 3px solid var(--border);
+  background: var(--bg-elev-1);
+  border-radius: 0 var(--r-sm) var(--r-sm) 0;
+}
+.annotation-highlight[data-color="yellow"] { border-left-color: #eab308; }
+.annotation-highlight[data-color="blue"] { border-left-color: #3b82f6; }
+.annotation-highlight[data-color="red"] { border-left-color: #ef4444; }
+.annotation-highlight[data-color="green"] { border-left-color: #22c55e; }
+.annotation-text { font-size: var(--text-sm); color: var(--fg); line-height: 1.5; }
+.annotation-note { font-size: var(--text-xs); color: var(--accent); font-style: italic; margin-top: 4px; }
+.annotation-meta-row { font-size: var(--text-xs); color: var(--fg-muted); padding: var(--sp-1) 0; }
+.annotation-meta { font-size: var(--text-xs); color: var(--fg-muted); font-family: var(--font-mono); margin-top: 4px; }
+.annotations-tags { display: flex; flex-wrap: wrap; gap: 4px; }
