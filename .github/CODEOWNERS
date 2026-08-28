@@ -1,0 +1,14 @@
+# Lattice code ownership
+# Anyone whose review is required to merge
+
+# Default: any code change requires a review from the team
+*  @10xdev4u-alt
+
+# Tool surface and protocol: highest-leverage area
+/research/   @10xdev4u-alt
+/public/assets/webmcp.ts   @10xdev4u-alt
+/netlify/functions/   @10xdev4u-alt
+
+# Docs: anyone can review
+/docs/   @10xdev4u-alt
+*.md   @10xdev4u-alt

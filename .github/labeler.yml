@@ -1,0 +1,32 @@
+name: Lattice labeler
+on:
+  - pull_request
+
+# Auto-apply labels to PRs based on what files changed.
+# This keeps our issue tracker honest without manual labeling.
+
+docs:
+  - '**/*.md'
+  - 'docs/**/*'
+  - 'research/**/*'
+  - 'LICENSE'
+
+frontend:
+  - 'public/**/*'
+  - 'index.html'
+
+functions:
+  - 'netlify/functions/**/*'
+
+tools:
+  - 'public/assets/webmcp.ts'
+  - 'public/assets/tools/**/*'
+
+config:
+  - 'netlify.toml'
+  - 'package.json'
+  - 'tsconfig.json'
+  - '.github/**/*'
+
+ci:
+  - '.github/workflows/**/*'

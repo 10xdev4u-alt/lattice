@@ -1,0 +1,8 @@
+* text=auto eol=lf
+
+*.md  linguist-documentation
+*.md  diff=markdown
+
+# Lockfiles should not be diffed across line endings
+*.lock binary
+package-lock.json binary
