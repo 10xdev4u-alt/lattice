@@ -146,6 +146,14 @@ function render(root: HTMLElement): void {
         });
         return;
       }
+      if (t.dataset.action === 'skeptic') {
+        const id = Number(t.dataset.stepId);
+        const step = STEP_INDEX.get(id);
+        if (!step) return;
+        const claim = buildClaimFromStep(step);
+        showSkepticPopover(t, claim);
+        return;
+      }
       const open = detail.hasAttribute('hidden');
       if (open) detail.removeAttribute('hidden');
       else detail.setAttribute('hidden', '');
@@ -178,6 +186,7 @@ function stepRow(step: WorkflowStep): string {
           <dt>Result summary</dt><dd><pre>${escapeHtml(step.result_summary.slice(0, 2000))}</pre></dd>
         </dl>
         <div class="trail-step-detail-actions">
+          <button data-action="skeptic" data-step-id="${step.step_id}" title="What would the skeptic say?">Skeptic</button>
           <button data-action="branch-from" data-step-id="${step.step_id}" title="Branch the audit log from this step">Branch from here</button>
           <button data-copy="${escapeHtml(JSON.stringify(step, null, 2))}">Copy full step</button>
         </div>
