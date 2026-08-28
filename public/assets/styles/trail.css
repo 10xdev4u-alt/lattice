@@ -103,3 +103,11 @@
   margin-left: 4px;
 }
 .trail-step-anchor-btn:hover { background: var(--bg-elev-2); color: var(--accent); }
+.trail-step-model {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--fg-muted);
+  padding: 0 4px;
+  background: var(--bg);
+  border-radius: var(--r-sm);
+}

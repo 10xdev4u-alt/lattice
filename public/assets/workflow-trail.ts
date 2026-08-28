@@ -20,6 +20,8 @@ export interface WorkflowStep {
   model_interpretation?: string;
   duration_ms: number;
   status: 'ok' | 'err' | 'denied';
+  model?: string;
+  base_url?: string;
 }
 
 export interface WorkflowSession {

@@ -148,6 +148,7 @@ function stepRow(step: WorkflowStep): string {
         <span class="trail-step-args">${escapeHtml(argsSummary)}</span>
         <span class="trail-step-status trail-step-status-${step.status}">${escapeHtml(step.status)}</span>
         <time class="trail-step-time" datetime="${escapeHtml(step.timestamp)}">${escapeHtml(formatTime(step.timestamp))}</time>
+        ${step.model ? `<span class="trail-step-model" title="${escapeHtml(step.base_url ?? '')}">${escapeHtml(step.model)}</span>` : ''}
         ${anchor ? `<span class="trail-step-anchor" data-anchor-color="${anchor.color}">★ ${escapeHtml(anchor.label)}</span>` : ''}
         <button class="trail-step-anchor-btn" data-action="${anchor ? 'unanchor' : 'anchor'}" data-step-id="${step.step_id}" title="${anchor ? 'Remove anchor' : 'Mark as anchor'}">${anchor ? '★' : '☆'}</button>
       </div>
@@ -155,6 +156,7 @@ function stepRow(step: WorkflowStep): string {
         <dl>
           <dt>Timestamp</dt><dd>${escapeHtml(step.timestamp)}</dd>
           <dt>Duration</dt><dd>${step.duration_ms}ms</dd>
+          <dt>Model</dt><dd>${escapeHtml(step.model ?? 'n/a')}</dd>
           <dt>Args</dt><dd><pre>${escapeHtml(JSON.stringify(step.args, null, 2))}</pre></dd>
           <dt>Result summary</dt><dd><pre>${escapeHtml(step.result_summary.slice(0, 2000))}</pre></dd>
         </dl>
