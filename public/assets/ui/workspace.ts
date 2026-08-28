@@ -112,6 +112,10 @@ function installKeyboardShortcuts(root: HTMLElement): void {
           // Open the scratchpad
           void openScratchpadOverlay();
           announce('Scratchpad opened');
+        } else if (e2.key === 'b') {
+          // Open the branch diff
+          void openBranchDiffOverlay();
+          announce('Branch diff opened');
         }
       };
       document.addEventListener('keydown', onNext, { once: true });
@@ -187,6 +191,20 @@ async function openScratchpadOverlay(): Promise<void> {
   if (inner) mountScratchpadPanel(inner);
 }
 
+async function openBranchDiffOverlay(): Promise<void> {
+  const { mountBranchDiffOverlay } = await import('./branch-diff');
+  const overlay = document.createElement('div');
+  overlay.className = 'kg-overlay';
+  overlay.innerHTML = `<div class="kg-modal" role="dialog" aria-modal="true" style="width: 90vw; max-width: 1000px"><button data-action="close">Close</button><div data-branch-diff-host style="padding: var(--sp-4)"></div></div>`;
+  overlay.addEventListener('click', (e) => {
+    const t = e.target as HTMLElement;
+    if (t.dataset.action === 'close' || t === overlay) overlay.remove();
+  });
+  document.body.appendChild(overlay);
+  const inner = overlay.querySelector<HTMLElement>('[data-branch-diff-host]');
+  if (inner) mountBranchDiffOverlay(inner);
+}
+
 function showHelp(_root: HTMLElement): void {
   const overlay = document.createElement('div');
   overlay.className = 'help-overlay';
@@ -208,6 +226,8 @@ function showHelp(_root: HTMLElement): void {
         <dd>Open the stats panel</dd>
         <dt><kbd>g</kbd> <kbd>n</kbd></dt>
         <dd>Open the scratchpad</dd>
+        <dt><kbd>g</kbd> <kbd>b</kbd></dt>
+        <dd>Open the branch diff</dd>
         <dt><kbd>?</kbd></dt>
         <dd>Open this help</dd>
         <dt><kbd>Esc</kbd></dt>
