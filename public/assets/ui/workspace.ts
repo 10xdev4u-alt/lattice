@@ -25,6 +25,7 @@ export function mountWorkspace(root: HTMLElement | null): void {
       </aside>
       <main class="canvas" role="main">
         <div data-canvas></div>
+        <div data-settings hidden></div>
       </main>
       <aside class="rail rail-right" role="complementary" aria-label="Agent">
         <div data-peer-banner></div>
@@ -65,11 +66,26 @@ function installKeyboardShortcuts(root: HTMLElement): void {
     } else if ((e.metaKey || e.ctrlKey) && e.key === 'r') {
       e.preventDefault();
       workspace.classList.toggle('rail-right-collapsed');
+    } else if ((e.metaKey || e.ctrlKey) && e.key === ',') {
+      e.preventDefault();
+      toggleSettings(root);
     } else if (e.key === '?') {
       e.preventDefault();
       showHelp(workspace);
     }
   });
+}
+
+function toggleSettings(root: HTMLElement): void {
+  const settings = root.querySelector<HTMLElement>('[data-settings]');
+  if (!settings) return;
+  const isOpen = !settings.hasAttribute('hidden');
+  if (isOpen) {
+    settings.setAttribute('hidden', '');
+  } else {
+    settings.removeAttribute('hidden');
+    void import('../settings').then(({ mountSettingsPanel }) => mountSettingsPanel(settings));
+  }
 }
 
 function showHelp(_root: HTMLElement): void {
@@ -83,6 +99,8 @@ function showHelp(_root: HTMLElement): void {
         <dd>Toggle the paper list rail</dd>
         <dt><kbd>Ctrl/Cmd</kbd> + <kbd>R</kbd></dt>
         <dd>Toggle the agent rail</dd>
+        <dt><kbd>Ctrl/Cmd</kbd> + <kbd>,</kbd></dt>
+        <dd>Open the settings panel</dd>
         <dt><kbd>?</kbd></dt>
         <dd>Open this help</dd>
         <dt><kbd>Esc</kbd></dt>

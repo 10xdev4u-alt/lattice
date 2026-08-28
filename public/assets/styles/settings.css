@@ -1,0 +1,16 @@
+/* Settings panel */
+.settings { padding: var(--sp-3); }
+.settings h2 { font-size: var(--text-md); margin: 0 0 var(--sp-3); }
+.settings-row { display: flex; gap: var(--sp-2); align-items: center; padding: var(--sp-2) 0; font-size: var(--text-sm); }
+.settings-row span { flex: 1; color: var(--fg-muted); }
+.settings-row code { font-family: var(--font-mono); font-size: var(--text-xs); }
+.settings-row input[type="text"], .settings-row select {
+  font: inherit;
+  background: var(--bg);
+  color: var(--fg);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  padding: var(--sp-1) var(--sp-2);
+  min-width: 200px;
+}
+.settings-hint { font-size: var(--text-xs); color: var(--fg-muted); margin: var(--sp-3) 0 0; }
