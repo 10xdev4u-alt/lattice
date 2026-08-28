@@ -1,77 +1,98 @@
 # Lattice
 
-> Research papers, in conversation. A WebMCP-powered workspace where the agent, your open PDF, your library, and your notes share one context, and every claim the agent makes is a re-openable, re-playable, citable event in your own audit log.
+> Research papers, in conversation. A WebMCP-powered workspace where the AI agent, your open PDF, your library, and your notes share one context — and every claim the agent makes is a re-openable, re-playable, citable event in your own audit log.
 
-Built for the [OpenAI WebMCP Challenge](https://openai.com/webmcp-challenge) (Sept 3, 2026). $35K prize pool. 10 winning teams. We're going for one of them.
-
----
-
-## What this is, in one paragraph
-
-You bring a library of research PDFs. Lattice registers 14 typed WebMCP tools that let your AI agent search, summarize, compare, cite, and audit across your papers. Every tool call is logged. Every claim is traceable to a paper, a page, a sentence. You can replay the agent's work, branch it, export it as a PRISMA-style methods appendix, and invite a second agent to peer-review it, all without leaving the page.
+Built for the [OpenAI WebMCP Challenge](https://openai.com/webmcp-challenge) (Sept 3, 2026). $35K prize pool, 10 winning teams.
 
 ---
 
-## Why it wins
+## What this is
 
-| Judge criterion | How Lattice answers it |
-|---|---|
-| **WebMCP Leverage** | 14 tools, imperative API, dynamically registered per open paper, full lifecycle (`registerTool`, `AbortSignal`, `toolchange`), `readOnlyHint` on 8 reads, `untrustedContentHint: true` on every paper-text return, `exposedTo` for the cross-agent peer-reviewer demo, confirmation flows on every write. |
-| **Execution** | Real backend (Netlify Functions + Blobs + AI Gateway), real papers (arXiv source PDFs, pre-bundled), real bibliography export (BibTeX, CSL-JSON, RIS), real workflow artifacts (Markdown methods appendix, JSONL audit log). |
-| **Impact** | Every researcher on Earth has this exact pain. The "show your work" expectation is academic norm, not nice-to-have. |
-| **Creativity** | The page IS the audit log. We answer an open WebMCP spec issue (#261) with a working demo. |
+You bring a library of research PDFs. Lattice registers 14 typed WebMCP tools that let your AI agent search, summarize, compare, cite, and audit across your papers. Every tool call is logged. Every claim is traceable to a paper, a page, a sentence. You can replay the agent's work, branch it, export it as a PRISMA-style methods appendix, and invite a second agent to peer-review it — all without leaving the page.
 
-The research vertical has no WebMCP demos in the 20+ official + ChromeLabs set. The only scholarly site in the 365-site live directory does API-shaped citation. Nobody has built a workspace the researcher lives in.
+**The killer feature:** the page IS the audit log. Open the Log tab. See every tool call, every arg, every result, every duration. Click a step. Replay it. Export it as a Markdown methods appendix you can drop into a thesis. This answers WebMCP open issue #261 (reviewable workflow documents) with a working implementation.
 
 ---
 
 ## Try it
 
+The app is the `public/` directory served by Vite. Run it with one of:
+
 ```bash
-git clone https://github.com/10xdev4u-alt/lattice
-cd lattice
+# Option A — Vite dev server
 npm install
-netlify dev
-# open http://localhost:8888
+npm run dev          # http://localhost:8888
+
+# Option B — Netlify Functions included
+npm install -g netlify-cli
+netlify dev          # http://localhost:8888
+
+# Option C — Docker
+docker build -t lattice:dev .
+docker run --rm -p 8888:8888 lattice:dev
 ```
 
-For the full WebMCP experience, open in Chrome 149+ with the flag enabled at `chrome://flags/#enable-webmcp-testing`, or in the ChatGPT desktop in-app browser.
+For the full WebMCP experience, open in **Chrome 149+ with the flag enabled at `chrome://flags/#enable-webmcp-testing`**, or in the **ChatGPT desktop in-app browser**. The polyfill keeps the page fully usable in Safari and Firefox.
+
+The empty state has a "Load sample library" button that pulls in 5 well-known arXiv papers. You can also paste an arXiv ID (e.g. `1706.03762`) and the LaTeX-source path is used.
 
 ---
 
-## How we built it
+## The 14 tools
+
+| Tool | Mode | What it does |
+|---|---|---|
+| `list_papers` | read | Returns the library as CSL-JSON |
+| `open_paper` | action | Opens a paper; re-registers per-paper tools |
+| `search_library` | search | Full-text search with snippets |
+| `summarize_paper` | read | LLM-summarize at a chosen audience level |
+| `extract_quote` | read | Verbatim quote for a concept |
+| `compare_claims` | read | Agreements and conflicts between two papers |
+| `cite_paper` | read | Citation in BibTeX, APA, MLA, Chicago, CSL-JSON, RIS |
+| `add_to_bibliography` | write | Add a paper to the export list (confirmation required) |
+| `remove_from_bibliography` | write | Inverse |
+| `export_bibliography` | write | Download the bibliography as a file |
+| `explain_evidence` | read | List papers supporting/refuting a claim |
+| `show_workflow_trail` | read | The audit log; summary, jsonl, or markdown |
+| `compose_review` | write | Draft a structured peer review |
+| `peer_review_invite` | write | Invite the second agent (skeptic persona) |
+
+Every tool: snake_case, ≤ 30 char name, ≤ 500 char description, JSON-Schema input, `readOnlyHint` / `untrustedContentHint` where appropriate. Write tools require explicit user confirmation per the WebMCP secure-tools guide.
+
+---
+
+## Architecture
 
 | | |
 |---|---|
-| Stack | Vanilla TypeScript + Vite, Netlify Functions, Netlify Blobs, Netlify AI Gateway (Claude Haiku), pdf.js |
-| Standard | [WebMCP](https://github.com/webmachinelearning/webmcp) imperative API |
-| License | Apache 2.0 |
-| Status | 10-day sprint, deadline Sept 3, 2026 1pm PT |
+| **Stack** | Vanilla TypeScript, Vite, Netlify Functions, Netlify Blobs, pdf.js, @citation-js |
+| **LLM** | OpenAI-compatible endpoint at `https://api.kilo.ai/api/gateway/v1`, model `poolside-laguna-free`, key `latticex` (swap via env var) |
+| **Storage** | Netlify Blobs for papers (`papers/<id>/source.pdf`, `text.json`, `index.json`); localStorage for the trail in the demo |
+| **WebMCP** | Imperative API only, with a no-op polyfill for absent `document.modelContext` |
+| **License** | Apache 2.0 |
+| **Status** | 10-day sprint, deadline Sept 3, 2026 1pm PT |
 
----
-
-## The team
-
-- **10xdev4u-alt** (10xdev4u@gmail.com) — primary author, architect
-- **the-ai-developer** — co-author, engineering
-- Built with ZCode + Claude Code + Codex in an agentic git-issues-and-PRs loop
-
----
-
-## Read the briefs
-
-Before you dig into the code, the deep research is here:
+The 4 research briefs that shaped this build are in [`research/`](research/):
 
 - [`research/webmcp-spec.md`](research/webmcp-spec.md) — full WebMCP technical reference
 - [`research/academic-domain.md`](research/academic-domain.md) — the research-tools market and pain points
 - [`research/competitive-landscape.md`](research/competitive-landscape.md) — every existing WebMCP demo analyzed
 - [`research/agent-ui-patterns.md`](research/agent-ui-patterns.md) — design patterns for agent+human UIs
+- [`research/demo-script.md`](research/demo-script.md) — the 3-minute video script
+
+---
+
+## The team
+
+- **10xdev4u-alt** — primary author, architect
+- **the-ai-developer** — co-author, engineering
+- Built with ZCode, Claude Code, Codex, and a deep agentic git-issues-and-PRs loop
 
 ---
 
 ## Contributing
 
-See [`CONTRIBUTING.md`](CONTRIBUTING.md). The TL;DR is: we work in branches off main, raise issues before code, and use strict 6-word conventional commits with co-author trailers.
+See [`CONTRIBUTING.md`](CONTRIBUTING.md). The short version: we work in branches off main, raise issues before code, and use strict 6-word conventional commits with co-author trailers. Every PR is reviewed before merge.
 
 ---
 
