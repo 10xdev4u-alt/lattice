@@ -59,6 +59,7 @@ function render(root: HTMLElement): void {
         .join('')}
     </div>
     ` : ''}
+    <button class="paper-list-batch" data-action="batch">Apply tool to every paper</button>
     <form class="paper-list-arxiv" data-arxiv-form>
       <input type="text" data-arxiv-input placeholder="Paste arXiv ID or URL" aria-label="Add an arXiv paper" />
       <button type="submit" aria-label="Add">+</button>
@@ -98,6 +99,10 @@ function render(root: HTMLElement): void {
       }
       render(root);
     });
+  });
+
+  root.querySelector<HTMLButtonElement>('[data-action="batch"]')?.addEventListener('click', () => {
+    void import('../batch').then(({ mountBatchOverlay }) => mountBatchOverlay());
   });
 
   const arxivForm = root.querySelector<HTMLFormElement>('[data-arxiv-form]');
