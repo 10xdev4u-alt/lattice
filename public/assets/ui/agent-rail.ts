@@ -61,6 +61,13 @@ export function mountAgentRail(root: HTMLElement): void {
 
   document.addEventListener('webmcp:toolcall', () => render(root));
   document.addEventListener('lattice:peer-reviewer-changed', () => render(root));
+  document.addEventListener('lattice:rate-limited', () => {
+    const banner = root.querySelector<HTMLElement>('[data-rate-limit]');
+    if (banner) {
+      banner.removeAttribute('hidden');
+      setTimeout(() => banner.setAttribute('hidden', ''), 5000);
+    }
+  });
 }
 
 async function handleSubmit(root: HTMLElement): Promise<void> {
@@ -139,6 +146,7 @@ async function render(root: HTMLElement): Promise<void> {
         <input type="text" data-agent-input placeholder="Ask about your library" aria-label="Ask the agent" />
         <button type="submit">Send</button>
       </form>
+      <div class="rate-limit-banner" data-rate-limit hidden role="status">Rate limit hit. The next attempt will wait and retry.</div>
       <div class="agent-rail-actions">
         <button data-action="invite-reviewer">${peerActive ? 'Reviewer active (click to dismiss)' : 'Invite peer-reviewer'}</button>
       </div>

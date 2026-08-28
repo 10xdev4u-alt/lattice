@@ -38,6 +38,13 @@
 .confidence-high { background: var(--ok); box-shadow: 0 0 4px var(--ok); }
 .confidence-mixed { background: var(--warn); }
 .confidence-speculative { background: var(--err); }
+.rate-limit-banner {
+  font-size: var(--text-xs);
+  padding: var(--sp-1) var(--sp-2);
+  background: var(--warn);
+  color: var(--bg);
+  text-align: center;
+}
 .feedback-actions { display: inline-flex; gap: 4px; margin-top: 4px; margin-left: 6px; }
 .feedback-btn {
   font-size: 12px;

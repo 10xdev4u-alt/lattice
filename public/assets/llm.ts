@@ -70,6 +70,11 @@ export async function completePrompt(prompt: string, opts: CompleteOptions): Pro
         body,
         signal: opts.signal,
       });
+      if (res.status === 429) {
+        // Rate limited. Surface a rate-limit event so the UI can react.
+        document.dispatchEvent(new CustomEvent('lattice:rate-limited', { detail: { status: 429 } }));
+        throw new Error('LLM 429: rate limit exceeded');
+      }
       if (res.ok) {
         const data = (await res.json()) as {
           choices: Array<{ message: { content: string } }>;
