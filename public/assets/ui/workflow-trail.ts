@@ -77,7 +77,15 @@ function render(root: HTMLElement): void {
   const shareBtn = root.querySelector<HTMLButtonElement>('[data-action="share"]');
   shareBtn?.addEventListener('click', () => {
     void import('../share').then(({ buildShareUrl }) => {
-      const url = buildShareUrl();
+      const wantPass = window.confirm('Encrypt the share URL with a passphrase? Click OK to set one, Cancel to share plain.');
+      let url: string;
+      if (wantPass) {
+        const pass = window.prompt('Enter a passphrase (the recipient will need this):') ?? '';
+        if (!pass) return;
+        url = buildShareUrl(pass);
+      } else {
+        url = buildShareUrl();
+      }
       void navigator.clipboard?.writeText(url);
       window.prompt('Share URL (copied to clipboard):', url);
     });

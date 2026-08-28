@@ -21,13 +21,21 @@
       </main>
     </div>
     <script type="module">
-      import { mountShareView, decodeSessionFromFragment } from '/assets/share.ts';
-      const fragment = window.location.hash.replace(/^#share=/, '');
-      const payload = fragment ? decodeSessionFromFragment(fragment) : null;
+      import { mountShareView, decodeSessionFromFragment, decryptAsync } from '/assets/share.ts';
+      const params = new URLSearchParams(window.location.hash.slice(1));
+      const fragment = params.get('share') ?? '';
+      const passphrase = params.get('p') ? window.prompt('This link is encrypted. Enter the passphrase:') ?? '' : '';
+      let payload = null;
+      if (fragment && passphrase) {
+        const json = await decryptAsync(fragment, passphrase);
+        if (json) payload = JSON.parse(json);
+      } else {
+        payload = decodeSessionFromFragment(fragment);
+      }
       const root = document.getElementById('app-main');
       if (!root) return;
       if (!payload) {
-        root.innerHTML = '<p class="empty-state">Invalid or missing share link.</p>';
+        root.innerHTML = '<p class="empty-state">Invalid or missing share link. Wrong passphrase?</p>';
       } else {
         mountShareView(root, payload);
       }
