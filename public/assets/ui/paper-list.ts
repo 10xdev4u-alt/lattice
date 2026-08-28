@@ -212,8 +212,9 @@ function paperRow(p: Paper): string {
   const year = p.year ? ` · ${p.year}` : '';
   const pinned = isPinned(p.id);
   const tags = getTagsFor(p.id);
+  const tooltip = describeWhyAdded(p);
   return `
-    <li class="paper-row ${pinned ? 'paper-row-pinned' : ''}" data-paper-id="${p.id}" role="button" tabindex="0" aria-label="Open ${escapeHtml(p.title)}">
+    <li class="paper-row ${pinned ? 'paper-row-pinned' : ''}" data-paper-id="${p.id}" role="button" tabindex="0" aria-label="Open ${escapeHtml(p.title)}" title="${escapeHtml(tooltip)}">
       <button class="paper-row-pin" data-action="pin" aria-label="${pinned ? 'Unpin' : 'Pin'} ${escapeHtml(p.title)}" aria-pressed="${pinned}">${pinned ? '★' : '☆'}</button>
       <div class="paper-row-title">${escapeHtml(p.title)}</div>
       <div class="paper-row-meta">${escapeHtml(author)}${escapeHtml(more)}${year}</div>
@@ -228,6 +229,22 @@ function paperRow(p: Paper): string {
       </div>
     </li>
   `;
+}
+
+function describeWhyAdded(p: Paper): string {
+  const date = new Date(p.addedAt).toLocaleString();
+  switch (p.source) {
+    case 'sample':
+      return `Added from the sample library on ${date}.`;
+    case 'arxiv':
+      return `Imported from arXiv (${p.arxivId ?? p.id}) on ${date}.`;
+    case 'doi-resolve':
+      return `Imported from DOI (${p.doi ?? p.id}) on ${date}.`;
+    case 'pdf-upload':
+      return `Uploaded as a PDF on ${date}.`;
+    default:
+      return `Added on ${date}.`;
+  }
 }
 
 function escapeHtml(s: string): string {
