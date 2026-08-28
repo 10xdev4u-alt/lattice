@@ -49,6 +49,7 @@ function render(root: HTMLElement, paperId: string): void {
           <a class="paper-viewer-action" href="/api/papers/${encodeURIComponent(paper.id)}/file" target="_blank" rel="noopener">Open in new tab</a>
           <a class="paper-viewer-action" href="https://arxiv.org/abs/${encodeURIComponent(paper.arxivId ?? '')}" target="_blank" rel="noopener" ${paper.arxivId ? '' : 'hidden'}>arXiv</a>
           <button class="paper-viewer-action" data-action="summarize" type="button">Regenerate summary</button>
+          <button class="paper-viewer-action" data-action="explain-3" type="button">Explain in 3</button>
           <button class="paper-viewer-action" data-action="ask-agent" type="button">Ask the agent</button>
         </div>
       </header>
@@ -65,6 +66,26 @@ function render(root: HTMLElement, paperId: string): void {
       input.value = `Summarize ${paper.title}`;
       const form = input.closest('form');
       form?.dispatchEvent(new Event('submit', { cancelable: true }));
+    }
+  });
+  root.querySelector('[data-action="explain-3"]')?.addEventListener('click', async () => {
+    const target = root.querySelector<HTMLElement>('[data-summarize-host]');
+    if (target) {
+      target.innerHTML = '<p class="canvas-empty">Asking the LLM for the 3-sentence take…</p>';
+    }
+    try {
+      const { explainIn3Sentences } = await import('../explain-3');
+      const summary = await explainIn3Sentences({
+        paperId: paper.id,
+        signal: new AbortController().signal,
+      });
+      if (target) {
+        target.innerHTML = `<div class="regenerated-summary"><strong>3-sentence take:</strong> ${escapeHtml(summary)}</div>`;
+      }
+    } catch (err) {
+      if (target) {
+        target.innerHTML = `<p class="canvas-empty">Explain failed: ${escapeHtml((err as Error).message)}</p>`;
+      }
     }
   });
   root.querySelector('[data-action="summarize"]')?.addEventListener('click', () => {
