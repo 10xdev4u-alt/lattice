@@ -1,0 +1,18 @@
+/* Agent rail polish */
+.agent-message-thinking { opacity: 0.6; font-style: italic; }
+.agent-rail-actions {
+  padding: var(--sp-2) var(--sp-3);
+  border-top: 1px solid var(--border);
+  display: flex;
+  gap: var(--sp-2);
+}
+.agent-rail-actions button {
+  font-size: var(--text-xs);
+  padding: var(--sp-1) var(--sp-3);
+  background: var(--accent-soft);
+  border: 1px solid var(--accent);
+  color: var(--accent);
+  border-radius: var(--r-sm);
+  cursor: pointer;
+}
+.agent-rail-actions button:hover { background: var(--accent); color: white; }
