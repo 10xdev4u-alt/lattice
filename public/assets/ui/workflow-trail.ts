@@ -36,6 +36,7 @@ function render(root: HTMLElement): void {
         <button data-action="export-jsonl">Export as JSONL</button>
         <button data-action="share">Share</button>
         <button data-action="fork-branch">Fork branch</button>
+        <button data-action="save-routine">Save as routine</button>
       </div>
     </div>
     <div data-scrubber-host></div>
@@ -87,6 +88,16 @@ function render(root: HTMLElement): void {
       if (!name) return;
       const branch = startFreshBranch(name);
       appendBranchRow(root, branch);
+    });
+  });
+
+  const saveRoutineBtn = root.querySelector<HTMLButtonElement>('[data-action="save-routine"]');
+  saveRoutineBtn?.addEventListener('click', () => {
+    void import('../routines').then(({ saveRoutineFromTrail }) => {
+      const name = window.prompt('Routine name:', 'My routine');
+      if (!name) return;
+      const description = window.prompt('Short description:', '') ?? '';
+      saveRoutineFromTrail(name, description);
     });
   });
 
