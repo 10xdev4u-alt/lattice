@@ -6,12 +6,12 @@
  * text, tag). Multi-select for compare / batch ops. Click to open in
  * the canvas.
  *
- * Closes #35.
+ * Closes #35. Updated for #143 (pin papers).
  */
 
 import { getLibrary, type Paper } from '../library';
-import { openPaper } from '../tools/open-paper';
 import { getModelContext } from '../model-context-polyfill';
+import { isPinned, togglePin } from '../pins';
 
 type SortKey = 'recency' | 'title' | 'author' | 'year';
 
@@ -21,6 +21,7 @@ export function mountPaperList(root: HTMLElement): void {
   render(root);
 
   document.addEventListener('lattice:library-changed', () => render(root));
+  document.addEventListener('lattice:pins-changed', () => render(root));
 }
 
 function render(root: HTMLElement): void {
@@ -100,7 +101,12 @@ function render(root: HTMLElement): void {
   });
 
   root.querySelectorAll<HTMLLIElement>('[data-paper-id]').forEach((li) => {
-    li.addEventListener('click', () => {
+    li.addEventListener('click', (e) => {
+      const target = e.target as HTMLElement;
+      if (target.dataset.action === 'pin') {
+        togglePin(li.dataset.paperId!);
+        return;
+      }
       const id = li.dataset.paperId!;
       const ctx = getModelContext();
       void ctx.executeTool(
@@ -122,30 +128,33 @@ function filteredAndSorted(): Paper[] {
       return false;
     });
   }
-  switch (STATE.sort) {
-    case 'title':
-      papers = [...papers].sort((a, b) => a.title.localeCompare(b.title));
-      break;
-    case 'author':
-      papers = [...papers].sort((a, b) => (a.authors[0]?.family ?? '').localeCompare(b.authors[0]?.family ?? ''));
-      break;
-    case 'year':
-      papers = [...papers].sort((a, b) => (b.year ?? 0) - (a.year ?? 0));
-      break;
-    case 'recency':
-    default:
-      papers = [...papers].sort((a, b) => b.addedAt.localeCompare(a.addedAt));
-      break;
-  }
-  return papers;
+  // Pinned first, then sort
+  const pinned = papers.filter((p) => isPinned(p.id));
+  const rest = papers.filter((p) => !isPinned(p.id));
+  const sortedRest = (() => {
+    switch (STATE.sort) {
+      case 'title':
+        return [...rest].sort((a, b) => a.title.localeCompare(b.title));
+      case 'author':
+        return [...rest].sort((a, b) => (a.authors[0]?.family ?? '').localeCompare(b.authors[0]?.family ?? ''));
+      case 'year':
+        return [...rest].sort((a, b) => (b.year ?? 0) - (a.year ?? 0));
+      case 'recency':
+      default:
+        return [...rest].sort((a, b) => b.addedAt.localeCompare(a.addedAt));
+    }
+  })();
+  return [...pinned, ...sortedRest];
 }
 
 function paperRow(p: Paper): string {
   const author = p.authors[0]?.family ?? 'Unknown';
   const more = p.authors.length > 1 ? ` et al.` : '';
   const year = p.year ? ` · ${p.year}` : '';
+  const pinned = isPinned(p.id);
   return `
-    <li class="paper-row" data-paper-id="${p.id}" role="button" tabindex="0" aria-label="Open ${escapeHtml(p.title)}">
+    <li class="paper-row ${pinned ? 'paper-row-pinned' : ''}" data-paper-id="${p.id}" role="button" tabindex="0" aria-label="Open ${escapeHtml(p.title)}">
+      <button class="paper-row-pin" data-action="pin" aria-label="${pinned ? 'Unpin' : 'Pin'} ${escapeHtml(p.title)}" aria-pressed="${pinned}">${pinned ? '★' : '☆'}</button>
       <div class="paper-row-title">${escapeHtml(p.title)}</div>
       <div class="paper-row-meta">${escapeHtml(author)}${escapeHtml(more)}${year}</div>
       <div class="paper-row-source">${escapeHtml(p.source)}</div>
