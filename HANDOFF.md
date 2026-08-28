@@ -60,14 +60,18 @@ Build Lattice in 6 PR-driven sprints, each shipping 1-3 issues per the issue que
 19. **#92** Polish the README
 20. **#93** Dry-run the submission checklist
 
-## What I need from you to start the build loop
+## Decisions (locked in)
 
-- **Confirm the 6-sprint plan** or push back on the day allocation.
-- **Confirm the build order** (or let me re-shuffle).
-- **Who else is on the team?** If it's just you + me, I'll move faster. If there are more, I need their GitHub handles so I can mention them in the co-author trailers.
-- **Netlify account**: do you want me to deploy to `lattice-app.netlify.app` (a free Netlify site), or do you have a custom domain in mind?
-- **OpenAI API key**: do we have one for the model, or do we go pure Netlify AI Gateway with Claude Haiku (free tier)?
-- **Auth**: do you want me to add real auth (Netlify Identity, Clerk, magic link) or keep the demo anonymous?
+- **Deploy target:** Local + Docker for now. Image size is a first-class constraint. Production deploy later.
+- **LLM provider:** OpenAI-compatible endpoint at `https://api.kilo.ai/api/gateway/v1` (API key `latticex`, model `poolside-laguna-free` for testing). Wire via env var so any OpenAI-compatible base can be swapped.
+- **Auth:** Magic link. The user enters their email, gets a link, the library persists. Local dev uses a mock email sender; prod wires to a real provider.
+- **Team:** 10xdev4u-alt + 1-2 humans + AI agents. CODEOWNERS will list all humans; AI agents co-author in commit trailers.
+
+## What changed in the plan
+
+- Added a new epic: `epic: docker` for the image-size work.
+- The model layer is abstracted behind a thin interface so the test model can be swapped for prod without touching call sites.
+- Local dev is the primary verification surface; CI runs typecheck + lint + test on every PR; deploys to a Netlify preview on PRs come later.
 
 ## The PR loop in 7 steps
 
