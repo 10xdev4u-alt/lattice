@@ -15,6 +15,7 @@
 import { getSession, toMarkdownAppendix, type WorkflowStep } from '../workflow-trail';
 import { mountTimelineScrubber } from './timeline-scrubber';
 import { renderSessionSummary } from './session-summary';
+import { getAnchor, setAnchor, clearAnchor } from '../anchors';
 
 export function mountWorkflowTrail(root: HTMLElement): void {
   render(root);
@@ -114,7 +115,20 @@ function render(root: HTMLElement): void {
     const toggle = li.querySelector<HTMLDivElement>('[data-step-toggle]');
     const detail = li.querySelector<HTMLDivElement>('[data-step-detail]');
     if (!toggle || !detail) return;
-    toggle.addEventListener('click', () => {
+    toggle.addEventListener('click', (e) => {
+      const t = e.target as HTMLElement;
+      if (t.dataset.action === 'anchor') {
+        const id = Number(t.dataset.stepId);
+        const label = window.prompt('Anchor label:', `Milestone ${id}`) ?? '';
+        if (label) setAnchor(id, label);
+        render(root);
+        return;
+      }
+      if (t.dataset.action === 'unanchor') {
+        clearAnchor(Number(t.dataset.stepId));
+        render(root);
+        return;
+      }
       const open = detail.hasAttribute('hidden');
       if (open) detail.removeAttribute('hidden');
       else detail.setAttribute('hidden', '');
@@ -125,14 +139,17 @@ function render(root: HTMLElement): void {
 
 function stepRow(step: WorkflowStep): string {
   const argsSummary = oneLineSummary(step.args);
+  const anchor = getAnchor(step.step_id);
   return `
-    <li class="trail-step" data-step-id="${step.step_id}">
+    <li class="trail-step ${anchor ? 'trail-step-anchored' : ''}" data-step-id="${step.step_id}">
       <div class="trail-step-toggle" data-step-toggle role="button" tabindex="0" aria-expanded="false">
         <span class="trail-step-num">#${step.step_id}</span>
         <code class="trail-step-name">${escapeHtml(step.tool_name)}</code>
         <span class="trail-step-args">${escapeHtml(argsSummary)}</span>
         <span class="trail-step-status trail-step-status-${step.status}">${escapeHtml(step.status)}</span>
         <time class="trail-step-time" datetime="${escapeHtml(step.timestamp)}">${escapeHtml(formatTime(step.timestamp))}</time>
+        ${anchor ? `<span class="trail-step-anchor" data-anchor-color="${anchor.color}">★ ${escapeHtml(anchor.label)}</span>` : ''}
+        <button class="trail-step-anchor-btn" data-action="${anchor ? 'unanchor' : 'anchor'}" data-step-id="${step.step_id}" title="${anchor ? 'Remove anchor' : 'Mark as anchor'}">${anchor ? '★' : '☆'}</button>
       </div>
       <div class="trail-step-detail" data-step-detail hidden>
         <dl>
