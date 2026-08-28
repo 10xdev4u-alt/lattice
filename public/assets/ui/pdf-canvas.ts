@@ -45,6 +45,12 @@ function render(root: HTMLElement, paperId: string): void {
         <h2 class="paper-viewer-title">${escapeHtml(paper.title)}</h2>
         <p class="paper-viewer-authors">${escapeHtml(formatAuthors(paper))}</p>
         <p class="paper-viewer-meta">${paper.year ?? 'n.d.'}${paper.doi ? ` · DOI ${escapeHtml(paper.doi)}` : ''}${paper.arxivId ? ` · arXiv ${escapeHtml(paper.arxivId)}` : ''}</p>
+        <div class="paper-viewer-toolbar">
+          <a class="paper-viewer-action" href="/api/papers/${encodeURIComponent(paper.id)}/file" target="_blank" rel="noopener">Open in new tab</a>
+          <a class="paper-viewer-action" href="https://arxiv.org/abs/${encodeURIComponent(paper.arxivId ?? '')}" target="_blank" rel="noopener" ${paper.arxivId ? '' : 'hidden'}>arXiv</a>
+          <button class="paper-viewer-action" data-action="summarize" type="button">Regenerate summary</button>
+          <button class="paper-viewer-action" data-action="ask-agent" type="button">Ask the agent</button>
+        </div>
       </header>
       <section class="paper-viewer-pages" data-pdf-host></section>
     </article>
@@ -53,6 +59,29 @@ function render(root: HTMLElement, paperId: string): void {
   if (host) {
     void mountPdfViewer(host, paperId);
   }
+  root.querySelector('[data-action="ask-agent"]')?.addEventListener('click', () => {
+    const input = document.querySelector<HTMLInputElement>('[data-agent-input]');
+    if (input) {
+      input.value = `Summarize ${paper.title}`;
+      const form = input.closest('form');
+      form?.dispatchEvent(new Event('submit', { cancelable: true }));
+    }
+  });
+  root.querySelector('[data-action="summarize"]')?.addEventListener('click', () => {
+    void import('../llm').then(({ completePrompt }) => {
+      const target = root.querySelector<HTMLElement>('[data-summarize-host]');
+      if (target) {
+        target.innerHTML = '<p class="canvas-empty">Regenerating…</p>';
+        void completePrompt(`One-paragraph summary of "${paper.title}" for a ${paper.arxivId ? 'domain expert' : 'curious reader'}.`, { signal: new AbortController().signal, maxTokens: 200 })
+          .then((summary) => {
+            if (target) target.innerHTML = `<div class="regenerated-summary">${escapeHtml(summary)}</div>`;
+          })
+          .catch((err) => {
+            if (target) target.innerHTML = `<p class="canvas-empty">Summary failed: ${escapeHtml((err as Error).message)}</p>`;
+          });
+      }
+    });
+  });
 }
 
 function formatAuthors(p: Paper): string {
