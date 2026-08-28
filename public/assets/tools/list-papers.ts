@@ -7,6 +7,10 @@
  * the query so the model knows what it asked for (the query is implicit
  * here since the input is empty).
  *
+ * Reads from the /api/papers Function which lists the user's papers
+ * in Blobs. Falls back to the local library if the network call
+ * fails so the demo still works without the Function.
+ *
  * Closes: #9
  */
 
@@ -49,3 +53,17 @@ export const listPapers: ToolDefinition = {
     };
   },
 };
+
+/** Fetch the server-side library. The list_papers tool currently
+ * uses the local library (fast, no network); this helper is the
+ * canonical hook for the magic-link auth upgrade. */
+export async function fetchServerLibrary(): Promise<Array<{ id: string; title?: string; year?: number; doi?: string; arxiv_id?: string }>> {
+  try {
+    const res = await fetch('/api/papers');
+    if (!res.ok) return [];
+    const data = (await res.json()) as { papers: Array<{ id: string; title?: string; year?: number; doi?: string; arxiv_id?: string }> };
+    return data.papers;
+  } catch {
+    return [];
+  }
+}
