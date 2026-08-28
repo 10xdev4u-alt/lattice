@@ -17,6 +17,7 @@ import { decorateCitations } from '../citation-chips';
 import { runAgentLoop, buildHistoryFromChat, type AgentLoopResult } from '../agent-loop';
 import { inferConfidence, renderConfidenceDot } from '../confidence';
 import { recordFeedback, getFeedbackForMessage } from '../feedback';
+import { streamCompletePrompt } from '../llm-stream';
 
 interface RegisteredTool {
   name: string;
@@ -74,18 +75,31 @@ async function handleSubmit(root: HTMLElement): Promise<void> {
     const chat = root.querySelector<HTMLDivElement>('[data-agent-chat]');
     const history = chat ? buildHistoryFromChat(chat) : [];
     const controller = new AbortController();
-    const result = await runAgentLoop(text, history, { signal: controller.signal });
-    if (result.toolCalls.length > 0) {
-      const summary = result.toolCalls
-        .map((c) => `${c.tool}(${JSON.stringify(c.args).slice(0, 80)})`)
-        .join(', ');
-      appendMessage(root, 'agent', `I called ${result.toolCalls.length} tool${result.toolCalls.length === 1 ? '' : 's'}: ${summary}.`);
+    // Stream the answer directly into a new agent message so the user
+    // sees tokens land in real time.
+    const streamDiv = document.createElement('div');
+    streamDiv.className = 'agent-message agent-message-agent';
+    streamDiv.innerHTML = `<span class="agent-message-role">Agent</span><p data-stream-target></p>`;
+    chat?.appendChild(streamDiv);
+    chat?.scrollTo({ top: chat.scrollHeight });
+    const target = streamDiv.querySelector<HTMLElement>('[data-stream-target]');
+    let streamed = '';
+    try {
+      const system = `You are Lattice, a research-paper assistant. Keep answers short and direct. Use markdown for structure. Cite paper ids when referencing specific papers.`;
+      await streamCompletePrompt(text, { signal: controller.signal, maxTokens: 800, system }, (delta) => {
+        streamed += delta;
+        if (target) target.textContent = streamed;
+        chat?.scrollTo({ top: chat.scrollHeight });
+      });
+      if (target) target.innerHTML = escapeHtml(streamed) + renderConfidenceDot(inferConfidence(streamed));
+    } catch (err) {
+      if (target) target.textContent = `Error: ${(err as Error).message}`;
+    } finally {
+      setBusy(root, false);
     }
-    appendMessage(root, 'agent', result.finalMessage || '(no response)');
   } catch (err) {
-    appendMessage(root, 'agent', `Error: ${(err as Error).message}`);
-  } finally {
     setBusy(root, false);
+    appendMessage(root, 'agent', `Error: ${(err as Error).message}`);
   }
 }
 
@@ -190,7 +204,7 @@ function appendMessage(root: HTMLElement, role: 'user' | 'agent', text: string, 
   const div = document.createElement('div');
   div.className = `agent-message agent-message-${role}${transient ? ' agent-message-thinking' : ''}`;
   const confidence = role === 'agent' && !transient ? renderConfidenceDot(inferConfidence(text)) : '';
-  div.innerHTML = `<span class="agent-message-role">${role === 'user' ? 'You' : 'Agent'}</span><p>${escapeHtml(text)}${confidence}</p>`;
+  div.innerHTML = `<span class="agent-message-role">${role === 'user' ? 'You' : 'Agent'}</span><p data-stream-target></p>`;
   if (role === 'agent' && !transient) {
     const actions = document.createElement('div');
     actions.className = 'agent-message-actions';
