@@ -25,6 +25,7 @@
     "docker:run": "docker run --rm -p 8888:8888 lattice:dev"
   },
   "dependencies": {
+    "@netlify/blobs": "^8.1.0",
     "openai": "^4.67.0",
     "pdfjs-dist": "^4.7.76",
     "citeproc": "^2.4.63",
