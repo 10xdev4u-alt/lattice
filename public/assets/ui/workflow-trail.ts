@@ -29,6 +29,7 @@ function render(root: HTMLElement): void {
       <h2>Workflow trail</h2>
       <p class="trail-subtitle">${session.steps.length} step${session.steps.length === 1 ? '' : 's'} in this session</p>
       <div class="trail-actions">
+        <button data-action="toggle-prisma">Show PRISMA flow</button>
         <button data-action="export-md">Export as methods appendix</button>
         <button data-action="export-jsonl">Export as JSONL</button>
       </div>
@@ -44,6 +45,20 @@ function render(root: HTMLElement): void {
   exportJsonl?.addEventListener('click', () =>
     downloadFile(session.steps.map((s) => JSON.stringify(s)).join('\n'), 'lattice-trail.jsonl', 'application/x-ndjson'),
   );
+  const prismaBtn = root.querySelector<HTMLButtonElement>('[data-action="toggle-prisma"]');
+  prismaBtn?.addEventListener('click', async () => {
+    const { mountPrismaDiagram } = await import('./prisma');
+    const host = document.createElement('div');
+    host.className = 'prisma-overlay';
+    host.innerHTML = `<div class="prisma-modal" role="dialog" aria-modal="true"><button data-action="close">Close</button><div data-prisma-host></div></div>`;
+    host.addEventListener('click', (e) => {
+      const t = e.target as HTMLElement;
+      if (t.dataset.action === 'close' || t === host) host.remove();
+    });
+    document.body.appendChild(host);
+    const inner = host.querySelector<HTMLElement>('[data-prisma-host]');
+    if (inner) mountPrismaDiagram(inner);
+  });
 
   root.querySelectorAll<HTMLLIElement>('[data-step-id]').forEach((li) => {
     const toggle = li.querySelector<HTMLDivElement>('[data-step-toggle]');

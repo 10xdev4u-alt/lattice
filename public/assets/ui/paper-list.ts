@@ -35,6 +35,10 @@ function render(root: HTMLElement): void {
         <option value="year">Year</option>
       </select>
     </div>
+    <form class="paper-list-arxiv" data-arxiv-form>
+      <input type="text" data-arxiv-input placeholder="Paste arXiv ID or URL" aria-label="Add an arXiv paper" />
+      <button type="submit" aria-label="Add">+</button>
+    </form>
     <ul class="paper-list" role="list">
       ${papers.map((p) => paperRow(p)).join('')}
     </ul>
@@ -57,6 +61,43 @@ function render(root: HTMLElement): void {
       render(root);
     });
   }
+
+  const arxivForm = root.querySelector<HTMLFormElement>('[data-arxiv-form]');
+  const arxivInput = root.querySelector<HTMLInputElement>('[data-arxiv-input]');
+  arxivForm?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const id = arxivInput?.value.trim();
+    if (!id) return;
+    if (arxivInput) arxivInput.disabled = true;
+    try {
+      const { addPaper } = await import('../library');
+      const { fetchArxivSource } = await import('../../../netlify/functions/_lib/arxiv');
+      const result = await fetchArxivSource(id);
+      if (!result) {
+        window.alert(`Could not fetch ${id}. Check the ID and try again.`);
+        return;
+      }
+      addPaper({
+        id: `arxiv-${result.metadata.arxiv_id.replace(/[^\w]/g, '')}`,
+        title: result.metadata.title,
+        authors: result.metadata.authors.map((name) => {
+          const parts = name.split(/\s+/);
+          const family = parts.pop() ?? name;
+          return { family, given: parts.join(' ') };
+        }),
+        year: result.metadata.published ? Number(result.metadata.published.slice(0, 4)) : undefined,
+        doi: result.metadata.doi ?? undefined,
+        arxivId: result.metadata.arxiv_id,
+        abstract: result.metadata.summary,
+        source: 'arxiv',
+        addedAt: new Date().toISOString(),
+      });
+      if (arxivInput) arxivInput.value = '';
+      document.dispatchEvent(new CustomEvent('lattice:library-changed'));
+    } finally {
+      if (arxivInput) arxivInput.disabled = false;
+    }
+  });
 
   root.querySelectorAll<HTMLLIElement>('[data-paper-id]').forEach((li) => {
     li.addEventListener('click', () => {
