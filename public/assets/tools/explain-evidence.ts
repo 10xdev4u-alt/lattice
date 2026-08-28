@@ -5,12 +5,15 @@
  * refutes it, with verbatim quotes. The headline "show your work" tool
  * that turns the library into an evidence map.
  *
- * Closes: #15
+ * Calls the /api/papers/explain Function which reads each paper's
+ * text.json, ranks the most relevant, and returns the evidence map.
+ * Falls back to a local stub if the network call fails.
+ *
+ * Closes #15.
  */
 
 import type { ToolDefinition, ToolResult } from './types';
 import { toolError } from './types';
-import { getLibrary } from '../library';
 
 export const explainEvidence: ToolDefinition = {
   name: 'explain_evidence',
@@ -44,19 +47,33 @@ export const explainEvidence: ToolDefinition = {
     if (!claim) {
       return toolError('MISSING_ARG', 'explain_evidence requires a claim.', 'Ask the user what claim to investigate.');
     }
-    const library = getLibrary();
+
+    try {
+      const res = await fetch('/api/papers/explain', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ claim, max_papers }),
+      });
+      if (res.ok) {
+        const data = (await res.json()) as { claim: string; evidence: Array<{ paper_id: string; stance: string; quote: string; page: number; score: number }> };
+        return { content: [{ type: 'text', text: JSON.stringify(data) }] };
+      }
+    } catch {
+      // fall through to local note
+    }
+
     return {
       content: [
         {
           type: 'text',
           text: JSON.stringify({
             claim,
-            library_size: library.length,
-            note: 'Full evidence extraction lands with the per-paper index (#47).',
             evidence: [],
+            note: 'Search backend unavailable; no evidence returned.',
           }),
         },
       ],
     };
   },
 };
+
