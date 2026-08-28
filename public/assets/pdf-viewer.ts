@@ -17,6 +17,8 @@
  * on the text layer. The user can click a highlight to jump to its
  * note, or add a new highlight via the floating "Highlight" button
  * that appears when text is selected.
+ *
+ * Closes #150: real per-paper highlight creation.
  */
 
 import { getPaper } from './library';
@@ -60,6 +62,7 @@ export async function mountPdfViewer(root: HTMLElement, paperId: string): Promis
     const doc = await loadingTask.promise;
     pagesRoot.innerHTML = '';
     const highlights = listHighlights(paperId);
+    const pageTexts: PageRender[] = [];
     for (let i = 1; i <= doc.numPages; i++) {
       const page = await doc.getPage(i);
       const viewport = page.getViewport({ scale: 1.25 });
@@ -87,16 +90,78 @@ export async function mountPdfViewer(root: HTMLElement, paperId: string): Promis
       textLayer.style.width = `${viewport.width}px`;
       textLayer.style.height = `${viewport.height}px`;
       pagesRoot.appendChild(textLayer);
+      pageTexts.push({ pageNumber: i, text: reconstructed.text });
       // Render highlights for this page
       renderHighlightsForPage(textLayer, highlights.filter((h) => h.page === i), reconstructed.text);
+      // Selection handler: when the user finishes a selection, show
+      // a floating "Highlight" button.
+      installSelectionHandler(textLayer, paperId, i, reconstructed.text);
       page.cleanup();
     }
     await doc.cleanup();
     await doc.destroy();
     renderHighlightsPanel(root, paperId);
+    // Store page texts for later use (e.g. selection-based highlight)
+    (pagesRoot as any).__pageTexts = pageTexts;
   } catch (err) {
     pagesRoot.innerHTML = `<p class="canvas-empty">Could not render PDF: ${escapeHtml((err as Error).message)}</p>`;
   }
+}
+
+function installSelectionHandler(layer: HTMLElement, paperId: string, page: number, pageText: string): void {
+  let button: HTMLButtonElement | null = null;
+  layer.addEventListener('mouseup', () => {
+    setTimeout(() => {
+      const selection = window.getSelection();
+      const text = selection?.toString().trim();
+      if (!text || text.length < 3) {
+        button?.remove();
+        button = null;
+        return;
+      }
+      if (!button) {
+        button = document.createElement('button');
+        button.className = 'highlight-floating';
+        button.textContent = 'Highlight';
+        layer.parentElement?.appendChild(button);
+        button.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const note = window.prompt('Optional note for this highlight:', '');
+          addHighlight({ paperId, page, text, note: note ?? '', color: 'yellow' });
+          // Re-render the page text with the new highlight
+          layer.innerHTML = '';
+          layer.appendChild(document.createTextNode(pageText));
+          const newHighlights = listHighlights(paperId).filter((h) => h.page === page);
+          for (const h of newHighlights) {
+            const idx = pageText.toLowerCase().indexOf(h.text.toLowerCase());
+            if (idx === -1) continue;
+            // Re-render the whole page with the new marker
+            const before = pageText.slice(0, idx);
+            const match = pageText.slice(idx, idx + h.text.length);
+            const after = pageText.slice(idx + h.text.length);
+            layer.innerHTML = '';
+            if (before) layer.appendChild(document.createTextNode(before));
+            const marker = document.createElement('span');
+            marker.className = `highlight-marker highlight-${h.color}`;
+            marker.textContent = match;
+            marker.title = h.note || 'Highlight';
+            layer.appendChild(marker);
+            if (after) layer.appendChild(document.createTextNode(after));
+          }
+          button?.remove();
+          button = null;
+          selection?.removeAllRanges();
+        });
+      }
+      const range = selection?.getRangeAt(0);
+      const rect = range?.getBoundingClientRect();
+      if (button && rect) {
+        button.style.left = `${rect.left + window.scrollX}px`;
+        button.style.top = `${rect.top + window.scrollY - 36}px`;
+        button.style.display = 'block';
+      }
+    }, 10);
+  });
 }
 
 function renderHighlightsForPage(layer: HTMLElement, highlights: Highlight[], text: string): void {
