@@ -1,0 +1,22 @@
+/* Tour */
+.tour { padding: var(--sp-4); }
+.tour h2 { font-size: var(--text-md); margin: 0 0 var(--sp-1); }
+.tour-sub { color: var(--fg-muted); font-size: var(--text-sm); margin: 0 0 var(--sp-3); line-height: 1.5; }
+.tour button {
+  font-size: var(--text-sm);
+  padding: var(--sp-2) var(--sp-4);
+  background: var(--accent);
+  color: white;
+  border: none;
+  border-radius: var(--r-sm);
+  cursor: pointer;
+}
+.tour button:hover { filter: brightness(1.1); }
+.tour-caption {
+  margin-top: var(--sp-3);
+  font-size: var(--text-sm);
+  color: var(--fg-muted);
+  font-style: italic;
+  min-height: 1.5em;
+  line-height: 1.5;
+}
