@@ -184,6 +184,18 @@ function appendMessage(root: HTMLElement, role: 'user' | 'agent', text: string, 
   const div = document.createElement('div');
   div.className = `agent-message agent-message-${role}${transient ? ' agent-message-thinking' : ''}`;
   div.innerHTML = `<span class="agent-message-role">${role === 'user' ? 'You' : 'Agent'}</span><p>${escapeHtml(text)}</p>`;
+  if (role === 'agent' && !transient) {
+    const actions = document.createElement('div');
+    actions.className = 'agent-message-actions';
+    const regen = document.createElement('button');
+    regen.className = 'agent-message-regen';
+    regen.textContent = 'Regenerate';
+    regen.addEventListener('click', () => {
+      void regenerateLast(root, text);
+    });
+    actions.appendChild(regen);
+    div.appendChild(actions);
+  }
   chat.appendChild(div);
   chat.scrollTop = chat.scrollHeight;
   if (!transient) {
@@ -210,6 +222,38 @@ function appendMessage(root: HTMLElement, role: 'user' | 'agent', text: string, 
       input.value = `I want to challenge this claim you made: "${claim.slice(0, 200)}". Defend it with citations, or retract it.`;
       form?.dispatchEvent(new Event('submit', { cancelable: true }));
     });
+  }
+}
+
+async function regenerateLast(root: HTMLElement, previousText: string): Promise<void> {
+  // Find the last user message before the agent's reply and re-ask.
+  const chat = root.querySelector<HTMLDivElement>('[data-agent-chat]');
+  if (!chat) return;
+  const messages = Array.from(chat.querySelectorAll<HTMLDivElement>('.agent-message'));
+  // Walk backwards to find the previous user message.
+  let lastUserText: string | null = null;
+  for (let i = messages.length - 1; i >= 0; i--) {
+    const m = messages[i]!;
+    if (m.classList.contains('agent-message-user')) {
+      lastUserText = m.querySelector('p')?.textContent ?? null;
+      break;
+    }
+  }
+  if (!lastUserText) return;
+  recordStep({
+    tool_name: 'regenerate',
+    args: { prompt: lastUserText, previous: previousText.slice(0, 200) },
+    result_summary: 'user regenerated the agent reply',
+    result_full: { prompt: lastUserText, previous: previousText },
+    duration_ms: 0,
+    status: 'ok',
+  });
+  const form = root.querySelector<HTMLFormElement>('[data-agent-form]');
+  if (!form) return;
+  const input = form.querySelector<HTMLInputElement>('[data-agent-input]');
+  if (input) {
+    input.value = lastUserText;
+    form.dispatchEvent(new Event('submit', { cancelable: true }));
   }
 }
 

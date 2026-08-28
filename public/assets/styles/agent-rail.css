@@ -16,3 +16,14 @@
   cursor: pointer;
 }
 .agent-rail-actions button:hover { background: var(--accent); color: white; }
+.agent-message-actions { margin-top: 4px; }
+.agent-message-regen {
+  font-size: var(--text-xs);
+  padding: 2px 8px;
+  background: transparent;
+  color: var(--fg-muted);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  cursor: pointer;
+}
+.agent-message-regen:hover { background: var(--bg-elev-2); color: var(--accent); border-color: var(--accent); }
