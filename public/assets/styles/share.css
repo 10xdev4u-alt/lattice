@@ -12,8 +12,8 @@
   color: var(--fg-muted);
   margin: 0;
 }
-.share-view-trail, .share-view-appendix { margin-top: var(--sp-6); }
-.share-view-trail h2, .share-view-appendix h2 { font-size: var(--text-lg); margin: 0 0 var(--sp-3); }
+.share-view-trail, .share-view-appendix, .share-view-chat { margin-top: var(--sp-6); }
+.share-view-trail h2, .share-view-appendix h2, .share-view-chat h2 { font-size: var(--text-lg); margin: 0 0 var(--sp-3); }
 .share-view-md {
   font-family: var(--font-mono);
   font-size: var(--text-xs);
@@ -26,3 +26,8 @@
   max-height: 600px;
   overflow: auto;
 }
+.share-chat-list { list-style: none; margin: 0; padding: 0; }
+.share-chat-message { padding: var(--sp-2) var(--sp-3); border-bottom: 1px solid var(--border); }
+.share-chat-role { font-size: var(--text-xs); color: var(--fg-muted); font-family: var(--font-mono); display: block; margin-bottom: 2px; }
+.share-chat-agent p { color: var(--agent); }
+.share-chat-user p { color: var(--fg); }

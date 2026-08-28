@@ -3,8 +3,8 @@
  *
  * The session is encoded into the URL fragment as base64-encoded
  * JSON. The recipient opens the URL in any browser and sees a
- * read-only view of the audit log. No server round-trip; the
- * privacy model is "the URL is the data."
+ * read-only view of the audit log AND the chat history. No
+ * server round-trip; the privacy model is "the URL is the data."
  *
  * For the demo the shared view lives at /share/ in the index shell.
  * In production this would be a separate route.
@@ -12,27 +12,57 @@
 
 import { getSession, toMarkdownAppendix, type WorkflowSession } from './workflow-trail';
 
+interface ChatMessageLite {
+  role: 'user' | 'agent';
+  text: string;
+  timestamp: string;
+}
+
+interface SharedPayload {
+  session: WorkflowSession;
+  chat: ChatMessageLite[];
+}
+
 export function encodeSessionToFragment(session: WorkflowSession): string {
-  const json = JSON.stringify({
-    session_id: session.session_id,
-    created_at: session.created_at,
-    steps: session.steps.map((s) => ({
-      step_id: s.step_id,
-      timestamp: s.timestamp,
-      tool_name: s.tool_name,
-      args: s.args,
-      result_summary: s.result_summary,
-      duration_ms: s.duration_ms,
-      status: s.status,
-    })),
-  });
+  let chat: ChatMessageLite[] = [];
+  if (typeof localStorage !== 'undefined') {
+    try {
+      const raw = localStorage.getItem('lattice.chat.v1');
+      if (raw) {
+        const parsed = JSON.parse(raw) as ChatMessageLite[];
+        chat = parsed.filter((m) => m.role === 'user' || m.role === 'agent').map((m) => ({
+          role: m.role,
+          text: m.text,
+          timestamp: m.timestamp ?? new Date().toISOString(),
+        }));
+      }
+    } catch {
+      // ignore
+    }
+  }
+  const payload: SharedPayload = {
+    session: {
+      ...session,
+      steps: session.steps.map((s) => ({
+        step_id: s.step_id,
+        timestamp: s.timestamp,
+        tool_name: s.tool_name,
+        args: s.args,
+        result_summary: s.result_summary,
+        duration_ms: s.duration_ms,
+        status: s.status,
+      })),
+    },
+    chat,
+  };
+  const json = JSON.stringify(payload);
   return btoa(unescape(encodeURIComponent(json)));
 }
 
-export function decodeSessionFromFragment(fragment: string): WorkflowSession | null {
+export function decodeSessionFromFragment(fragment: string): SharedPayload | null {
   try {
     const json = decodeURIComponent(escape(atob(decodeURIComponent(fragment))));
-    return JSON.parse(json) as WorkflowSession;
+    return JSON.parse(json) as SharedPayload;
   } catch {
     return null;
   }
@@ -48,14 +78,31 @@ export function buildShareUrl(): string {
   return url.toString();
 }
 
-export function mountShareView(root: HTMLElement, session: WorkflowSession): void {
+export function mountShareView(root: HTMLElement, payload: SharedPayload): void {
+  const session = payload.session;
+  const chat = payload.chat ?? [];
   root.innerHTML = `
     <article class="share-view">
       <header class="share-view-header">
         <h1>Shared Lattice session</h1>
-        <p class="share-view-sub">Session <code>${escapeHtml(session.session_id)}</code> · ${session.steps.length} step(s) · captured ${new Date(session.created_at).toISOString()}</p>
-        <p class="share-view-warn">Read-only view. The audit log below is a static snapshot — the recipient cannot call tools or mutate state.</p>
+        <p class="share-view-sub">Session <code>${escapeHtml(session.session_id)}</code> · ${session.steps.length} step(s) · ${chat.length} chat message(s) · captured ${new Date(session.created_at).toISOString()}</p>
+        <p class="share-view-warn">Read-only view. The audit log and chat below are a static snapshot — the recipient cannot call tools or mutate state.</p>
       </header>
+      ${chat.length > 0 ? `
+      <section class="share-view-chat">
+        <h2>Chat</h2>
+        <ol class="share-chat-list" role="list">
+          ${chat
+            .map(
+              (m) => `<li class="share-chat-message share-chat-${escapeHtml(m.role)}">
+                <span class="share-chat-role">${m.role === 'user' ? 'You' : 'Agent'}</span>
+                <p>${escapeHtml(m.text)}</p>
+              </li>`,
+            )
+            .join('')}
+        </ol>
+      </section>
+      ` : ''}
       <section class="share-view-trail">
         <h2>Audit log</h2>
         <ol class="trail-list" role="list">
