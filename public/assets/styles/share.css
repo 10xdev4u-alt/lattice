@@ -1,0 +1,28 @@
+/* Share view */
+.share-view { max-width: 900px; margin: 0 auto; padding: var(--sp-6); }
+.share-view-header { margin-bottom: var(--sp-6); }
+.share-view-header h1 { font-size: var(--text-2xl); margin: 0 0 var(--sp-2); }
+.share-view-sub { color: var(--fg-muted); font-family: var(--font-mono); font-size: var(--text-sm); margin: 0 0 var(--sp-2); }
+.share-view-warn {
+  background: var(--bg-elev-1);
+  border: 1px solid var(--warn);
+  border-radius: var(--r-md);
+  padding: var(--sp-3);
+  font-size: var(--text-sm);
+  color: var(--fg-muted);
+  margin: 0;
+}
+.share-view-trail, .share-view-appendix { margin-top: var(--sp-6); }
+.share-view-trail h2, .share-view-appendix h2 { font-size: var(--text-lg); margin: 0 0 var(--sp-3); }
+.share-view-md {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  background: var(--bg-elev-1);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  padding: var(--sp-3);
+  white-space: pre-wrap;
+  word-break: break-word;
+  max-height: 600px;
+  overflow: auto;
+}
