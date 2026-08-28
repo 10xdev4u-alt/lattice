@@ -119,6 +119,32 @@
   margin: 0 0 var(--sp-1);
 }
 .paper-viewer-meta { font-family: var(--font-mono); font-size: var(--text-xs); }
+.paper-viewer-toolbar {
+  display: flex;
+  gap: var(--sp-2);
+  margin-top: var(--sp-3);
+  flex-wrap: wrap;
+}
+.paper-viewer-action {
+  font-size: var(--text-xs);
+  padding: var(--sp-1) var(--sp-3);
+  background: var(--bg-elev-1);
+  color: var(--fg);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  text-decoration: none;
+  cursor: pointer;
+}
+.paper-viewer-action:hover { background: var(--bg-elev-2); border-color: var(--accent); color: var(--accent); text-decoration: none; }
+.regenerated-summary {
+  background: var(--bg-elev-1);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  padding: var(--sp-4);
+  margin-top: var(--sp-3);
+  line-height: var(--leading-relaxed);
+  font-size: var(--text-sm);
+}
 .paper-viewer-abstract h3,
 .paper-viewer-body h3 {
   font-size: var(--text-md);
