@@ -124,6 +124,16 @@ async function render(root: HTMLElement): Promise<void> {
     void render(root);
   });
 
+  root.querySelectorAll<HTMLButtonElement>('[data-tryit]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const name = btn.dataset.tryit!;
+      const sample = sampleArgs(name);
+      const ctx = getModelContext();
+      void ctx.executeTool({ name } as any, JSON.stringify(sample)).catch((err) => console.error(`${name} failed`, err));
+      appendMessage(root, 'user', `(tried ${name} with sample args)`);
+    });
+  });
+
   const trailRoot = root.querySelector<HTMLDivElement>('[data-workflow-trail]');
   if (trailRoot) mountWorkflowTrail(trailRoot);
 }
@@ -162,12 +172,30 @@ function toolCount(): number {
   return 14;
 }
 
+function sampleArgs(name: string): unknown {
+  switch (name) {
+    case 'list_papers':
+      return {};
+    case 'search_library':
+      return { query: 'attention', max_results_per_paper: 3 };
+    case 'show_workflow_trail':
+      return { format: 'summary' };
+    case 'explain_evidence':
+      return { claim: 'transformers are better than RNNs for sequence modeling' };
+    default:
+      return {};
+  }
+}
+
 function toolRow(t: RegisteredTool): string {
   const readOnly = t.annotations?.readOnlyHint ?? !!(t.name === 'list_papers' || t.name === 'search_library');
   return `
     <li class="tool-row" data-tool-name="${escapeHtml(t.name)}">
-      <code class="tool-name">${escapeHtml(t.name)}</code>
-      <span class="tool-readonly">${readOnly ? 'read' : 'write'}</span>
+      <div class="tool-row-head">
+        <code class="tool-name">${escapeHtml(t.name)}</code>
+        <span class="tool-readonly">${readOnly ? 'read' : 'write'}</span>
+        <button class="tool-tryit" data-tryit="${escapeHtml(t.name)}" title="Try this tool with sample args">Try it</button>
+      </div>
       <p class="tool-description">${escapeHtml(t.description)}</p>
     </li>
   `;
