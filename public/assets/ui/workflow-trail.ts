@@ -34,6 +34,7 @@ function render(root: HTMLElement): void {
         <button data-action="toggle-prisma">Show PRISMA flow</button>
         <button data-action="export-md">Export as methods appendix</button>
         <button data-action="export-jsonl">Export as JSONL</button>
+        <button data-action="export-notion">Copy Notion import</button>
         <button data-action="share">Share</button>
         <button data-action="fork-branch">Fork branch</button>
         <button data-action="save-routine">Save as routine</button>
@@ -98,6 +99,14 @@ function render(root: HTMLElement): void {
       if (!name) return;
       const description = window.prompt('Short description:', '') ?? '';
       saveRoutineFromTrail(name, description);
+    });
+  });
+
+  const notionBtn = root.querySelector<HTMLButtonElement>('[data-action="export-notion"]');
+  notionBtn?.addEventListener('click', () => {
+    void import('../notion-export').then(({ buildNotionImport, copyNotionImport }) => {
+      const md = buildNotionImport(session);
+      void copyNotionImport(md);
     });
   });
 
