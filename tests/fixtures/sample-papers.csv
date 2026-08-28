@@ -1,0 +1,6 @@
+arxiv_id,title,expected_top_terms
+1706.03762,Attention Is All You Need,attention transformer self-attention encoder decoder
+1810.04805,BERT: Pre-training of Deep Bidirectional Transformers for Language Understanding,bert bidirectional pretraining language
+2005.14165,Language Models are Few-Shot Learners,gpt-3 few-shot autoregressive parameters
+2201.11903,Chain-of-Thought Prompting Elicits Reasoning in Large Language Models,chain-of-thought reasoning prompting steps
+2303.08774,GPT-4 Technical Report,gpt-4 multimodal exam human-level

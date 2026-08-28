@@ -16,6 +16,7 @@ import type { Config, Context } from '@netlify/functions';
 import { getStore } from '@netlify/blobs';
 import { createHash } from 'node:crypto';
 import { extractPdfText } from './_lib/pdf-text';
+import { buildIndex, type PageText } from './_lib/search-index';
 
 interface IngestRequest {
   filename: string;
@@ -114,26 +115,37 @@ export default async (req: Request, _ctx: Context): Promise<Response> => {
     );
   }
 
-  await store.set(storageKey, bytes, {
-    contentType: 'application/pdf',
-    metadata: { originalFilename: body.filename, sha256 },
-  });
-
-  const warnings: string[] = [];
-  let pageCount = 0;
-  let title = body.filename.replace(/\.pdf$/i, '');
-  try {
-    const extraction = await extractPdfText(bytes);
-    pageCount = extraction.pageCount;
-    if (extraction.title) title = extraction.title;
-    await store.setJSON(`papers/${paperId}/text.json`, {
-      extractedAt: new Date().toISOString(),
-      pages: extraction.pages,
+    await store.set(storageKey, bytes, {
+      contentType: 'application/pdf',
+      metadata: { originalFilename: body.filename, sha256 },
     });
-    for (const w of extraction.warnings) warnings.push(w);
-  } catch (err) {
-    warnings.push(`text_extraction_failed: ${(err as Error).message}`);
-  }
+
+    const warnings: string[] = [];
+    let pageCount = 0;
+    let title = body.filename.replace(/\.pdf$/i, '');
+    let pages: PageText[] = [];
+    try {
+      const extraction = await extractPdfText(bytes);
+      pageCount = extraction.pageCount;
+      if (extraction.title) title = extraction.title;
+      pages = extraction.pages;
+      await store.setJSON(`papers/${paperId}/text.json`, {
+        extractedAt: new Date().toISOString(),
+        pages: extraction.pages,
+      });
+      for (const w of extraction.warnings) warnings.push(w);
+    } catch (err) {
+      warnings.push(`text_extraction_failed: ${(err as Error).message}`);
+    }
+
+    // Auto-build the search index on ingest so the first
+    // search_library call has something to read.
+    try {
+      const index = buildIndex(paperId, pages);
+      await store.setJSON(`papers/${paperId}/index.json`, index);
+    } catch (err) {
+      warnings.push(`index_build_failed: ${(err as Error).message}`);
+    }
 
   const response: IngestResponse = {
     paper: {
