@@ -29,6 +29,9 @@ async function main(): Promise<void> {
 
   mountWorkspace(document.getElementById('app-main'));
 
+  // Trail watcher: badges the Log tab with the count of new steps.
+  void import('./trail-watcher').then(({ initTrailWatcher }) => initTrailWatcher());
+
   // Report-a-problem button: copy a diagnostic bundle to the clipboard.
   document.querySelector<HTMLButtonElement>('[data-action="report-problem"]')?.addEventListener('click', async () => {
     const { copyDiagnosticBundleToClipboard } = await import('./diagnostics');
