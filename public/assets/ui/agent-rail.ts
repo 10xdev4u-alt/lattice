@@ -221,12 +221,16 @@ function appendMessage(root: HTMLElement, role: 'user' | 'agent', text: string, 
     const downBtn = document.createElement('button');
     downBtn.className = `feedback-btn${existing === 'down' ? ' active-down' : ''}`;
     downBtn.textContent = '👎';
-    downBtn.title = 'Not helpful';
+    downBtn.title = 'Not helpful (click to regenerate with feedback)';
     downBtn.setAttribute('aria-label', 'Not helpful');
     downBtn.addEventListener('click', () => {
       recordFeedback({ sessionId: session.session_id, messageIndex, text, feedback: 'down' });
       downBtn.classList.add('active-down');
       upBtn.classList.remove('active-up');
+      // Smart re-ask: tell the agent what the user disliked and ask
+      // for a different approach. The previous reply is inlined as
+      // a "don't do this" reference.
+      void regenerateLast(root, text, true);
     });
     feedbackActions.appendChild(upBtn);
     feedbackActions.appendChild(downBtn);
@@ -262,7 +266,7 @@ function appendMessage(root: HTMLElement, role: 'user' | 'agent', text: string, 
   }
 }
 
-async function regenerateLast(root: HTMLElement, previousText: string): Promise<void> {
+async function regenerateLast(root: HTMLElement, previousText: string, withFeedback = false): Promise<void> {
   // Find the last user message before the agent's reply and re-ask.
   const chat = root.querySelector<HTMLDivElement>('[data-agent-chat]');
   if (!chat) return;
@@ -278,10 +282,12 @@ async function regenerateLast(root: HTMLElement, previousText: string): Promise<
   }
   if (!lastUserText) return;
   recordStep({
-    tool_name: 'regenerate',
+    tool_name: withFeedback ? 'regenerate_with_feedback' : 'regenerate',
     args: { prompt: lastUserText, previous: previousText.slice(0, 200) },
-    result_summary: 'user regenerated the agent reply',
-    result_full: { prompt: lastUserText, previous: previousText },
+    result_summary: withFeedback
+      ? 'user gave 👎 feedback and asked the agent to try again'
+      : 'user regenerated the agent reply',
+    result_full: { prompt: lastUserText, previous: previousText, with_feedback: withFeedback },
     duration_ms: 0,
     status: 'ok',
   });
@@ -289,7 +295,9 @@ async function regenerateLast(root: HTMLElement, previousText: string): Promise<
   if (!form) return;
   const input = form.querySelector<HTMLInputElement>('[data-agent-input]');
   if (input) {
-    input.value = lastUserText;
+    input.value = withFeedback
+      ? `${lastUserText}\n\nYour previous answer was: "${previousText.slice(0, 400)}". The user marked it as unhelpful. Try a different approach: be more specific, cite a paper id, or ask a clarifying question.`
+      : lastUserText;
     form.dispatchEvent(new Event('submit', { cancelable: true }));
   }
 }
