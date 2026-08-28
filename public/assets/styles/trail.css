@@ -1,0 +1,78 @@
+/* Workflow trail */
+.trail-header { margin-bottom: var(--sp-4); }
+.trail-header h2 { font-size: var(--text-md); margin: 0 0 var(--sp-1); }
+.trail-subtitle { font-size: var(--text-xs); color: var(--fg-muted); margin: 0 0 var(--sp-3); }
+.trail-actions { display: flex; gap: var(--sp-2); }
+.trail-actions button { font-size: var(--text-xs); padding: var(--sp-1) var(--sp-2); }
+.trail-empty { color: var(--fg-muted); font-size: var(--text-sm); margin: 0; }
+
+.trail-list { list-style: none; margin: 0; padding: 0; }
+.trail-step { border-bottom: 1px solid var(--border); }
+.trail-step-toggle {
+  display: grid;
+  grid-template-columns: auto 1fr auto auto auto;
+  gap: var(--sp-3);
+  align-items: center;
+  padding: var(--sp-2) var(--sp-3);
+  cursor: pointer;
+  transition: background var(--dur-fast) var(--ease);
+}
+.trail-step-toggle:hover, .trail-step-toggle:focus-visible {
+  background: var(--bg-elev-2);
+  outline: none;
+}
+.trail-step-num {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--fg-muted);
+  min-width: 30px;
+}
+.trail-step-name {
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  color: var(--accent);
+}
+.trail-step-args {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--fg-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 300px;
+}
+.trail-step-status {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  padding: 0 6px;
+  border-radius: var(--r-sm);
+  text-transform: uppercase;
+}
+.trail-step-status-ok { background: var(--ok); color: var(--bg); }
+.trail-step-status-err { background: var(--err); color: var(--bg); }
+.trail-step-status-denied { background: var(--warn); color: var(--bg); }
+.trail-step-time { font-family: var(--font-mono); font-size: var(--text-xs); color: var(--fg-muted); }
+
+.trail-step-detail {
+  padding: var(--sp-3) var(--sp-4);
+  background: var(--bg);
+  border-top: 1px solid var(--border);
+  font-size: var(--text-xs);
+}
+.trail-step-detail dl { display: grid; grid-template-columns: 120px 1fr; gap: var(--sp-2); margin: 0; }
+.trail-step-detail dt { color: var(--fg-muted); font-family: var(--font-mono); }
+.trail-step-detail dd { margin: 0; color: var(--fg); }
+.trail-step-detail pre {
+  font-family: var(--font-mono);
+  background: var(--bg-elev-1);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  padding: var(--sp-2);
+  margin: 0;
+  white-space: pre-wrap;
+  word-break: break-word;
+  max-height: 300px;
+  overflow: auto;
+}
+.trail-step-detail-actions { margin-top: var(--sp-2); }
+.trail-step-detail button { font-size: var(--text-xs); padding: var(--sp-1) var(--sp-2); }

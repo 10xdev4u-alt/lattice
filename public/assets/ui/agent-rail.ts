@@ -63,16 +63,7 @@ function render(root: HTMLElement): void {
       </ul>
     </div>
     <div class="agent-rail-tab" data-tab-content="log" hidden>
-      ${session.steps.length === 0
-        ? '<p class="agent-log-empty">No tool calls yet. The audit trail lands here when the agent acts.</p>'
-        : `<ol class="tool-log" role="list">${session.steps
-            .slice(-50)
-            .reverse()
-            .map(
-              (s) =>
-                `<li class="tool-log-row"><code>${escapeHtml(s.tool_name)}</code> <span class="tool-log-status">${escapeHtml(s.status)}</span> <time>${escapeHtml(s.timestamp)}</time></li>`,
-            )
-            .join('')}</ol>`}
+      <div data-workflow-trail></div>
     </div>
   `;
 
@@ -87,6 +78,10 @@ function render(root: HTMLElement): void {
       });
     });
   });
+
+  // Mount the workflow trail into the log tab.
+  const trailRoot = root.querySelector<HTMLDivElement>('[data-workflow-trail]');
+  if (trailRoot) mountWorkflowTrail(trailRoot);
 }
 
 function appendMessage(root: HTMLElement, role: 'user' | 'agent', text: string): void {
@@ -102,7 +97,7 @@ function appendMessage(root: HTMLElement, role: 'user' | 'agent', text: string):
   chat.scrollTop = chat.scrollHeight;
 }
 
-function listTools(): Array<{ name: string; description: string; readOnly: boolean }> {
+  function listTools(): Array<{ name: string; description: string; readOnly: boolean }> {
   // The actual list comes from the registered tools. We can't call
   // getTools() synchronously, so we maintain a small client-side
   // mirror populated when the harness runs. For the demo we hard-code
@@ -122,6 +117,8 @@ const ALWAYS_ON_TOOLS = [
   { name: 'show_workflow_trail', description: 'Show the audit log', readOnly: true },
   { name: 'compose_review', description: 'Draft a peer review', readOnly: false },
 ];
+
+import { mountWorkflowTrail } from './workflow-trail';
 
 function toolRow(t: { name: string; description: string; readOnly: boolean }): string {
   return `
