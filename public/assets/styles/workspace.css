@@ -18,6 +18,16 @@
 }
 .workspace.rail-right-collapsed .rail-right { display: none; }
 
+.workspace.rail-right-floating .rail-right {
+  position: fixed;
+  right: 0;
+  top: var(--header-h);
+  bottom: 0;
+  width: var(--rail-right-w);
+  z-index: 30;
+  box-shadow: -4px 0 16px rgba(0, 0, 0, 0.3);
+}
+
 .rail {
   background: var(--bg-elev-1);
   border-right: 1px solid var(--border);

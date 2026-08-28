@@ -73,6 +73,10 @@ function installKeyboardShortcuts(root: HTMLElement): void {
       e.preventDefault();
       workspace.classList.toggle('rail-right-collapsed');
       announce('Agent rail toggled');
+    } else if (e.shiftKey && (e.metaKey || e.ctrlKey) && e.key === 'r') {
+      e.preventDefault();
+      workspace.classList.toggle('rail-right-floating');
+      announce('Agent rail floating mode toggled');
     } else if ((e.metaKey || e.ctrlKey) && e.key === ',') {
       e.preventDefault();
       toggleSettings(root);
@@ -216,6 +220,8 @@ function showHelp(_root: HTMLElement): void {
         <dd>Toggle the paper list rail</dd>
         <dt><kbd>Ctrl/Cmd</kbd> + <kbd>R</kbd></dt>
         <dd>Toggle the agent rail</dd>
+        <dt><kbd>Ctrl/Cmd</kbd> + <kbd>Shift</kbd> + <kbd>R</kbd></dt>
+        <dd>Float the agent rail over the canvas</dd>
         <dt><kbd>Ctrl/Cmd</kbd> + <kbd>,</kbd></dt>
         <dd>Open the settings panel</dd>
         <dt><kbd>g</kbd> <kbd>k</kbd></dt>
