@@ -20,6 +20,7 @@ import {
   validateToolDefinition,
   type ToolResult,
 } from './types';
+import { requestConfirmation } from '../ui/confirmation-modal';
 import { listPapers } from './list-papers';
 import { openPaper } from './open-paper';
 import { searchLibrary } from './search-library';
@@ -85,38 +86,14 @@ async function requestConfirmation(
   tool: ToolDefinition,
   args: unknown,
 ): Promise<boolean | 'always'> {
-  return new Promise((resolve) => {
-    const overlay = document.createElement('div');
-    overlay.className = 'confirm-overlay';
-    overlay.innerHTML = `
-      <div class="confirm-modal" role="dialog" aria-modal="true" aria-labelledby="confirm-title">
-        <h2 id="confirm-title" class="confirm-title">The agent wants to <code>${tool.name}</code></h2>
-        <details class="confirm-args">
-          <summary>View full args</summary>
-          <pre>${JSON.stringify(args, null, 2)}</pre>
-        </details>
-        <div class="confirm-actions">
-          <button data-action="deny">Deny</button>
-          <button data-action="allow">Allow</button>
-          <button data-action="always">Allow for this session</button>
-        </div>
-      </div>
-    `;
-    overlay.addEventListener('click', (e) => {
-      const t = e.target as HTMLElement;
-      if (t.dataset.action === 'deny') {
-        overlay.remove();
-        resolve(false);
-      } else if (t.dataset.action === 'allow') {
-        overlay.remove();
-        resolve(true);
-      } else if (t.dataset.action === 'always') {
-        overlay.remove();
-        resolve('always');
-      }
-    });
-    document.body.appendChild(overlay);
+  const choice = await requestConfirmation({
+    toolName: tool.name,
+    description: tool.description,
+    args,
   });
+  if (choice === 'deny') return false;
+  if (choice === 'always') return 'always';
+  return true;
 }
 
 export async function registerAllTools(): Promise<void> {
