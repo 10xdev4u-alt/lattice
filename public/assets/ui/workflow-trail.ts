@@ -14,6 +14,7 @@
 
 import { getSession, toMarkdownAppendix, type WorkflowStep } from '../workflow-trail';
 import { mountTimelineScrubber } from './timeline-scrubber';
+import { renderSessionSummary } from './session-summary';
 
 export function mountWorkflowTrail(root: HTMLElement): void {
   render(root);
@@ -45,6 +46,9 @@ function render(root: HTMLElement): void {
 
   const scrubberHost = root.querySelector<HTMLElement>('[data-scrubber-host]');
   if (scrubberHost) mountTimelineScrubber(scrubberHost);
+
+  const summaryHost = root.querySelector<HTMLElement>('[data-summary-host]');
+  if (summaryHost) renderSessionSummary(summaryHost);
 
   const exportMd = root.querySelector<HTMLButtonElement>('[data-action="export-md"]');
   exportMd?.addEventListener('click', () => downloadFile(toMarkdownAppendix(session), 'lattice-methods-appendix.md', 'text/markdown'));

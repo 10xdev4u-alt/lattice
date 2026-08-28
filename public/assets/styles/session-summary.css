@@ -1,0 +1,21 @@
+/* Session summary */
+.session-summary { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; padding: var(--sp-2) 0; }
+.summary-pill {
+  display: inline-flex;
+  align-items: center;
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  color: var(--fg);
+}
+.summary-total { background: var(--accent); color: white; border-color: var(--accent); }
+.summary-reads { color: var(--ok); border-color: var(--ok); }
+.summary-writes { color: var(--warn); border-color: var(--warn); }
+.summary-err { color: var(--err); border-color: var(--err); }
+.summary-denied { color: var(--fg-muted); border-color: var(--border-strong); }
+.summary-top { color: var(--fg-muted); font-size: var(--text-xs); margin-left: 4px; }
+.summary-top code { color: var(--accent); }
+.session-summary-empty { color: var(--fg-muted); font-size: var(--text-xs); margin: 0; }
