@@ -1,0 +1,16 @@
+/* Batch overlay */
+.batch-modal { padding: var(--sp-4); max-width: 480px; width: 90vw; }
+.batch-modal h2 { font-size: var(--text-md); margin: 0 0 var(--sp-3); }
+.batch-modal label { display: flex; flex-direction: column; gap: var(--sp-1); font-size: var(--text-sm); color: var(--fg-muted); margin-bottom: var(--sp-3); }
+.batch-modal select {
+  font: inherit;
+  background: var(--bg);
+  color: var(--fg);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  padding: var(--sp-1) var(--sp-2);
+}
+.batch-modal button { font-size: var(--text-sm); padding: var(--sp-1) var(--sp-3); background: var(--accent); color: white; border: none; border-radius: var(--r-sm); cursor: pointer; }
+.batch-modal button:hover { filter: brightness(1.1); }
+.batch-progress { margin-top: var(--sp-3); font-size: var(--text-sm); color: var(--fg); min-height: 1.5em; }
+.batch-progress code { font-family: var(--font-mono); color: var(--accent); }
