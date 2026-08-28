@@ -111,3 +111,14 @@
   background: var(--bg);
   border-radius: var(--r-sm);
 }
+[data-trail-search] {
+  width: 100%;
+  font: inherit;
+  font-size: var(--text-xs);
+  padding: var(--sp-1) var(--sp-2);
+  background: var(--bg);
+  color: var(--fg);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  margin: var(--sp-2) 0;
+}
