@@ -10,7 +10,7 @@
  */
 
 import { getModelContext } from '../model-context-polyfill';
-import { getSession } from '../workflow-trail';
+import { getSession, recordStep } from '../workflow-trail';
 import { mountWorkflowTrail } from './workflow-trail';
 import { completePrompt } from '../llm';
 import { setPeerReviewerActive, isPeerReviewerActive } from './peer-reviewer';
@@ -150,6 +150,14 @@ function appendMessage(root: HTMLElement, role: 'user' | 'agent', text: string, 
   chat.scrollTop = chat.scrollHeight;
   if (role === 'agent' && !transient) {
     decorateCitations(div, (claim) => {
+      recordStep({
+        tool_name: 'challenge_claim',
+        args: { claim: claim.slice(0, 200) },
+        result_summary: 'user challenged the claim; re-asking the agent',
+        result_full: { claim: claim.slice(0, 200) },
+        duration_ms: 0,
+        status: 'ok',
+      });
       const input = root.querySelector<HTMLInputElement>('[data-agent-input]');
       if (!input) return;
       input.value = `I want to challenge this claim you made: "${claim.slice(0, 200)}". Defend it with citations, or retract it.`;
