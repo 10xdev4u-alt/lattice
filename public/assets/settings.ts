@@ -75,6 +75,14 @@ function render(root: HTMLElement): void {
         <input type="text" data-setting="llm_base" value="${escapeHtml(s.llm_base)}" />
       </label>
       <label class="settings-row">
+        <span>Theme</span>
+        <select data-theme-select>
+          <option value="system">System</option>
+          <option value="light">Light</option>
+          <option value="dark">Dark</option>
+        </select>
+      </label>
+      <label class="settings-row">
         <input type="checkbox" data-setting="enable_peer_reviewer" ${s.enable_peer_reviewer ? 'checked' : ''} />
         <span>Invite peer-reviewer on every open paper</span>
       </label>
@@ -92,6 +100,16 @@ function render(root: HTMLElement): void {
       }
     });
   });
+
+  const themeSelect = root.querySelector<HTMLSelectElement>('[data-theme-select]');
+  if (themeSelect) {
+    void import('../theme').then(({ getTheme, setTheme }) => {
+      themeSelect.value = getTheme();
+      themeSelect.addEventListener('change', () => {
+        setTheme(themeSelect.value as 'light' | 'dark' | 'system');
+      });
+    });
+  }
 }
 
 function escapeHtml(s: string): string {

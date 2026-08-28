@@ -1,60 +1,58 @@
 /**
- * /api/papers/<id>/index — build the search index for a paper.
+ * GET /api/papers — list the library from Blobs.
  *
- * Reads the extracted text from papers/<id>/text.json, builds the
- * inverted index, writes it to papers/<id>/index.json. Idempotent
- * (re-runs overwrite the previous index).
+ * Used by list_papers. Reads the keys under `papers/` in the
+ * Lattice Blobs store, fetches each `meta.json` (if present),
+ * and returns CSL-JSON-shaped entries.
  *
- * Closes #56.
+ * The client falls back to localStorage if this Function is
+ * unreachable. The meta files are written by a future
+ * magic-link-auth build; for now the Function returns just the
+ * paper ids and the client cross-references with localStorage.
+ *
+ * Closes the polish item: list_papers reads from the server.
  */
 
 import type { Config, Context } from '@netlify/functions';
 import { getStore } from '@netlify/blobs';
-import { buildIndex, type PageText } from './_lib/search-index';
 
-export default async (req: Request, _ctx: Context): Promise<Response> => {
-  if (req.method !== 'POST') {
-    return jsonResponse({ error: { code: 'METHOD_NOT_ALLOWED', message: 'Use POST.' } }, 405);
-  }
-  const id = new URL(req.url).pathname.match(/\/api\/papers\/([^/]+)\/index/)?.[1];
-  if (!id) {
-    return jsonResponse({ error: { code: 'BAD_PATH', message: 'Missing paper id.' } }, 400);
-  }
-
+export default async (_req: Request, _ctx: Context): Promise<Response> => {
   const store = getStore('lattice');
-  const textBlob = await store.get(`papers/${id}/text.json`);
-  if (!textBlob) {
-    return jsonResponse(
-      {
-        error: {
-          code: 'NOT_FOUND',
-          message: `No text.json for paper ${id}.`,
-          retry_hint: 'Run /api/papers/ingest or /api/papers/from-arxiv first.',
-        },
-      },
-      404,
-    );
+  const papers: Array<{ id: string; title?: string; year?: number; doi?: string; arxiv_id?: string }> = [];
+  try {
+    for await (const blob of store.list({ prefix: 'papers/' })) {
+      const id = blob.key.split('/')[1];
+      if (!id) continue;
+      // Only consider paper ids, not text/index/source files
+      if (blob.key.includes('/')) continue;
+      const meta = await store.get(`papers/${id}/meta.json`);
+      let entry: { id: string; title?: string; year?: number; doi?: string; arxiv_id?: string } = { id };
+      if (meta) {
+        try {
+          const parsed = (await meta.json()) as Record<string, unknown>;
+          entry = {
+            id,
+            title: typeof parsed.title === 'string' ? parsed.title : undefined,
+            year: typeof parsed.year === 'number' ? parsed.year : undefined,
+            doi: typeof parsed.doi === 'string' ? parsed.doi : undefined,
+            arxiv_id: typeof parsed.arxiv_id === 'string' ? parsed.arxiv_id : undefined,
+          };
+        } catch {
+          // ignore parse errors
+        }
+      }
+      papers.push(entry);
+    }
+  } catch {
+    // No store or no list support; return empty.
   }
-  const parsed = (await textBlob.json()) as { pages: PageText[] };
-  const index = buildIndex(id, parsed.pages);
-  await store.setJSON(`papers/${id}/index.json`, index);
-
-  return jsonResponse({
-    paper_id: id,
-    total_terms: index.total_terms,
-    total_pages: index.total_pages,
-    built_at: index.built_at,
+  return new Response(JSON.stringify({ count: papers.length, papers }), {
+    status: 200,
+    headers: { 'Content-Type': 'application/json' },
   });
 };
 
-function jsonResponse(body: unknown, status = 200): Response {
-  return new Response(JSON.stringify(body), {
-    status,
-    headers: { 'Content-Type': 'application/json' },
-  });
-}
-
 export const config: Config = {
-  path: '/api/papers/:id/index',
-  method: 'POST',
+  path: '/api/papers',
+  method: 'GET',
 };
