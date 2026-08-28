@@ -137,6 +137,15 @@ function render(root: HTMLElement): void {
         render(root);
         return;
       }
+      if (t.dataset.action === 'branch-from') {
+        void import('../branches').then(({ forkFromStep, listBranches }) => {
+          const name = window.prompt(`Branch from step #${t.dataset.stepId}:`, `Branch from #${t.dataset.stepId}`);
+          if (!name) return;
+          forkFromStep(Number(t.dataset.stepId), name);
+          listBranches();
+        });
+        return;
+      }
       const open = detail.hasAttribute('hidden');
       if (open) detail.removeAttribute('hidden');
       else detail.setAttribute('hidden', '');
@@ -169,6 +178,7 @@ function stepRow(step: WorkflowStep): string {
           <dt>Result summary</dt><dd><pre>${escapeHtml(step.result_summary.slice(0, 2000))}</pre></dd>
         </dl>
         <div class="trail-step-detail-actions">
+          <button data-action="branch-from" data-step-id="${step.step_id}" title="Branch the audit log from this step">Branch from here</button>
           <button data-copy="${escapeHtml(JSON.stringify(step, null, 2))}">Copy full step</button>
         </div>
       </div>
