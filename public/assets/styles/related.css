@@ -1,0 +1,24 @@
+/* Related papers */
+.related { padding: var(--sp-3); }
+.related h2 { font-size: var(--text-md); margin: 0 0 var(--sp-3); }
+.related-list { list-style: none; margin: 0; padding: 0; }
+.related-item {
+  padding: var(--sp-3) 0;
+  border-bottom: 1px solid var(--border);
+}
+.related-title { font-weight: 500; font-size: var(--text-sm); margin-bottom: var(--sp-1); }
+.related-meta { font-size: var(--text-xs); color: var(--fg-muted); font-family: var(--font-mono); margin-bottom: var(--sp-1); }
+.related-summary { font-size: var(--text-xs); color: var(--fg-muted); line-height: 1.5; margin-bottom: var(--sp-2); }
+.related-actions { display: flex; gap: var(--sp-2); align-items: center; }
+.related-actions button {
+  font-size: var(--text-xs);
+  padding: var(--sp-1) var(--sp-3);
+  background: var(--accent);
+  color: white;
+  border: none;
+  border-radius: var(--r-sm);
+  cursor: pointer;
+}
+.related-actions button:hover { filter: brightness(1.1); }
+.related-actions a { font-size: var(--text-xs); color: var(--fg-muted); text-decoration: none; }
+.related-actions a:hover { color: var(--accent); }
