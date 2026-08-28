@@ -15,6 +15,7 @@ import { mountWorkflowTrail } from './workflow-trail';
 import { setPeerReviewerActive, isPeerReviewerActive } from './peer-reviewer';
 import { decorateCitations } from '../citation-chips';
 import { runAgentLoop, buildHistoryFromChat, type AgentLoopResult } from '../agent-loop';
+import { inferConfidence, renderConfidenceDot } from '../confidence';
 
 interface RegisteredTool {
   name: string;
@@ -187,7 +188,8 @@ function appendMessage(root: HTMLElement, role: 'user' | 'agent', text: string, 
   if (empty) empty.remove();
   const div = document.createElement('div');
   div.className = `agent-message agent-message-${role}${transient ? ' agent-message-thinking' : ''}`;
-  div.innerHTML = `<span class="agent-message-role">${role === 'user' ? 'You' : 'Agent'}</span><p>${escapeHtml(text)}</p>`;
+  const confidence = role === 'agent' && !transient ? renderConfidenceDot(inferConfidence(text)) : '';
+  div.innerHTML = `<span class="agent-message-role">${role === 'user' ? 'You' : 'Agent'}</span><p>${escapeHtml(text)}${confidence}</p>`;
   if (role === 'agent' && !transient) {
     const actions = document.createElement('div');
     actions.className = 'agent-message-actions';

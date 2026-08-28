@@ -27,3 +27,14 @@
   cursor: pointer;
 }
 .agent-message-regen:hover { background: var(--bg-elev-2); color: var(--accent); border-color: var(--accent); }
+.confidence-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin-left: 6px;
+  vertical-align: middle;
+}
+.confidence-high { background: var(--ok); box-shadow: 0 0 4px var(--ok); }
+.confidence-mixed { background: var(--warn); }
+.confidence-speculative { background: var(--err); }
