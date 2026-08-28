@@ -21,6 +21,7 @@ import {
   type ToolResult,
 } from './types';
 import { requestConfirmation } from '../ui/confirmation-modal';
+import { instrument, denyStep } from './trail-instrumentation';
 import { listPapers } from './list-papers';
 import { openPaper } from './open-paper';
 import { searchLibrary } from './search-library';
@@ -48,7 +49,9 @@ const ALWAYS_ON_TOOLS: ToolDefinition[] = [
 ];
 
 function wrapWithConfirmation(tool: ToolDefinition): ToolDefinition {
-  if (tool.annotations?.readOnlyHint) return tool;
+  if (tool.annotations?.readOnlyHint) {
+    return { ...tool, execute: instrument(tool.name, tool.execute) };
+  }
 
   const wrapped: ToolDefinition = {
     ...tool,
@@ -56,6 +59,7 @@ function wrapWithConfirmation(tool: ToolDefinition): ToolDefinition {
       if (!sessionAllowed.has(tool.name)) {
         const ok = await requestConfirmation(tool, args);
         if (!ok) {
+          denyStep(tool.name, args);
           return {
             content: [
               {
@@ -76,7 +80,7 @@ function wrapWithConfirmation(tool: ToolDefinition): ToolDefinition {
           sessionAllowed.add(tool.name);
         }
       }
-      return tool.execute(args, opts);
+      return instrument(tool.name, tool.execute)(args, opts);
     },
   };
   return wrapped;
