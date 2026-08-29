@@ -27,8 +27,9 @@ export function mountPdfCanvas(root: HTMLElement): void {
   const initial = currentPaperId ?? library[0]!.id;
   render(root, initial);
 
-  document.addEventListener('lattice:paper-opened', ((e: CustomEvent) => {
-    currentPaperId = e.detail.paper_id;
+  document.addEventListener('lattice:paper-opened', ((e: Event) => {
+    const detail = (e as CustomEvent<{ paper_id: string }>).detail;
+    currentPaperId = detail.paper_id;
     render(root, currentPaperId);
   }) as EventListener);
 }

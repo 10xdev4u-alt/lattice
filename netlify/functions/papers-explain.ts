@@ -52,7 +52,13 @@ export default async (req: Request, _ctx: Context): Promise<Response> => {
 
   const maxPapers = body.max_papers ?? 5;
   const store = getStore('lattice');
-  const paperKeys = await listKeys(store, 'papers/');
+  const paperKeys: string[] = [];
+  try {
+    const list = await store.list({ prefix: 'papers/' });
+    for (const b of list.blobs) paperKeys.push(b.key);
+  } catch {
+    // ignore
+  }
 
   // Build a per-paper excerpt bundle. Cap total context at 12k chars
   // so we don't blow the model's input budget.
@@ -60,9 +66,9 @@ export default async (req: Request, _ctx: Context): Promise<Response> => {
   for (const key of paperKeys) {
     if (!key.endsWith('/text.json')) continue;
     const paperId = key.split('/')[1]!;
-    const blob = await store.get(key);
-    if (!blob) continue;
-    const pages = ((await blob.json()) as { pages: PageText[] }).pages;
+    const meta = await store.getWithMetadata(key, { type: 'json' });
+    if (!meta) continue;
+    const pages = (meta.data as { pages: PageText[] }).pages;
     const excerpt = pages
       .slice(0, 4)
       .map((p) => `--- ${paperId} page ${p.page_number} ---\n${p.text.slice(0, 800)}`)
@@ -119,17 +125,6 @@ Rules:
   }
 };
 
-async function listKeys(store: ReturnType<typeof getStore>, prefix: string): Promise<string[]> {
-  const out: string[] = [];
-  try {
-    for await (const blob of store.list({ prefix })) {
-      out.push(blob.key);
-    }
-  } catch {
-    // Fall back to an empty list.
-  }
-  return out;
-}
 
 function json(body: unknown, status = 200): Response {
   return new Response(JSON.stringify(body), {

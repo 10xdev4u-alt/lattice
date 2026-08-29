@@ -20,7 +20,7 @@ import {
   validateToolDefinition,
   type ToolResult,
 } from './types';
-import { requestConfirmation } from '../ui/confirmation-modal';
+import { requestConfirmation as requestConfirmationModal } from '../ui/confirmation-modal';
 import { instrument, denyStep } from './trail-instrumentation';
 import { listPapers } from './list-papers';
 import { openPaper } from './open-paper';
@@ -90,7 +90,7 @@ async function requestConfirmation(
   tool: ToolDefinition,
   args: unknown,
 ): Promise<boolean | 'always'> {
-  const choice = await requestConfirmation({
+  const choice: 'allow' | 'always' | 'deny' = await requestConfirmationModal({
     toolName: tool.name,
     description: tool.description,
     args,

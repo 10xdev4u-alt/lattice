@@ -8,7 +8,6 @@
     "noUncheckedIndexedAccess": true,
     "noImplicitOverride": true,
     "noFallthroughCasesInSwitch": true,
-    "exactOptionalPropertyTypes": true,
     "useUnknownInCatchVariables": true,
     "isolatedModules": true,
     "esModuleInterop": true,

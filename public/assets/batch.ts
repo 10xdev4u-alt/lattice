@@ -10,8 +10,8 @@
  * Closes the polish item: a "do this for every paper" button.
  */
 
-import { getLibrary, getPaper } from './library';
-import { getModelContext } from '../model-context-polyfill';
+import { getLibrary } from './library';
+import { getModelContext } from './model-context-polyfill';
 import { recordStep } from './workflow-trail';
 
 interface BatchOptions {

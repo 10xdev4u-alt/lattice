@@ -106,7 +106,19 @@ function installKeyboardShortcuts(root: HTMLElement): void {
           announce('Knowledge graph opened');
         } else if (e2.key === 'f') {
           // Open the arXiv feed overlay
-          void openArxivFeedOverlay();
+          void import('../arxiv-feed').then(({ mountArxivFeed: mountFeed }) => {
+            const overlay = document.createElement('div');
+            overlay.className = 'kg-overlay';
+            overlay.innerHTML = `<div class="kg-modal feed-modal" role="dialog" aria-modal="true"><button data-action="close">Close</button><div data-feed-host style="height: 70vh; overflow: auto"></div></div>`;
+            overlay.addEventListener('click', (e) => {
+              const t = e.target as HTMLElement;
+              if (t.dataset.action === 'close' || t === overlay) overlay.remove();
+            });
+            document.body.appendChild(overlay);
+            const inner = overlay.querySelector<HTMLElement>('[data-feed-host]');
+            if (inner) void mountFeed(inner);
+            announce('arXiv feed opened');
+          });
           announce('arXiv feed opened');
         } else if (e2.key === 's') {
           // Open the stats panel
@@ -151,20 +163,6 @@ async function openKnowledgeGraphOverlay(): Promise<void> {
   document.body.appendChild(overlay);
   const inner = overlay.querySelector<HTMLElement>('[data-kg-host]');
   if (inner) await mountKnowledgeGraph(inner);
-}
-
-async function openArxivFeedOverlay(): Promise<void> {
-  const { mountArxivFeed } = await import('../arxiv-feed');
-  const overlay = document.createElement('div');
-  overlay.className = 'kg-overlay';
-  overlay.innerHTML = `<div class="kg-modal feed-modal" role="dialog" aria-modal="true"><button data-action="close">Close</button><div data-feed-host style="height: 70vh; overflow: auto"></div></div>`;
-  overlay.addEventListener('click', (e) => {
-    const t = e.target as HTMLElement;
-    if (t.dataset.action === 'close' || t === overlay) overlay.remove();
-  });
-  document.body.appendChild(overlay);
-  const inner = overlay.querySelector<HTMLElement>('[data-feed-host]');
-  if (inner) await mountArxivFeed(inner);
 }
 
 async function openStatsOverlay(): Promise<void> {

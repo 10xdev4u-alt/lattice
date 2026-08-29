@@ -43,7 +43,7 @@ interface Cluster {
 }
 
 const COLUMN_GAP_RATIO = 0.15; // a column gap is at least 15% of the page width
-const MIN_ITEMS_PER_COLUMN = 4;
+const MIN_ITEMS_PER_COLUMN = 3;
 const LINE_BREAK_FACTOR = 1.6; // y-jumps > 1.6x median line height become line breaks
 
 export function reconstructPage(
@@ -131,9 +131,12 @@ function clusterIntoColumns(
   // If the heuristic disagreed (e.g. items spill past a column), trust
   // the actual cluster count, capped at columnCount.
   const effectiveCount = Math.min(clusters.length, columnCount);
+  // Boundaries: midpoint of the GAP between adjacent clusters' right
+  // edge and the next cluster's left edge. For the last cluster, fall
+  // back to the page width.
   const columnBoundaries: number[] = [];
-  for (let i = 0; i < effectiveCount; i++) {
-    columnBoundaries.push((clusters[i]!.max + (clusters[i + 1]?.min ?? pageWidth)) / 2);
+  for (let i = 0; i < effectiveCount - 1; i++) {
+    columnBoundaries.push((clusters[i]!.max + clusters[i + 1]!.min) / 2);
   }
   return items.reduce<TextItem[][]>(
     (cols, item) => {

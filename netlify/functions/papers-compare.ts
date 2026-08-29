@@ -55,13 +55,15 @@ export default async (req: Request, _ctx: Context): Promise<Response> => {
 
   const maxClaims = body.max_claims ?? 5;
   const store = getStore('lattice');
-  const aBlob = await store.get(`papers/${body.paper_id_a}/text.json`);
-  const bBlob = await store.get(`papers/${body.paper_id_b}/text.json`);
-  if (!aBlob || !bBlob) {
+  const [aMeta, bMeta] = await Promise.all([
+    store.getWithMetadata(`papers/${body.paper_id_a}/text.json`, { type: 'json' }),
+    store.getWithMetadata(`papers/${body.paper_id_b}/text.json`, { type: 'json' }),
+  ]);
+  if (!aMeta || !bMeta) {
     return json({ error: { code: 'NOT_FOUND', message: 'One of the papers has no extracted text.' } }, 404);
   }
-  const aPages = ((await aBlob.json()) as { pages: PageText[] }).pages;
-  const bPages = ((await bBlob.json()) as { pages: PageText[] }).pages;
+  const aPages = (aMeta.data as { pages: PageText[] }).pages;
+  const bPages = (bMeta.data as { pages: PageText[] }).pages;
   const aExcerpt = aPages.slice(0, 3).map((p) => `--- ${body.paper_id_a} page ${p.page_number} ---\n${p.text.slice(0, 1500)}`).join('\n\n');
   const bExcerpt = bPages.slice(0, 3).map((p) => `--- ${body.paper_id_b} page ${p.page_number} ---\n${p.text.slice(0, 1500)}`).join('\n\n');
 

@@ -12,7 +12,6 @@
  * the buffer-everything behavior.
  */
 
-import { getModelContext } from '../model-context-polyfill';
 import { recordStep } from './workflow-trail';
 
 interface StreamOptions {

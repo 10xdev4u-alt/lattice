@@ -11,7 +11,7 @@
  * prepended as context.
  */
 
-import { getLibrary, getPaper, type Paper } from './library';
+import { getPaper } from './library';
 
 const PAPER_ID_PATTERN = /\b(arxiv:[\w.-]+|pdf-[\w]+)\b/g;
 

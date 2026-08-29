@@ -16,7 +16,7 @@
  * Closes the polish item: the playbook runs on a new paper.
  */
 
-import { getModelContext } from '../model-context-polyfill';
+import { getModelContext } from './model-context-polyfill';
 import { recordStep } from './workflow-trail';
 import { listRoutines, type Routine, type RoutineStep } from './routines';
 
@@ -31,9 +31,9 @@ export interface RunResult {
 }
 
 export async function runRoutine(opts: RunOptions): Promise<RunResult> {
-  const routine = listRoutines().find((r) => r.id === opts.routineId);
+  const routine: Routine | undefined = listRoutines().find((r) => r.id === opts.routineId);
   if (!routine) {
-    return { steps: routine?.steps.map((s) => ({ tool: s.tool, status: 'denied', durationMs: 0 })) ?? [] };
+    return { steps: [] };
   }
   const ctx = getModelContext();
   const results: RunResult['steps'] = [];
@@ -77,12 +77,13 @@ export async function runRoutine(opts: RunOptions): Promise<RunResult> {
 async function promptForInputs(routine: Routine, paperId: string): Promise<Record<string, unknown>> {
   const overrides: Record<string, unknown> = { paper_id: paperId };
   for (const step of routine.steps) {
-    if (step.tool === 'search_library' && typeof step.args?.query === 'string') {
-      const def = step.args.query as string;
+    const args = (step.args ?? {}) as Record<string, unknown>;
+    if (step.tool === 'search_library' && typeof args.query === 'string') {
+      const def = args.query;
       const ans = window.prompt(`Routine "${routine.name}" — search query?`, def);
       if (ans !== null) overrides['query'] = ans;
-    } else if (step.tool === 'compare_claims' && typeof step.args?.topic === 'string') {
-      const def = step.args.topic as string;
+    } else if (step.tool === 'compare_claims' && typeof args.topic === 'string') {
+      const def = args.topic;
       const ans = window.prompt(`Routine "${routine.name}" — topic?`, def);
       if (ans !== null) overrides['topic'] = ans;
     }

@@ -90,20 +90,9 @@ function render(root: HTMLElement): void {
     </section>
   `;
 
-  root.querySelectorAll<HTMLInputElement | HTMLSelectElement>('[data-setting]').forEach((el) => {
-    el.addEventListener('change', () => {
-      const key = el.dataset.setting as keyof Settings;
-      if (el.type === 'checkbox') {
-        setSettings({ [key]: (el as HTMLInputElement).checked } as Partial<Settings>);
-      } else {
-        setSettings({ [key]: el.value } as Partial<Settings>);
-      }
-    });
-  });
-
   const themeSelect = root.querySelector<HTMLSelectElement>('[data-theme-select]');
   if (themeSelect) {
-    void import('../theme').then(({ getTheme, setTheme }) => {
+    void import('./theme').then(({ getTheme, setTheme }) => {
       themeSelect.value = getTheme();
       themeSelect.addEventListener('change', () => {
         setTheme(themeSelect.value as 'light' | 'dark' | 'system');

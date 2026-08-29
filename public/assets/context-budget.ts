@@ -11,7 +11,6 @@
  * Closes the polish item: a real "context budget" indicator.
  */
 
-import { getModelContext } from '../model-context-polyfill';
 
 interface BudgetState {
   chars: number;

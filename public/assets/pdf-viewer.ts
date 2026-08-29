@@ -22,7 +22,7 @@
  */
 
 import { getPaper } from './library';
-import { reconstructPage, type TextItem } from '../netlify/functions/_lib/column-detector';
+import { reconstructPage, type TextItem } from '../../netlify/functions/_lib/column-detector';
 import { listHighlights, addHighlight, type Highlight } from './highlights';
 
 interface PageRender {

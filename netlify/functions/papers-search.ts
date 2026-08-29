@@ -49,16 +49,16 @@ export default async (req: Request, _ctx: Context): Promise<Response> => {
   let totalHits = 0;
 
   for (const key of library) {
-    if (!key.endsWith('/index.json')) continue;
+    if (!key.endsWith('/text.json')) continue;
     const paperId = key.split('/')[1]!;
-    const indexBlob = await store.get(key);
-    if (!indexBlob) continue;
-    const index = (await indexBlob.json()) as SearchIndex;
+    const meta = await store.getWithMetadata(key, { type: 'json' });
+    if (!meta) continue;
+    const index = meta.data as SearchIndex;
     const hits = searchIndex(index, body.query, maxPerPaper);
 
     // For snippets we need the full text — fetch it once per paper.
-    const textBlob = await store.get(`papers/${paperId}/text.json`);
-    const pages = textBlob ? ((await textBlob.json()) as { pages: PageText[] }).pages : [];
+    const textMeta = await store.getWithMetadata(`papers/${paperId}/text.json`, { type: 'json' });
+    const pages = textMeta ? (textMeta.data as { pages: PageText[] }).pages : [];
     const pageTextByNumber = new Map<number, string>();
     for (const p of pages) pageTextByNumber.set(p.page_number, p.text);
 

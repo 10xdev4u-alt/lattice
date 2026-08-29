@@ -67,7 +67,6 @@ export default async (req: Request, _ctx: Context): Promise<Response> => {
   }
 
   await store.set(sourceKey, result.text, {
-    contentType: 'text/plain',
     metadata: { arxivId: result.metadata.arxiv_id, byteSize: String(result.byte_size) },
   });
   await store.setJSON(`papers/${id}/text.json`, {

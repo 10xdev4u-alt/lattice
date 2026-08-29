@@ -20,11 +20,16 @@ interface FilterState {
   exclude: string[];
 }
 
-const STATE: FilterState = { query: '', include: [], exclude: [] };
+interface FilterState {
+  query: string;
+  include: string[];
+  exclude: string[];
+  sort: SortKey;
+}
 
 type SortKey = 'recency' | 'title' | 'author' | 'year';
 
-const STATE: { sort: SortKey; query: string } = { sort: 'recency', query: '' };
+const STATE: FilterState = { sort: 'recency', query: '', include: [], exclude: [] };
 
 export function mountPaperList(root: HTMLElement): void {
   render(root);

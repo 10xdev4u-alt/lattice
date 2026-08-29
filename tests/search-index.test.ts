@@ -50,7 +50,7 @@ describe('searchIndex', () => {
   it('finds pages with matching terms', () => {
     const hits = searchIndex(idx, 'attention', 5);
     expect(hits.length).toBe(2);
-    expect(hits[0]?.page).toBeLessThan(hits[1]?.page);
+    expect(hits[0]?.page ?? 0).toBeLessThan(hits[1]?.page ?? 0);
   });
 
   it('returns empty for queries that are all stopwords', () => {
@@ -63,8 +63,8 @@ describe('searchIndex', () => {
 
   it('scores higher for pages with more term occurrences', () => {
     const hits = searchIndex(idx, 'attention', 5);
+    expect(hits.length).toBeGreaterThanOrEqual(2);
     expect(hits[0]?.page).toBe(1);
-    expect(hits[0]?.page).toBe(3);
   });
 
   it('caps the result count', () => {

@@ -18,15 +18,14 @@ export default async (req: Request, _ctx: Context): Promise<Response> => {
     });
   }
   const store = getStore('lattice');
-  const blob = await store.get(`sessions/${id}.json`);
-  if (!blob) {
+  const meta = await store.getWithMetadata(`sessions/${id}.json`, { type: 'json' });
+  if (!meta) {
     return new Response(JSON.stringify({ error: { code: 'NOT_FOUND', message: 'No such session.' } }), {
       status: 404,
       headers: { 'Content-Type': 'application/json' },
     });
   }
-  const session = await blob.json();
-  return new Response(JSON.stringify(session), {
+  return new Response(JSON.stringify(meta.data), {
     status: 200,
     headers: { 'Content-Type': 'application/json' },
   });

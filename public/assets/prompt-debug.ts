@@ -11,7 +11,6 @@
  * Closes the polish item: a "what's in the prompt" debug view.
  */
 
-import { buildHistoryFromChat } from './agent-loop';
 
 interface DebugMessage {
   role: string;

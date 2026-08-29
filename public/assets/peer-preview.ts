@@ -11,7 +11,7 @@
  */
 
 import { fetchArxivMetadata } from '../../netlify/functions/_lib/arxiv';
-import { challengeClaim } from './peer-reviewer';
+import { challengeClaim } from './ui/peer-reviewer';
 
 interface PreviewState {
   pending: Map<string, AbortController>;
@@ -52,7 +52,7 @@ async function showPreview(target: HTMLElement, paperId: string): Promise<void> 
     if (!controller.signal.aborted) {
       popover.textContent = `Peer-reviewer (skeptic): ${challenge}`;
     }
-  } catch (err) {
+  } catch (_err) {
     if (!controller.signal.aborted) {
       popover.textContent = `Peer-reviewer (skeptic): I can't access the server, but I'd ask: where's the citation?`;
     }

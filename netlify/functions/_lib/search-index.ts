@@ -27,7 +27,7 @@ export interface PageText {
 }
 
 export interface SearchIndexPage {
-  page: number;
+  page_number: number;
   terms: Record<string, number>;
 }
 
@@ -58,7 +58,7 @@ export function buildIndex(paperId: string, pages: PageText[]): SearchIndex {
       terms[term] = (terms[term] ?? 0) + 1;
       totalTerms++;
     }
-    indexed.push({ page: page.page_number, terms });
+    indexed.push({ page_number: page.page_number, terms });
   }
   return {
     paper_id: paperId,

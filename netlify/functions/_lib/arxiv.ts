@@ -81,7 +81,7 @@ export async function fetchArxivSource(arxivId: string): Promise<ArxivSourceResu
   };
 }
 
-function stripArxivId(input: string): string | null {
+export function stripArxivId(input: string): string | null {
   const trimmed = input.trim();
   if (!trimmed) return null;
   // Accept forms: "1706.03762", "arXiv:1706.03762", "https://arxiv.org/abs/1706.03762v3"
@@ -126,11 +126,11 @@ function decodeEntities(s: string): string {
     .replace(/&amp;/g, '&');
 }
 
-function stripLatex(src: string): string {
+export function stripLatex(src: string): string {
   return src
-    .replace(/^%.*$/gm, '') // strip line comments
+    .replace(/%[^\n]*/g, '') // strip line comments (including mid-line)
     .replace(/\\begin\{[^}]+\}[\s\S]*?\\end\{[^}]+\}/g, '') // strip environments
-    .replace(/\\\w+(\[[^\]]*\])?(\{[^}]*\})?/g, '') // strip commands
+    .replace(/\\\w+(\[[^\]]*\])?\s*/g, '') // strip commands (preserve args)
     .replace(/[{}]/g, '') // strip remaining braces
     .replace(/[ \t]+/g, ' ')
     .replace(/\n{3,}/g, '\n\n')

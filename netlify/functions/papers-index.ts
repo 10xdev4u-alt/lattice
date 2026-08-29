@@ -20,26 +20,19 @@ export default async (_req: Request, _ctx: Context): Promise<Response> => {
   const store = getStore('lattice');
   const papers: Array<{ id: string; title?: string; year?: number; doi?: string; arxiv_id?: string }> = [];
   try {
-    for await (const blob of store.list({ prefix: 'papers/' })) {
+    const list = await store.list({ prefix: 'papers/' });
+    for (const blob of list.blobs) {
       const id = blob.key.split('/')[1];
       if (!id) continue;
-      // Only consider paper ids, not text/index/source files
       if (blob.key.includes('/')) continue;
-      const meta = await store.get(`papers/${id}/meta.json`);
-      let entry: { id: string; title?: string; year?: number; doi?: string; arxiv_id?: string } = { id };
-      if (meta) {
-        try {
-          const parsed = (await meta.json()) as Record<string, unknown>;
-          entry = {
-            id,
-            title: typeof parsed.title === 'string' ? parsed.title : undefined,
-            year: typeof parsed.year === 'number' ? parsed.year : undefined,
-            doi: typeof parsed.doi === 'string' ? parsed.doi : undefined,
-            arxiv_id: typeof parsed.arxiv_id === 'string' ? parsed.arxiv_id : undefined,
-          };
-        } catch {
-          // ignore parse errors
-        }
+      const meta = await store.getWithMetadata(`papers/${id}/meta.json`, { type: 'json' });
+      const entry: { id: string; title?: string; year?: number; doi?: string; arxiv_id?: string } = { id };
+      if (meta && meta.data) {
+        const parsed = meta.data as Record<string, unknown>;
+        entry.title = typeof parsed.title === 'string' ? parsed.title : undefined;
+        entry.year = typeof parsed.year === 'number' ? parsed.year : undefined;
+        entry.doi = typeof parsed.doi === 'string' ? parsed.doi : undefined;
+        entry.arxiv_id = typeof parsed.arxiv_id === 'string' ? parsed.arxiv_id : undefined;
       }
       papers.push(entry);
     }

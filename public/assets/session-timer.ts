@@ -10,7 +10,9 @@ const STORAGE_KEY = 'lattice.session-timer.v1';
 let startedAt = Date.now();
 let paused = false;
 let totalAccumulatedMs = 0;
-let interval: ReturnType<typeof setInterval> | null = null;
+// interval kept in scope so tests can clear it. Not used in the
+// current render loop, which uses requestAnimationFrame-style ticks.
+const _interval: ReturnType<typeof setInterval> | null = null;
 
 interface State {
   accumulatedMs: number;
