@@ -248,6 +248,8 @@ function showHelp(_root: HTMLElement): void {
         <dd>Open the session hash (copy a short URL for this session)</dd>
         <dt><kbd>g</kbd> <kbd>p</kbd></dt>
         <dd>Open the prompt diff (last 2 submissions)</dd>
+        <dt><kbd>g</kbd> <kbd>d</kbd></dt>
+        <dd>Run the routine detector (find broken routines)</dd>
         <dt><kbd>?</kbd></dt>
         <dd>Open this help</dd>
         <dt><kbd>Esc</kbd></dt>
