@@ -6,23 +6,27 @@
  * short-window and long-window rules.
  */
 
-import { describe, expect, it, beforeEach } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { checkRateLimit } from '../netlify/functions/_lib/rate-limit';
 
 describe('rate limiter', () => {
   it('allows up to 60 calls per minute', () => {
     for (let i = 0; i < 60; i++) {
-      const r = checkRateLimit(`sess_${i}_allow`);
+      const r = checkRateLimit('sess_one');
       expect(r.ok).toBe(true);
     }
-    const r = checkRateLimit('sess_overflow');
+    const r = checkRateLimit('sess_one');
     expect(r.ok).toBe(false);
     expect(r.retryAfterSeconds).toBe(60);
   });
 
   it('uses independent sessions', () => {
+    // Two different sessions can each get their full quota.
     for (let i = 0; i < 60; i++) checkRateLimit('sess_a');
     expect(checkRateLimit('sess_a').ok).toBe(false);
+    // sess_b starts fresh; its first call must succeed because its
+    // bucket is empty even though the global Map still has sess_a's
+    // history.
     expect(checkRateLimit('sess_b').ok).toBe(true);
   });
 });

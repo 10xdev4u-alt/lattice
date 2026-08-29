@@ -56,7 +56,7 @@ export const openPaper: ToolDefinition = {
 
     const ctx = getModelContext();
     try {
-      await registerPerPaperTools(paper, ctx, opts.signal);
+      await registerPerPaperTools(paper.id, ctx, opts.signal);
     } catch (err) {
       return toolError(
         'REGISTRATION_FAILED',
@@ -87,5 +87,5 @@ export const openPaper: ToolDefinition = {
         },
       ],
     };
-  },
-};
+  }
+}

@@ -75,7 +75,7 @@ function cslToRis(csl: Record<string, unknown>[]): string {
 
 function cslToMarkdown(csl: Record<string, unknown>[], style: 'apa' | 'mla'): string {
   return csl
-    .map((entry, i) => {
+    .map((entry, _i) => {
       const authors = ((entry.author as any[]) ?? [])
         .map((a) => `${a.family}${a.given ? ', ' + a.given.charAt(0) + '.' : ''}`)
         .join(', ');

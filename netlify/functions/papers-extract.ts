@@ -46,11 +46,11 @@ export default async (req: Request, _ctx: Context): Promise<Response> => {
   const maxQuotes = body.max_quotes ?? 2;
   const stance = body.stance ?? 'any';
   const store = getStore('lattice');
-  const textBlob = await store.get(`papers/${body.paper_id}/text.json`);
-  if (!textBlob) {
+  const textMeta = await store.getWithMetadata(`papers/${body.paper_id}/text.json`, { type: 'json' });
+  if (!textMeta) {
     return json({ error: { code: 'NOT_FOUND', message: 'No text.json for that paper.' } }, 404);
   }
-  const pages = ((await textBlob.json()) as { pages: PageText[] }).pages;
+  const pages = (textMeta.data as { pages: PageText[] }).pages;
   if (pages.length === 0) {
     return json({ error: { code: 'NO_TEXT', message: 'No extractable text.' } }, 422);
   }

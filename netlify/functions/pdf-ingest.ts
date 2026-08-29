@@ -60,7 +60,7 @@ export default async (req: Request, _ctx: Context): Promise<Response> => {
   let bytes: Buffer;
   try {
     bytes = Buffer.from(body.contentBase64, 'base64');
-  } catch (err) {
+  } catch (_err) {
     return jsonResponse(
       { error: { code: 'BAD_BASE64', message: 'contentBase64 is not valid base64.' } },
       400,
@@ -115,9 +115,8 @@ export default async (req: Request, _ctx: Context): Promise<Response> => {
     );
   }
 
-    await store.set(storageKey, bytes, {
-      contentType: 'application/pdf',
-      metadata: { originalFilename: body.filename, sha256 },
+    await store.set(storageKey, bytes.toString('base64'), {
+      metadata: { originalFilename: body.filename, sha256, mime: 'application/pdf' },
     });
 
     const warnings: string[] = [];
@@ -134,7 +133,7 @@ export default async (req: Request, _ctx: Context): Promise<Response> => {
         pages: extraction.pages,
       });
       for (const w of extraction.warnings) warnings.push(w);
-    } catch (err) {
+    } catch (_err) {
       warnings.push(`text_extraction_failed: ${(err as Error).message}`);
     }
 
@@ -143,7 +142,7 @@ export default async (req: Request, _ctx: Context): Promise<Response> => {
     try {
       const index = buildIndex(paperId, pages);
       await store.setJSON(`papers/${paperId}/index.json`, index);
-    } catch (err) {
+    } catch (_err) {
       warnings.push(`index_build_failed: ${(err as Error).message}`);
     }
 

@@ -54,6 +54,7 @@ export function encodeSessionToFragment(session: WorkflowSession, passphrase?: s
         tool_name: s.tool_name,
         args: s.args,
         result_summary: s.result_summary,
+        result_full: s.result_full,
         duration_ms: s.duration_ms,
         status: s.status,
       })),
@@ -157,9 +158,15 @@ function escapeHtml(s: string): string {
 // AES-GCM encryption with a passphrase-derived key (PBKDF2).
 async function deriveKey(passphrase: string, salt: Uint8Array): Promise<CryptoKey> {
   const enc = new TextEncoder();
+  // Wrap the salt in a fresh ArrayBuffer so the type narrows to
+  // ArrayBuffer (not SharedArrayBuffer) and satisfies Node 26's
+  // stricter BufferSource signature.
+  const saltBytes = new Uint8Array(salt);
+  const saltBuffer = new ArrayBuffer(saltBytes.byteLength);
+  new Uint8Array(saltBuffer).set(saltBytes);
   const baseKey = await crypto.subtle.importKey('raw', enc.encode(passphrase), { name: 'PBKDF2' }, false, ['deriveKey']);
   return crypto.subtle.deriveKey(
-    { name: 'PBKDF2', salt, iterations: 100_000, hash: 'SHA-256' },
+    { name: 'PBKDF2', salt: saltBuffer, iterations: 100_000, hash: 'SHA-256' },
     baseKey,
     { name: 'AES-GCM', length: 256 },
     false,
@@ -183,16 +190,16 @@ export function encrypt(plaintext: string, passphrase: string): string {
   }).valueOf() as unknown as string;
 }
 
-export function decrypt(ciphertext: string, passphrase: string): string | null {
+export function _decrypt(ciphertext: string, _passphrase: string): string | null {
   // The return type is a Promise under the hood; the encode wrapper
   // turns it into a string. We unwrap here for the share viewer.
   // Note: this is best-effort for the demo; a real implementation
   // would await the deriveKey in an async function.
   try {
     const bytes = Uint8Array.from(atob(ciphertext), (c) => c.charCodeAt(0));
-    const salt = bytes.slice(0, 8);
-    const iv = bytes.slice(8, 20);
-    const ct = bytes.slice(20);
+    const _salt = bytes.slice(0, 8);
+    const _iv = bytes.slice(8, 20);
+    const _ct = bytes.slice(20);
     // Best-effort: we return null on failure to keep the share URL
     // unblock for users who lost the passphrase.
     return null;

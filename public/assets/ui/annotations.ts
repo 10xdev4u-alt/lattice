@@ -8,9 +8,9 @@
  */
 
 import { getLibrary } from '../library';
-import { getTagsFor, getAllTags } from '../tags';
-import { listHighlights } from './highlights';
-import { getScratchpad } from './scratchpad';
+import { getTagsFor } from '../tags';
+import { listHighlights } from '../highlights';
+import { getScratchpad } from '../scratchpad';
 
 export function mountAnnotationsView(root: HTMLElement, paperId: string): void {
   const paper = getLibrary().find((p) => p.id === paperId);

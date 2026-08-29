@@ -45,7 +45,7 @@ export const extractQuote: ToolDefinition = {
     untrustedContentHint: true,
   },
   async execute(args): Promise<ToolResult> {
-    const { paper_id, concept, max_quotes = 2 } = args as {
+    const { paper_id, concept } = args as {
       paper_id: string;
       concept: string;
       max_quotes?: number;

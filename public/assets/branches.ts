@@ -11,8 +11,6 @@
 
 import { getSession, resetSession } from './workflow-trail';
 import { recordStep } from './workflow-trail';
-import type { WorkflowStep } from './workflow-trail';
-
 interface Branch {
   id: string;
   name: string;

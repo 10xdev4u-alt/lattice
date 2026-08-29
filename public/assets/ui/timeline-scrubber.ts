@@ -10,7 +10,7 @@
  * Closes the polish item: time-travel over the audit log.
  */
 
-import { getSession, type WorkflowStep } from '../workflow-trail';
+import { getSession } from '../workflow-trail';
 
 export function mountTimelineScrubber(root: HTMLElement): void {
   const session = getSession();

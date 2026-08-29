@@ -8,10 +8,9 @@
  * Closes #37.
  */
 
-import { mountPdfCanvas } from './pdf-canvas';
 import { loadSampleLibrary } from '../sample-library';
 import { addPaper } from '../library';
-import { fetchArxivSource } from '../../netlify/functions/_lib/arxiv';
+import { fetchArxivSource } from '../../../netlify/functions/_lib/arxiv';
 
 export function mountEmptyState(root: HTMLElement): void {
   root.innerHTML = `

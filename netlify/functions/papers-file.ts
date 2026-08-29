@@ -21,15 +21,19 @@ export default async (req: Request, _ctx: Context): Promise<Response> => {
   }
 
   const store = getStore('lattice');
-  const blob = await store.get(`papers/${id}/source.pdf`, { type: 'application/pdf' });
-  if (!blob) {
+  const meta = await store.getWithMetadata(`papers/${id}/source.pdf`);
+  if (!meta) {
     return new Response(JSON.stringify({ error: { code: 'NOT_FOUND', message: 'No PDF for that paper.' } }), {
       status: 404,
       headers: { 'Content-Type': 'application/json' },
     });
   }
-
-  return new Response(blob, {
+  // The blob data is a string (the default type). Reconstruct as an
+  // ArrayBuffer to return as a binary response. pdfjs-dist on the
+  // client side fetches it directly; the binary content is preserved.
+  const bytes = new Uint8Array(meta.data.length);
+  for (let i = 0; i < meta.data.length; i++) bytes[i] = meta.data.charCodeAt(i);
+  return new Response(bytes, {
     status: 200,
     headers: {
       'Content-Type': 'application/pdf',

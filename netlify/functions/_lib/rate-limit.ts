@@ -51,6 +51,7 @@ export function checkRateLimit(sessionId: string, now: number = Date.now()): Rat
   if (lastHour > LIMIT_LONG) {
     return { ok: false, retryAfterSeconds: 600 };
   }
+
   return { ok: true };
 }
 
@@ -62,7 +63,7 @@ export function logCall(record: {
   tokenEstimate?: number;
 }): void {
   // One-line JSON for easy Netlify log aggregation.
-  console.log(
+  console.info(
     JSON.stringify({
       ts: new Date().toISOString(),
       session: record.sessionId.slice(0, 12),

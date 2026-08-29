@@ -9,15 +9,15 @@
  */
 
 import { getLibrary } from '../library';
-import { diffPages, diffStats, mountPaperDiff, type DiffOp } from './paper-diff';
-import { getStore } from '../netlify/functions/_lib/arxiv-shim';
+import { diffPages, diffStats, mountPaperDiff } from './paper-diff';
+import { getStore } from '../../../netlify/functions/_lib/arxiv-shim';
 
 async function loadText(paperId: string): Promise<Array<{ page_number: number; text: string }> | null> {
   try {
     const store = getStore('lattice');
-    const blob = await store.get(`papers/${paperId}/text.json`);
-    if (!blob) return null;
-    return (await blob.json()) as Array<{ page_number: number; text: string }>;
+    const meta = await store.getWithMetadata(`papers/${paperId}/text.json`, { type: 'json' });
+    if (!meta) return null;
+    return meta.data as Array<{ page_number: number; text: string }>;
   } catch {
     return null;
   }

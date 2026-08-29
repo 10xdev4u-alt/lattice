@@ -21,9 +21,9 @@
  * add a sibling that sends the tool list.
  */
 
-import { getModelContext } from '../model-context-polyfill';
-import { recordStep } from '../workflow-trail';
-import { getSettings } from '../settings';
+import { getModelContext } from './model-context-polyfill';
+import { recordStep } from './workflow-trail';
+import { getSettings } from './settings';
 
 interface ToolDescriptor {
   name: string;

@@ -227,6 +227,56 @@ function downloadFile(content: string, filename: string, mime: string): void {
   setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
+function appendBranchRow(host: HTMLElement, branch: { id: string; name: string; createdAt: string }): void {
+  const list = host.querySelector<HTMLElement>('[data-branch-list]') ?? host;
+  const row = document.createElement('div');
+  row.className = 'branch-row';
+  row.innerHTML = `
+    <span>${escapeHtml(branch.name)}</span>
+    <time>${escapeHtml(new Date(branch.createdAt).toLocaleTimeString())}</time>
+    <button data-action="view">View</button>
+  `;
+  list.appendChild(row);
+  row.querySelector('[data-action="view"]')?.addEventListener('click', () => {
+    window.alert(`Branch "${branch.name}" created. Tool calls now go to this branch. Export the trail to share.`);
+  });
+}
+
+const STEP_INDEX = new Map<number, { tool_name: string; result_summary: string; args: unknown }>();
+
+function buildClaimFromStep(step: { tool_name: string; result_summary: string; args: unknown }): string {
+  const args = (step.args ?? {}) as Record<string, unknown>;
+  if (typeof args.query === 'string') return `Search for "${args.query}" returned ${step.result_summary.slice(0, 200)}`;
+  if (typeof args.claim === 'string') return `The user claims: "${args.claim}"`;
+  if (typeof args.paper_id === 'string') return `${step.tool_name} on ${args.paper_id}: ${step.result_summary.slice(0, 200)}`;
+  return `${step.tool_name}: ${step.result_summary.slice(0, 200)}`;
+}
+
+function showSkepticPopover(target: HTMLElement, claim: string): void {
+  document.querySelectorAll('.skeptic-popover').forEach((el) => el.remove());
+  const pop = document.createElement('div');
+  pop.className = 'skeptic-popover';
+  pop.setAttribute('role', 'status');
+  pop.setAttribute('aria-live', 'polite');
+  pop.textContent = 'Skeptic: thinking…';
+  document.body.appendChild(pop);
+  const rect = target.getBoundingClientRect();
+  pop.style.position = 'absolute';
+  pop.style.left = `${rect.left + window.scrollX}px`;
+  pop.style.top = `${rect.bottom + window.scrollY + 4}px`;
+  pop.style.zIndex = '100';
+  pop.style.maxWidth = '420px';
+  void import('../ui/peer-reviewer').then(async ({ challengeClaim }) => {
+    try {
+      const challenge = await challengeClaim(claim);
+      pop.textContent = `Skeptic: ${challenge}`;
+    } catch (err) {
+      pop.textContent = `Skeptic: unavailable (${(err as Error).message})`;
+    }
+  });
+  setTimeout(() => pop.remove(), 8000);
+}
+
 function escapeHtml(s: string): string {
   return s
     .replace(/&/g, '&amp;')

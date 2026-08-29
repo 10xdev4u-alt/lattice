@@ -9,7 +9,6 @@
  * Closes the polish item: multi-paper workflow UI.
  */
 
-import { getModelContext } from '../model-context-polyfill';
 import { getPaper } from '../library';
 
 interface OpenPaper {

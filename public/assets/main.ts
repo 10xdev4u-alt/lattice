@@ -16,7 +16,8 @@ async function main(): Promise<void> {
 
   const statusEl = document.getElementById('webmcp-status');
   if (statusEl) {
-    const hasWebMCP = 'modelContext' in document && 'registerTool' in document.modelContext;
+    const ctx = document.modelContext;
+    const hasWebMCP = !!ctx && 'registerTool' in ctx;
     statusEl.textContent = hasWebMCP ? 'WebMCP ready' : 'WebMCP not detected';
     statusEl.dataset.state = hasWebMCP ? 'ok' : 'warn';
   }
@@ -27,7 +28,9 @@ async function main(): Promise<void> {
     console.error('Tool registration failed', err);
   }
 
-  mountWorkspace(document.getElementById('app-main'));
+  mountWorkspace(document.getElementById('app-main') as HTMLElement | null);
+
+  // Report-a-problem button: copy a diagnostic bundle to the clipboard.
 
   // Trail watcher: badges the Log tab with the count of new steps.
   void import('./trail-watcher').then(({ initTrailWatcher }) => initTrailWatcher());
@@ -49,7 +52,7 @@ async function main(): Promise<void> {
 
   // Context budget bar: estimated tokens used vs window.
   void import('./context-budget').then(({ mountContextBudgetBar }) => {
-    const rail = document.querySelector('.agent-rail-tab[data-tab-content="chat"]');
+    const rail = document.querySelector('.agent-rail-tab[data-tab-content="chat"]') as HTMLElement | null;
     if (rail) mountContextBudgetBar(rail);
   });
 

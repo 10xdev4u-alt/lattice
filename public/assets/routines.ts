@@ -13,7 +13,7 @@
  * playbooks the user can read or share.
  */
 
-import { getSession, type WorkflowStep } from './workflow-trail';
+import { getSession } from './workflow-trail';
 
 export interface RoutineStep {
   tool: string;

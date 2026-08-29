@@ -135,6 +135,16 @@ export function installModelContextPolyfill(): void {
   }
 }
 
-export function getModelContext(): ModelContextPolyfill | (typeof document)['modelContext'] {
-  return (document as any).modelContext as ModelContextPolyfill;
+/** Returns the active modelContext, installing the polyfill on demand. */
+export function getModelContext(): ModelContextApi {
+  if (!document.modelContext) installModelContextPolyfill();
+  return document.modelContext as unknown as ModelContextApi;
+}
+
+export interface ModelContextApi {
+  registerTool(tool: unknown, options?: { signal?: AbortSignal }): Promise<void>;
+  getTools(options?: { fromOrigins?: string[] }): Promise<unknown[]>;
+  executeTool(tool: unknown, argsJson: string, options?: { signal?: AbortSignal }): Promise<unknown>;
+  addEventListener(type: 'toolchange', listener: (event: Event) => void): void;
+  removeEventListener(type: 'toolchange', listener: (event: Event) => void): void;
 }

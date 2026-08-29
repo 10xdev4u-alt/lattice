@@ -14,7 +14,6 @@ import { getSession, recordStep } from '../workflow-trail';
 import { mountWorkflowTrail } from './workflow-trail';
 import { setPeerReviewerActive, isPeerReviewerActive } from './peer-reviewer';
 import { decorateCitations } from '../citation-chips';
-import { runAgentLoop, buildHistoryFromChat, type AgentLoopResult } from '../agent-loop';
 import { inferConfidence, renderConfidenceDot } from '../confidence';
 import { recordFeedback, getFeedbackForMessage } from '../feedback';
 import { streamCompletePrompt } from '../llm-stream';
@@ -80,7 +79,6 @@ async function handleSubmit(root: HTMLElement): Promise<void> {
   setBusy(root, true);
   try {
     const chat = root.querySelector<HTMLDivElement>('[data-agent-chat]');
-    const history = chat ? buildHistoryFromChat(chat) : [];
     const controller = new AbortController();
     // Stream the answer directly into a new agent message so the user
     // sees tokens land in real time.
@@ -211,7 +209,6 @@ function appendMessage(root: HTMLElement, role: 'user' | 'agent', text: string, 
   if (empty) empty.remove();
   const div = document.createElement('div');
   div.className = `agent-message agent-message-${role}${transient ? ' agent-message-thinking' : ''}`;
-  const confidence = role === 'agent' && !transient ? renderConfidenceDot(inferConfidence(text)) : '';
   div.innerHTML = `<span class="agent-message-role">${role === 'user' ? 'You' : 'Agent'}</span><p data-stream-target></p>`;
   if (role === 'agent' && !transient) {
     const actions = document.createElement('div');
@@ -283,7 +280,9 @@ function appendMessage(root: HTMLElement, role: 'user' | 'agent', text: string, 
       const input = root.querySelector<HTMLInputElement>('[data-agent-input]');
       if (!input) return;
       input.value = `I want to challenge this claim you made: "${claim.slice(0, 200)}". Defend it with citations, or retract it.`;
-      form?.dispatchEvent(new Event('submit', { cancelable: true }));
+      // Trigger the same form-submit handler we wired up in render().
+      const formEl = input.closest('form');
+      formEl?.dispatchEvent(new Event('submit', { cancelable: true }));
     });
   }
 }
@@ -334,7 +333,9 @@ async function loadTools(): Promise<RegisteredTool[]> {
   }
 }
 
-function toolCount(): number {
+// toolCount: retained for the Live Tool Array badge; deliberately
+// not currently used inside this file but exported for future tabs.
+export function toolCount(): number {
   return 14;
 }
 

@@ -102,7 +102,7 @@ export function toMarkdownAppendix(session: WorkflowSession): string {
     '## Session',
     '',
     `- Session ID: \`${session.session_id}\``,
-    `- Steps: ${session.steps.length}`,
+    `- Steps: ${session.steps.length} step(s)`,
     '',
     '## Steps',
     '',

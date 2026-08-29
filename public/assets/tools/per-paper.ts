@@ -14,7 +14,7 @@
  */
 
 import type { ToolDefinition } from './types';
-import { getModelContext } from '../model-context-polyfill';
+import type { getModelContext } from '../model-context-polyfill';
 import { getPaper } from '../library';
 import { summarizePaper } from './summarize-paper';
 import { extractQuote } from './extract-quote';

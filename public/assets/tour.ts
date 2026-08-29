@@ -9,6 +9,8 @@
  */
 
 import { loadSampleLibrary } from './sample-library';
+import { getModelContext } from './model-context-polyfill';
+import { setPeerReviewerActive } from './ui/peer-reviewer';
 
 interface TourStep {
   caption: string;
@@ -29,7 +31,6 @@ const TOUR_STEPS: TourStep[] = [
     caption: 'Opening "Attention Is All You Need" — a per-paper toolset registers automatically.',
     durationMs: 3000,
     apply: async () => {
-      const { getModelContext } = await import('../model-context-polyfill');
       const ctx = getModelContext();
       await ctx.executeTool(
         { name: 'open_paper' } as any,
@@ -41,7 +42,6 @@ const TOUR_STEPS: TourStep[] = [
     caption: 'Searching the library for "self-attention" — note the Live Tool Array in the right rail.',
     durationMs: 3500,
     apply: async () => {
-      const { getModelContext } = await import('../model-context-polyfill');
       const ctx = getModelContext();
       await ctx.executeTool(
         { name: 'search_library' } as any,
@@ -52,8 +52,7 @@ const TOUR_STEPS: TourStep[] = [
   {
     caption: 'The peer-reviewer persona challenges every claim. Click "Invite peer-reviewer" to see it live.',
     durationMs: 2500,
-    apply: async () => {
-      const { setPeerReviewerActive } = await import('./peer-reviewer');
+    apply: () => {
       setPeerReviewerActive(true);
     },
   },
