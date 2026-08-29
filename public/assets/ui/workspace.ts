@@ -246,6 +246,8 @@ function showHelp(_root: HTMLElement): void {
         <dd>Open the branch diff</dd>
         <dt><kbd>g</kbd> <kbd>h</kbd></dt>
         <dd>Open the session hash (copy a short URL for this session)</dd>
+        <dt><kbd>g</kbd> <kbd>p</kbd></dt>
+        <dd>Open the prompt diff (last 2 submissions)</dd>
         <dt><kbd>?</kbd></dt>
         <dd>Open this help</dd>
         <dt><kbd>Esc</kbd></dt>
