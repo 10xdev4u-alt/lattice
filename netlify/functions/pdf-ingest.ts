@@ -134,7 +134,8 @@ export default async (req: Request, _ctx: Context): Promise<Response> => {
       });
       for (const w of extraction.warnings) warnings.push(w);
     } catch (_err) {
-      warnings.push(`text_extraction_failed: ${(err as Error).message}`);
+      void _err;
+      warnings.push(`text_extraction_failed`);
     }
 
     // Auto-build the search index on ingest so the first
@@ -143,7 +144,8 @@ export default async (req: Request, _ctx: Context): Promise<Response> => {
       const index = buildIndex(paperId, pages);
       await store.setJSON(`papers/${paperId}/index.json`, index);
     } catch (_err) {
-      warnings.push(`index_build_failed: ${(err as Error).message}`);
+      void _err;
+      warnings.push(`index_build_failed`);
     }
 
   const response: IngestResponse = {

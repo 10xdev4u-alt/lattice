@@ -10,9 +10,9 @@ const STORAGE_KEY = 'lattice.session-timer.v1';
 let startedAt = Date.now();
 let paused = false;
 let totalAccumulatedMs = 0;
-// interval kept in scope so tests can clear it. Not used in the
+// _interval kept in scope so tests can clear it. Not used in the
 // current render loop, which uses requestAnimationFrame-style ticks.
-const _interval: ReturnType<typeof setInterval> | null = null;
+let _interval: ReturnType<typeof setInterval> | null = null;
 
 interface State {
   accumulatedMs: number;
@@ -70,6 +70,6 @@ export function mountSessionTimer(root: HTMLElement): void {
     });
   }
   tick();
-  interval = setInterval(tick, 1000);
+  _interval = setInterval(tick, 1000);
   window.addEventListener('beforeunload', persist);
 }

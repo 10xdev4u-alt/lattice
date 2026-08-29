@@ -1,0 +1,27 @@
+/* Branch diff */
+.branch-diff-picker { padding: var(--sp-3); }
+.branch-diff-picker h2 { font-size: var(--text-md); margin: 0 0 var(--sp-3); }
+.branch-diff-controls { display: flex; gap: var(--sp-2); align-items: center; flex-wrap: wrap; margin-bottom: var(--sp-3); }
+.branch-diff-controls label { display: flex; align-items: center; gap: var(--sp-1); font-size: var(--text-sm); color: var(--fg-muted); }
+.branch-diff-controls select {
+  font: inherit;
+  background: var(--bg);
+  color: var(--fg);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  padding: var(--sp-1) var(--sp-2);
+  max-width: 240px;
+}
+.branch-diff-controls button {
+  font-size: var(--text-xs);
+  padding: var(--sp-1) var(--sp-3);
+  background: var(--accent);
+  color: white;
+  border: none;
+  border-radius: var(--r-sm);
+  cursor: pointer;
+}
+.branch-diff-summary { font-size: var(--text-sm); color: var(--fg-muted); line-height: 1.5; margin-bottom: var(--sp-3); }
+.branch-diff-table { width: 100%; border-collapse: collapse; font-size: var(--text-sm); }
+.branch-diff-table th, .branch-diff-table td { padding: var(--sp-2); text-align: left; border-bottom: 1px solid var(--border); }
+.branch-diff-table th { color: var(--fg-muted); font-weight: 500; }

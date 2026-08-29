@@ -71,7 +71,7 @@ export function encodeSessionToFragment(session: WorkflowSession, passphrase?: s
 export function decodeSessionFromFragment(fragment: string, passphrase?: string): SharedPayload | null {
   try {
     if (passphrase) {
-      const json = decrypt(fragment, passphrase);
+      const json = _decrypt(fragment, passphrase);
       if (!json) return null;
       return JSON.parse(json) as SharedPayload;
     }
