@@ -132,6 +132,18 @@ function installKeyboardShortcuts(root: HTMLElement): void {
           // Open the branch diff
           void openBranchDiffOverlay();
           announce('Branch diff opened');
+        } else if (e2.key === 'h') {
+          // Open the session hash overlay
+          void import('../session-hash').then(({ mountSessionHashOverlay }) => {
+            mountSessionHashOverlay();
+            announce('Session hash opened');
+          });
+        } else if (e2.key === 'h') {
+          // Open the session hash overlay
+          void import('../session-hash').then(({ mountSessionHashOverlay }) => {
+            mountSessionHashOverlay();
+            announce('Session hash opened');
+          });
         }
       };
       document.addEventListener('keydown', onNext, { once: true });
@@ -232,6 +244,8 @@ function showHelp(_root: HTMLElement): void {
         <dd>Open the scratchpad</dd>
         <dt><kbd>g</kbd> <kbd>b</kbd></dt>
         <dd>Open the branch diff</dd>
+        <dt><kbd>g</kbd> <kbd>h</kbd></dt>
+        <dd>Open the session hash (copy a short URL for this session)</dd>
         <dt><kbd>?</kbd></dt>
         <dd>Open this help</dd>
         <dt><kbd>Esc</kbd></dt>
