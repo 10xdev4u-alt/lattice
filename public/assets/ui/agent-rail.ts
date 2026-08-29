@@ -101,6 +101,9 @@ async function handleSubmit(root: HTMLElement): Promise<void> {
       if (target) target.textContent = `Error: ${(err as Error).message}`;
     } finally {
       setBusy(root, false);
+      void import('../prompt-diff').then(({ recordPrompt }) => {
+        recordPrompt(text, streamed, undefined);
+      });
     }
   } catch (err) {
     setBusy(root, false);
