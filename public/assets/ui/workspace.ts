@@ -178,7 +178,7 @@ async function openKnowledgeGraphOverlay(): Promise<void> {
 }
 
 async function openStatsOverlay(): Promise<void> {
-  const { mountStatsPanel } = await import('../stats');
+  const { mountStatsPageOverlay } = await import('./stats-page');
   const overlay = document.createElement('div');
   overlay.className = 'kg-overlay';
   overlay.innerHTML = `<div class="kg-modal stats-modal" role="dialog" aria-modal="true"><button data-action="close">Close</button><div data-stats-host></div></div>`;
@@ -188,7 +188,7 @@ async function openStatsOverlay(): Promise<void> {
   });
   document.body.appendChild(overlay);
   const inner = overlay.querySelector<HTMLElement>('[data-stats-host]');
-  if (inner) mountStatsPanel(inner);
+  if (inner) mountStatsPageOverlay();
 }
 
 async function openScratchpadOverlay(): Promise<void> {
