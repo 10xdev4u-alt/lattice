@@ -38,6 +38,12 @@ async function main(): Promise<void> {
   // What-just-changed toast: surfaces the last 2 steps on each new tool call.
   void import('./what-just-changed').then(({ mountWhatJustChanged }) => mountWhatJustChanged());
 
+  // Session timestamp footer: bottom-right of the app.
+  void import('./session-timestamp').then(({ mountSessionTimestamp, refreshSessionTimestamp }) => {
+    mountSessionTimestamp();
+    setInterval(refreshSessionTimestamp, 60_000);
+  });
+
   // Session timer pill: shows how long the user has been on the page.
   void import('./session-timer').then(({ mountSessionTimer }) => {
     const host = document.getElementById('session-timer-host');
