@@ -119,24 +119,39 @@ function render(root: HTMLElement): void {
     if (arxivInput) arxivInput.disabled = true;
     try {
       const { addPaper } = await import('../library');
-      const { fetchArxivSource } = await import('../../../netlify/functions/_lib/arxiv');
-      const result = await fetchArxivSource(id);
-      if (!result) {
-        window.alert(`Could not fetch ${id}. Check the ID and try again.`);
+      // The full fetch (metadata + LaTeX source) needs node:zlib
+      // server-side, so the client calls the Function instead.
+      const res = await fetch('/api/papers/from-arxiv', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ arxiv_id: id }),
+      });
+      const data = (await res.json()) as {
+        paper?: {
+          id: string;
+          title: string;
+          abstract: string;
+          authors: Array<{ family: string; given: string }>;
+          year?: number;
+          doi?: string;
+          arxiv_id: string;
+          source: 'arxiv';
+        };
+        error?: { code: string; message: string };
+      };
+      if (!res.ok || !data.paper) {
+        window.alert(data.error?.message ?? `Could not fetch ${id}. Check the ID and try again.`);
         return;
       }
+      const paper = data.paper;
       addPaper({
-        id: `arxiv-${result.metadata.arxiv_id.replace(/[^\w]/g, '')}`,
-        title: result.metadata.title,
-        authors: result.metadata.authors.map((name) => {
-          const parts = name.split(/\s+/);
-          const family = parts.pop() ?? name;
-          return { family, given: parts.join(' ') };
-        }),
-        year: result.metadata.published ? Number(result.metadata.published.slice(0, 4)) : undefined,
-        doi: result.metadata.doi ?? undefined,
-        arxivId: result.metadata.arxiv_id,
-        abstract: result.metadata.summary,
+        id: paper.id,
+        title: paper.title,
+        authors: paper.authors,
+        year: paper.year,
+        doi: paper.doi,
+        arxivId: paper.arxiv_id,
+        abstract: paper.abstract,
         source: 'arxiv',
         addedAt: new Date().toISOString(),
       });
