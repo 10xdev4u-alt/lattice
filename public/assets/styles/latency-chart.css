@@ -1,0 +1,21 @@
+/* Tool-call latency chart */
+.latency-chart {
+  display: flex;
+  align-items: flex-end;
+  gap: 2px;
+  height: 100px;
+  padding: var(--sp-2) 0;
+  border-bottom: 1px solid var(--border);
+  margin: var(--sp-2) 0;
+}
+.latency-col {
+  flex: 1;
+  min-width: 2px;
+  border-radius: 1px 1px 0 0;
+}
+.latency-legend { display: flex; gap: var(--sp-3); font-size: var(--text-xs); color: var(--fg-muted); flex-wrap: wrap; }
+.latency-legend .dot { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 4px; vertical-align: middle; }
+.dot-ok { background: var(--ok); }
+.dot-err { background: var(--err); }
+.dot-warn { background: var(--warn); }
+.latency-meta { margin-left: auto; font-family: var(--font-mono); }

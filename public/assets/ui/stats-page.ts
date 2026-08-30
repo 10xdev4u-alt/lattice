@@ -56,12 +56,23 @@ export function mountStatsPageOverlay(): void {
         <p>summary: ${upCount} 👍 / ${downCount} 👎${approval !== null ? ` (${approval}% approval)` : ''}</p>
         <button data-action="drilldown">Drill into feedback</button>
         <button data-action="peer-review">Peer review</button>
+        <button data-action="latency">Latency chart</button>
       </section>
     </div>
   `;
   overlay.addEventListener('click', (e) => {
     const t = e.target as HTMLElement;
     if (t.dataset.action === 'close' || t === overlay) overlay.remove();
+    if (t.dataset.action === 'latency') {
+      const latencyHost = overlay.querySelector<HTMLElement>('[data-stats-host]') ?? overlay.querySelector('.stats-modal');
+      if (latencyHost) {
+        void import('./latency-chart').then(({ mountLatencyChart }) => {
+          const el = document.createElement('div');
+          latencyHost.appendChild(el);
+          mountLatencyChart(el);
+        });
+      }
+    }
     if (t.dataset.action === 'peer-review') {
       const peerOverlay = document.createElement('div');
       peerOverlay.className = 'kg-overlay';

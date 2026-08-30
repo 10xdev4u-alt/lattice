@@ -45,6 +45,14 @@ export function mountCommandPalette(): void {
     { id: 'restore', label: 'Restore a session', hint: 'paste a session id', keywords: 'restore session load past', run: () => void import('./session-restore').then((m) => m.mountSessionRestoreOverlay()) },
     { id: 'prompt-diff', label: 'Prompt diff', hint: 'last 2 submissions', keywords: 'prompt diff compare submissions', run: () => void import('../prompt-diff').then((m) => m.mountPromptDiffOverlay()) },
     { id: 'whats-wrong', label: "What's wrong?", hint: 'recent errors + re-run', keywords: 'errors wrong debug retry', run: () => void import('./whats-wrong').then((m) => m.mountWhatsWrongOverlay()) },
+    { id: 'latency', label: 'Latency chart', hint: 'every tool call, by duration', keywords: 'latency chart duration performance', run: () => {
+        void import('./stats-page').then((m) => m.mountStatsPageOverlay());
+        // The chart appends inside the stats overlay once it mounts.
+        setTimeout(() => {
+          const btn = document.querySelector<HTMLButtonElement>('[data-action="latency"]');
+          btn?.click();
+        }, 300);
+      } },
     { id: 'scratchpad', label: 'Scratchpad', hint: 'free-form notes', keywords: 'scratchpad notes write', run: () => void import('../scratchpad').then((m) => m.mountScratchpadPanel(document.body)) },
     { id: 'settings', label: 'Settings', hint: 'theme, model, confirmations', keywords: 'settings preferences theme model', run: () => document.dispatchEvent(new KeyboardEvent('keydown', { key: ',', metaKey: true, bubbles: true })) },
     { id: 'help', label: 'Keyboard shortcuts', hint: 'the full list', keywords: 'help shortcuts keyboard', run: () => document.dispatchEvent(new KeyboardEvent('keydown', { key: '?', bubbles: true })) },
