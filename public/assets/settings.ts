@@ -99,6 +99,14 @@ function render(root: HTMLElement): void {
       });
     });
   }
+
+  const modelHost = document.createElement('div');
+  modelHost.dataset.modelPicker = '1';
+  const section = root.querySelector('section.settings');
+  if (section) {
+    section.insertBefore(modelHost, section.querySelector('.settings-hint'));
+    void import('./ui/model-picker').then(({ mountModelPicker }) => mountModelPicker(modelHost));
+  }
 }
 
 function escapeHtml(s: string): string {
