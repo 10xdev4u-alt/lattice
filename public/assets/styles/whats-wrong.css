@@ -1,0 +1,33 @@
+/* What's wrong */
+.whats-wrong-list { list-style: none; margin: 0; padding: 0; }
+.whats-wrong-row {
+  padding: var(--sp-3);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  margin-bottom: var(--sp-2);
+  background: var(--bg-elev-1);
+}
+.whats-wrong-meta { font-size: var(--text-xs); color: var(--fg-muted); font-family: var(--font-mono); margin-bottom: var(--sp-1); }
+.whats-wrong-text { font-size: var(--text-sm); color: var(--fg); margin-bottom: var(--sp-1); }
+.whats-wrong-args {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  padding: var(--sp-1) var(--sp-2);
+  margin: 0 0 var(--sp-2);
+  max-height: 120px;
+  overflow: auto;
+}
+.whats-wrong-row button {
+  font-size: var(--text-xs);
+  padding: var(--sp-1) var(--sp-3);
+  background: var(--accent);
+  color: white;
+  border: none;
+  border-radius: var(--r-sm);
+  cursor: pointer;
+}
+.whats-wrong-row button:disabled { opacity: 0.5; cursor: not-allowed; }
+.whats-wrong-row button:hover:not(:disabled) { filter: brightness(1.1); }

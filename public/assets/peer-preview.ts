@@ -19,7 +19,7 @@ interface PreviewState {
 
 const STATE: PreviewState = { pending: new Map() };
 
-export function mountPeerPreview(): void {
+export function mountPeerPreview(_root?: HTMLElement, _claim?: string): void {
   document.addEventListener('mouseover', (e) => {
     const t = e.target as HTMLElement;
     if (!t.classList.contains('citation-chip')) return;

@@ -13,6 +13,7 @@ import { getModelContext } from '../model-context-polyfill';
 import { getSession, recordStep } from '../workflow-trail';
 import { mountWorkflowTrail } from './workflow-trail';
 import { setPeerReviewerActive, isPeerReviewerActive } from './peer-reviewer';
+import { mountPeerPreview } from '../peer-preview';
 import { decorateCitations } from '../citation-chips';
 import { inferConfidence, renderConfidenceDot } from '../confidence';
 import { recordFeedback, getFeedbackForMessage } from '../feedback';
@@ -272,6 +273,9 @@ function appendMessage(root: HTMLElement, role: 'user' | 'agent', text: string, 
   }
   if (role === 'agent' && !transient) {
     decorateCitations(div, (claim) => {
+      // 1. Show the peer-reviewer preview popover (real challenge)
+      void mountPeerPreview(div, claim);
+      // 2. Also push the challenge back into the chat as a re-ask
       recordStep({
         tool_name: 'challenge_claim',
         args: { claim: claim.slice(0, 200) },
@@ -283,7 +287,6 @@ function appendMessage(root: HTMLElement, role: 'user' | 'agent', text: string, 
       const input = root.querySelector<HTMLInputElement>('[data-agent-input]');
       if (!input) return;
       input.value = `I want to challenge this claim you made: "${claim.slice(0, 200)}". Defend it with citations, or retract it.`;
-      // Trigger the same form-submit handler we wired up in render().
       const formEl = input.closest('form');
       formEl?.dispatchEvent(new Event('submit', { cancelable: true }));
     });

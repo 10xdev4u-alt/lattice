@@ -154,6 +154,15 @@ function render(root: HTMLElement): void {
         showSkepticPopover(t, claim);
         return;
       }
+      if (t.dataset.action === 'inspect') {
+        const id = Number(t.dataset.stepId);
+        const step = STEP_INDEX.get(id);
+        if (!step) return;
+        void import('./tool-inspector').then(({ mountToolInspectorOverlay }) => {
+          mountToolInspectorOverlay(step as any);
+        });
+        return;
+      }
       const open = detail.hasAttribute('hidden');
       if (open) detail.removeAttribute('hidden');
       else detail.setAttribute('hidden', '');
@@ -188,6 +197,7 @@ function stepRow(step: WorkflowStep): string {
         <div class="trail-step-detail-actions">
           <button data-action="skeptic" data-step-id="${step.step_id}" title="What would the skeptic say?">Skeptic</button>
           <button data-action="branch-from" data-step-id="${step.step_id}" title="Branch the audit log from this step">Branch from here</button>
+          <button data-action="inspect" data-step-id="${step.step_id}" title="See the full request and response JSON">Inspect</button>
           <button data-copy="${escapeHtml(JSON.stringify(step, null, 2))}">Copy full step</button>
         </div>
       </div>

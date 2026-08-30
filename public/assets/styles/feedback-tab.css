@@ -1,0 +1,7 @@
+/* Feedback tab */
+.feedback-tab-summary { font-size: var(--text-sm); color: var(--fg-muted); margin: 0 0 var(--sp-3); }
+.feedback-tab-table { width: 100%; border-collapse: collapse; font-size: var(--text-xs); }
+.feedback-tab-table th,
+.feedback-tab-table td { padding: var(--sp-2); text-align: left; border-bottom: 1px solid var(--border); vertical-align: top; }
+.feedback-tab-table th { color: var(--fg-muted); font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em; font-size: 10px; }
+.feedback-tab-table tr:hover { background: var(--bg-elev-1); }
