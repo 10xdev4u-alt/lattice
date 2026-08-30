@@ -21,10 +21,12 @@ export default async (_req: Request, _ctx: Context): Promise<Response> => {
   const papers: Array<{ id: string; title?: string; year?: number; doi?: string; arxiv_id?: string }> = [];
   try {
     const list = await store.list({ prefix: 'papers/' });
+    const seen = new Set<string>();
     for (const blob of list.blobs) {
+      // Keys look like papers/<id>/<file> — one entry per paper id.
       const id = blob.key.split('/')[1];
-      if (!id) continue;
-      if (blob.key.includes('/')) continue;
+      if (!id || seen.has(id)) continue;
+      seen.add(id);
       const meta = await store.getWithMetadata(`papers/${id}/meta.json`, { type: 'json' });
       const entry: { id: string; title?: string; year?: number; doi?: string; arxiv_id?: string } = { id };
       if (meta && meta.data) {

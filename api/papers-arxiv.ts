@@ -11,6 +11,7 @@
 import type { Config, Context } from './_lib/types';
 import { getStore } from './_lib/store';
 import { fetchArxivSource } from './_lib/arxiv';
+import { buildIndex } from './_lib/search-index';
 
 interface FromArxivRequest {
   arxiv_id: string;
@@ -74,6 +75,19 @@ export default async (req: Request, _ctx: Context): Promise<Response> => {
     source: 'arxiv-tex',
     pages: [{ page_number: 1, text: result.text }],
   });
+  // papers-index reads this to list the library with titles.
+  await store.setJSON(`papers/${id}/meta.json`, {
+    id,
+    title: result.metadata.title,
+    year: result.metadata.published ? Number(result.metadata.published.slice(0, 4)) : undefined,
+    doi: result.metadata.doi ?? undefined,
+    arxiv_id: result.metadata.arxiv_id,
+    abstract: result.metadata.summary,
+    authors: result.metadata.authors,
+  });
+  // papers-search reads this to rank pages.
+  const index = buildIndex(id, [{ page_number: 1, text: result.text }]);
+  await store.setJSON(`papers/${id}/index.json`, index);
 
   return jsonResponse(
     {

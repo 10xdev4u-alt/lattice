@@ -13,7 +13,7 @@
 
 import type { Config, Context } from './_lib/types';
 import { getStore } from './_lib/store';
-import { searchIndex, type SearchIndex, snippetAroundTermInText } from './_lib/search-index';
+import { buildIndex, searchIndex, snippetAroundTermInText, type SearchIndex } from './_lib/search-index';
 
 interface SearchRequest {
   query: string;
@@ -51,16 +51,25 @@ export default async (req: Request, _ctx: Context): Promise<Response> => {
   for (const key of library) {
     if (!key.endsWith('/text.json')) continue;
     const paperId = key.split('/')[1]!;
-    const meta = await store.getWithMetadata(key, { type: 'json' });
-    if (!meta) continue;
-    const index = meta.data as SearchIndex;
-    const hits = searchIndex(index, body.query, maxPerPaper);
 
-    // For snippets we need the full text — fetch it once per paper.
+    // For snippets we need the full text.
     const textMeta = await store.getWithMetadata(`papers/${paperId}/text.json`, { type: 'json' });
     const pages = textMeta ? (textMeta.data as { pages: PageText[] }).pages : [];
     const pageTextByNumber = new Map<number, string>();
     for (const p of pages) pageTextByNumber.set(p.page_number, p.text);
+
+    // The term index lives in index.json; build one on the fly for
+    // papers ingested before the index was written (or by hand).
+    let index: SearchIndex | null = null;
+    const indexMeta = await store.getWithMetadata(`papers/${paperId}/index.json`, { type: 'json' });
+    if (indexMeta && indexMeta.data) {
+      index = indexMeta.data as SearchIndex;
+    } else if (pages.length > 0) {
+      index = buildIndex(paperId, pages);
+    }
+    if (!index) continue;
+
+    const hits = searchIndex(index, body.query, maxPerPaper);
 
     const hitsWithSnippets = hits.map((h) => ({
       page: h.page,
@@ -78,15 +87,9 @@ export default async (req: Request, _ctx: Context): Promise<Response> => {
 };
 
 async function listKeys(store: ReturnType<typeof getStore>, prefix: string): Promise<string[]> {
-  // Netlify Blobs supports list. Falls back to a known prefix scan if
-  // the store doesn't expose list directly.
   try {
-    const out: string[] = [];
-    // @ts-expect-error list exists at runtime
-    for await (const blob of store.list({ prefix })) {
-      out.push(blob.key);
-    }
-    return out;
+    const { blobs } = await store.list({ prefix });
+    return blobs.map((b) => b.key);
   } catch {
     return [];
   }
