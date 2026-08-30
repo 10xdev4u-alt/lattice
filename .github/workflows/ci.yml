@@ -60,6 +60,14 @@ jobs:
             sleep 1
           done
           curl -sf http://localhost:8888/api/healthz
+          # Boot check: index.html must reference assets that the
+          # server can actually serve (a missing Readable import
+          # once made every asset 404 while healthz stayed green).
+          ASSET=$(grep -o 'assets/index-[^"]*\.js' dist/index.html | head -1)
+          echo "checking /$ASSET"
+          curl -sf -o /dev/null -w '%{content_type}\n' "http://localhost:8888/$ASSET" | grep -qi 'javascript'
+          CSS=$(grep -o 'assets/index-[^"]*\.css' dist/index.html | head -1)
+          curl -sf -o /dev/null -w '%{content_type}\n' "http://localhost:8888/$CSS" | grep -qi 'text/css'
           curl -sf -o /dev/null http://localhost:8888/
           curl -sI http://localhost:8888/api/healthz | grep -qi 'permissions-policy: tools=(self)'
           docker rm -f lattice-smoke
