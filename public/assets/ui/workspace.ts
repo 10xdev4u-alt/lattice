@@ -144,6 +144,12 @@ function installKeyboardShortcuts(root: HTMLElement): void {
             mountBuildBibliographyOverlay();
             announce('Build bibliography opened');
           });
+        } else if (e2.key === 'r') {
+          // Open the session-restore overlay
+          void import('./session-restore').then(({ mountSessionRestoreOverlay }) => {
+            mountSessionRestoreOverlay();
+            announce('Session restore opened');
+          });
         }
       };
       document.addEventListener('keydown', onNext, { once: true });
