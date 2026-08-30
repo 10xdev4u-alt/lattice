@@ -35,6 +35,11 @@ export function mountWorkspace(root: HTMLElement | null): void {
         <div data-agent-rail></div>
       </aside>
     </div>
+    <nav class="rail-mobile-tabs" role="tablist" aria-label="Workspace sections">
+      <button data-mobile-tab="library" role="tab" aria-selected="false">Library</button>
+      <button data-mobile-tab="canvas" role="tab" aria-selected="true">Paper</button>
+      <button data-mobile-tab="agent" role="tab" aria-selected="false">Agent</button>
+    </nav>
   `;
 
   const paperListRoot = root.querySelector<HTMLDivElement>('[data-paper-list]');
@@ -45,6 +50,20 @@ export function mountWorkspace(root: HTMLElement | null): void {
   if (canvasRoot) {
     if (getLibrary().length === 0) {
       mountEmptyState(canvasRoot);
+      // The empty state handed the canvas over never: when the
+      // library fills (sample load, arXiv add, restore), swap the
+      // empty state for the paper viewer so the first paper
+      // opens without a reload.
+      document.addEventListener(
+        'lattice:library-changed',
+        () => {
+          const lib = getLibrary();
+          if (lib.length > 0 && canvasRoot.querySelector('.empty-state')) {
+            import('./pdf-canvas').then(({ mountPdfCanvas }) => mountPdfCanvas(canvasRoot));
+          }
+        },
+        { once: true },
+      );
     } else {
       mountPdfCanvas(canvasRoot);
     }
@@ -57,7 +76,70 @@ export function mountWorkspace(root: HTMLElement | null): void {
     mountAgentRail(agentRailRoot);
   }
 
+  installMobileTabs(root);
   installKeyboardShortcuts(root);
+}
+
+/* Mobile: the three rails become a bottom-tabbed deck. On
+   narrow viewports each tab shows one region and hides the
+   others, so the agent chat stays reachable on a phone. */
+function installMobileTabs(root: HTMLElement): void {
+  const tabs = root.querySelectorAll<HTMLButtonElement>('[data-mobile-tab]');
+  if (tabs.length === 0) return;
+  const workspace = root.querySelector<HTMLElement>('.workspace');
+  if (!workspace) return;
+  const regions = {
+    library: workspace.querySelector<HTMLElement>('.rail-left'),
+    canvas: workspace.querySelector<HTMLElement>('.canvas'),
+    agent: workspace.querySelector<HTMLElement>('.rail-right'),
+  };
+
+  const select = (name: string): void => {
+    for (const t of tabs) {
+      t.setAttribute('aria-selected', t.dataset.mobileTab === name ? 'true' : 'false');
+    }
+    for (const [key, el] of Object.entries(regions)) {
+      if (!el) continue;
+      if (key === name) {
+        el.classList.add('rail-mobile-active');
+        el.classList.remove('rail-mobile-hidden');
+      } else {
+        el.classList.remove('rail-mobile-active');
+        el.classList.add('rail-mobile-hidden');
+      }
+    }
+  };
+
+  // 'canvas' shows the center region; the library/agent rails
+  // default hidden on mobile via CSS, so only the active one
+  // gets rail-mobile-active.
+  tabs.forEach((t) => {
+    t.addEventListener('click', () => {
+      const name = t.dataset.mobileTab!;
+      select(name);
+      if (name === 'canvas') {
+        regions.canvas?.classList.remove('canvas-mobile-hidden');
+      } else {
+        regions.canvas?.classList.add('canvas-mobile-hidden');
+      }
+    });
+  });
+
+  // Default: canvas visible (its tab is aria-selected in markup).
+  const applyDefault = (): void => {
+    if (window.innerWidth <= 800) {
+      regions.library?.classList.add('rail-mobile-hidden');
+      regions.agent?.classList.add('rail-mobile-hidden');
+    } else {
+      // Desktop: clear any mobile state entirely.
+      for (const el of Object.values(regions)) {
+        el?.classList.remove('rail-mobile-active', 'rail-mobile-hidden');
+      }
+      regions.canvas?.classList.remove('canvas-mobile-hidden');
+    }
+  };
+  applyDefault();
+  window.addEventListener('resize', applyDefault, { passive: true });
 }
 
 function installKeyboardShortcuts(root: HTMLElement): void {

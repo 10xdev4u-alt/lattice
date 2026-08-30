@@ -15,32 +15,37 @@ import { fetchArxivMetadata } from '../arxiv-client';
 export function mountEmptyState(root: HTMLElement): void {
   root.innerHTML = `
     <section class="empty-state">
-      <h2>Welcome to Lattice</h2>
-      <p>Bring a research paper. Lattice will surface every tool the AI agent can use on it — and the agent can see every paper you have open, every claim, every source.</p>
+      <p class="empty-eyebrow">Research papers, in conversation</p>
+      <h2 class="empty-headline">Bring a paper.<br>Watch every claim become traceable.</h2>
+      <p class="empty-lede">
+        Lattice turns your library into tools your AI agent can use — search, summarize, quote, cite, compare —
+        and logs every call in an audit trail you can replay, branch, and export as a methods appendix.
+      </p>
+      <div class="empty-actions">
+        <button data-action="load-sample" class="btn-primary">Load 5 classic papers</button>
+        <button data-action="paste-arxiv">Add by arXiv ID</button>
+        <button data-action="drop-pdf">Drop a PDF</button>
+      </div>
       <ol class="empty-state-steps" aria-label="3-step getting started">
         <li>
           <span class="empty-step-num">1</span>
-          <span class="empty-step-text">Load the sample library (5 well-known arXiv papers).</span>
+          <span class="empty-step-text">Load the papers — their full text is fetched and indexed.</span>
         </li>
         <li>
           <span class="empty-step-num">2</span>
-          <span class="empty-step-text">Open any paper. The Live Tool Array lights up.</span>
+          <span class="empty-step-text">Open one. Per-paper tools light up for your agent.</span>
         </li>
         <li>
           <span class="empty-step-num">3</span>
-          <span class="empty-step-text">Ask the agent. The audit log fills in as the agent acts.</span>
+          <span class="empty-step-text">Ask anything. Every answer arrives with its citations attached.</span>
         </li>
       </ol>
-      <div class="empty-actions">
-        <button data-action="load-sample" class="btn-primary">Load sample library</button>
-        <button data-action="start-tour">30-second tour</button>
-        <button data-action="paste-arxiv">Paste an arXiv ID</button>
-        <button data-action="drop-pdf">Drop a PDF</button>
+      <div class="empty-actions empty-actions-quiet">
+        <button data-action="start-tour" class="btn-ghost">30-second tour</button>
         <button data-action="load-session" class="btn-ghost">Load saved session</button>
         <button data-action="compare-ingests" class="btn-ghost">Compare ingests</button>
         <button data-action="annotations" class="btn-ghost">Annotations</button>
       </div>
-      <p class="empty-hint">A judge who clicks this should: load the sample library, then watch the Live Tool Array light up as the agent acts. Or click "30-second tour" for an auto-cycled walkthrough.</p>
       <div data-carousel-host></div>
     </section>
   `;

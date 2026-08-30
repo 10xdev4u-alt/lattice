@@ -1,18 +1,27 @@
-/* ── Lattice landing page ────────────────────────── */
+/* ── Lattice landing page — the manuscript system ── */
 
 :root {
-  --bg: #0a0a0c;
-  --bg-elev-1: #131318;
-  --bg-elev-2: #1a1a20;
-  --fg: #ececf1;
-  --fg-muted: #9aa0aa;
-  --border: #232329;
-  --border-strong: #34343c;
-  --accent: #7c6cff;
-  --accent-soft: #5a4eff22;
-  --agent: #b69bff;
+  --bg: #16130f;
+  --bg-elev-1: #201c17;
+  --bg-elev-2: #2a251f;
+  --bg-sink: #100d0a;
+  --fg: #efe7d8;
+  --fg-muted: #a29483;
+  --fg-faint: #6b6154;
+  --border: #382f26;
+  --border-strong: #4d4136;
+  --accent: #e8503a;
+  --accent-soft: #e8503a26;
+  --agent: #8f7ff0;
+  --agent-soft: #8f7ff026;
+  --ok: #2f9f7b;
+  --ok-soft: #2f9f7b26;
+  --err: #d64545;
+  --src-fetched: #c98a2d;
+  --font-display: 'Fraunces', 'Iowan Old Style', Georgia, serif;
+  --font-read: 'Newsreader', Georgia, serif;
   --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
-  --font-mono: 'JetBrains Mono', 'SF Mono', 'Menlo', 'Consolas', ui-monospace, monospace;
+  --font-mono: 'JetBrains Mono', 'SF Mono', 'Menlo', ui-monospace, monospace;
 }
 
 * { box-sizing: border-box; }
@@ -23,25 +32,25 @@ html, body {
   color: var(--fg);
   font-family: var(--font-sans);
   font-size: 16px;
-  line-height: 1.55;
+  line-height: 1.6;
   letter-spacing: -0.006em;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
 }
 
-::selection { background: var(--accent); color: white; }
+::selection { background: var(--accent); color: var(--bg-elev-1); }
 ::-webkit-scrollbar { width: 8px; }
 ::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 4px; }
 
 a { color: var(--accent); text-decoration: none; }
 a:hover { text-decoration: underline; }
 
-/* ── Hero ─────────────────────────────────────── */
+/* ── Hero: lamplight on the desk ─────────────── */
 
 .hero {
   background:
-    radial-gradient(ellipse 80% 50% at 50% 0%, rgba(90, 78, 255, 0.13) 0%, transparent 60%),
+    radial-gradient(ellipse 80% 50% at 50% 0%, rgba(232, 80, 58, 0.07) 0%, transparent 60%),
     var(--bg);
   min-height: 100vh;
   padding: 0 24px;
@@ -120,31 +129,27 @@ a:hover { text-decoration: underline; }
 }
 
 .hero-title {
+  font-family: var(--font-display);
   font-size: clamp(42px, 6vw, 68px);
-  font-weight: 700;
-  line-height: 1.04;
+  font-weight: 600;
+  line-height: 1.05;
   margin: 0 0 24px;
-  letter-spacing: -0.032em;
+  letter-spacing: -0.02em;
 }
+/* The italic half of the headline is the machine's promise —
+   set it in the agent's violet, no shimmer. One idea, held. */
 .hero-title em {
-  font-style: normal;
-  background: linear-gradient(120deg, #7c6cff 0%, #b69bff 50%, #7c6cff 100%);
-  background-size: 200% 100%;
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  animation: shimmer 6s ease-in-out infinite;
-}
-
-@keyframes shimmer {
-  0%, 100% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
+  font-family: var(--font-read);
+  font-style: italic;
+  font-weight: 400;
+  color: var(--agent);
 }
 
 .hero-sub {
-  font-size: 18px;
+  font-family: var(--font-read);
+  font-size: 19px;
   color: var(--fg-muted);
-  line-height: 1.6;
+  line-height: 1.65;
   margin: 0 0 36px;
   max-width: 52ch;
 }

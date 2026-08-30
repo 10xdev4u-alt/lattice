@@ -22,6 +22,15 @@ export function mountPdfCanvas(root: HTMLElement): void {
   const library = getLibrary();
   if (library.length === 0) {
     root.innerHTML = `<p class="canvas-empty">No papers yet. Drop a PDF or load the sample library.</p>`;
+    // The canvas mounted while empty; when the library fills
+    // (sample load, arXiv add, session restore) swap to the
+    // viewer instead of leaving the empty note up forever.
+    document.addEventListener('lattice:library-changed', () => {
+      const now = getLibrary();
+      if (now.length > 0 && !root.querySelector('.paper-viewer')) {
+        render(root, now[0]!.id);
+      }
+    }, { once: true });
     return;
   }
   const initial = currentPaperId ?? library[0]!.id;

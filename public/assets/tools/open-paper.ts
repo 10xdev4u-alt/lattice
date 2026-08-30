@@ -69,6 +69,13 @@ export const openPaper: ToolDefinition = {
       );
     }
 
+    // The canvas follows the agent: when open_paper runs (from
+    // the chat, a judge's agent, or the UI), the reading surface
+    // swaps to this paper so human and machine stay in sync.
+    document.dispatchEvent(
+      new CustomEvent('lattice:paper-opened', { detail: { paper_id: paper.id } }),
+    );
+
     return {
       content: [
         {

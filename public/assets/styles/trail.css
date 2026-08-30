@@ -63,50 +63,84 @@
 }
 [data-trail-search]::placeholder { color: var(--fg-muted); }
 
-/* ── Trail list ────────────────────────────────── */
+/* ── Trail list: the lab notebook ────────────────
+   The audit log is the product. Every step is a numbered entry
+   in a bound notebook: a red spine runs down the left edge,
+   tying one observation to the next. Numbers are real sequence
+   (order matters — this is a chronological record). */
 
-.trail-list { list-style: none; margin: 0; padding: 0; }
-.trail-step {
-  border-bottom: 1px solid var(--border);
+.trail-list {
+  list-style: none;
+  margin: 0;
+  padding: 0 var(--sp-2) 0 0;
   position: relative;
+}
+/* The spine: the red thread of the argument */
+.trail-list::before {
+  content: '';
+  position: absolute;
+  left: 19px;
+  top: var(--sp-2);
+  bottom: var(--sp-2);
+  width: 1px;
+  background: var(--accent-soft);
+}
+.trail-step {
+  position: relative;
+  border-radius: var(--r-md);
+  padding-left: var(--sp-2);
+  margin-bottom: var(--sp-1);
 }
 .trail-step-toggle {
   display: grid;
   grid-template-columns: auto 1fr auto auto auto auto;
   gap: var(--sp-2);
   align-items: center;
-  padding: var(--sp-2) var(--sp-2);
+  padding: var(--sp-2) var(--sp-3);
+  border-radius: var(--r-md);
+  background: var(--bg-elev-1);
+  border: 1px solid var(--border);
   cursor: pointer;
-  transition: background var(--dur-fast) var(--ease);
+  transition:
+    background var(--dur-fast) var(--ease),
+    border-color var(--dur-fast) var(--ease);
 }
-.trail-step-toggle::before {
-  content: '';
-  position: absolute;
-  left: 0;
-  top: 0;
-  bottom: 0;
-  width: 2px;
-  background: var(--accent);
-  opacity: 0;
-  transition: opacity var(--dur-fast) var(--ease);
+/* The entry number sits ON the spine — a punched hole marker */
+.trail-step-num {
+  position: relative;
+  z-index: 1;
+  font-family: var(--font-mono);
+  font-size: var(--text-2xs);
+  font-weight: 500;
+  color: var(--accent);
+  background: var(--bg);
+  border: 1px solid var(--accent-soft);
+  border-radius: 999px;
+  min-width: 26px;
+  height: 22px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 2px;
+  margin-left: var(--sp-1);
 }
 .trail-step-toggle:hover, .trail-step-toggle:focus-visible {
   background: var(--bg-elev-2);
+  border-color: var(--border-strong);
   outline: none;
 }
-.trail-step-toggle:hover::before, .trail-step-toggle:focus-visible::before {
-  opacity: 1;
+.trail-step-toggle:hover .trail-step-num,
+.trail-step-toggle:focus-visible .trail-step-num {
+  background: var(--accent);
+  color: var(--bg-elev-1);
+  border-color: var(--accent);
 }
-.trail-step-num {
-  font-family: var(--font-mono);
-  font-size: var(--text-2xs);
-  color: var(--fg-muted);
-  min-width: 28px;
-}
+/* The tool that ran: data voice, machine color — it is the
+   machine's fingerprint in the human's notebook */
 .trail-step-name {
   font-family: var(--font-mono);
   font-size: var(--text-xs);
-  color: var(--accent);
+  color: var(--machine);
   font-weight: 500;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -130,9 +164,9 @@
   text-transform: uppercase;
   letter-spacing: var(--tracking-wide);
 }
-.trail-step-status-ok { background: var(--ok); color: var(--bg); }
-.trail-step-status-err { background: var(--err); color: var(--bg); }
-.trail-step-status-denied { background: var(--warn); color: var(--bg); }
+.trail-step-status-ok { background: var(--ok); color: var(--bg-elev-1); }
+.trail-step-status-err { background: var(--err); color: var(--bg-elev-1); }
+.trail-step-status-denied { background: var(--warn); color: var(--bg-elev-1); }
 .trail-step-time {
   font-family: var(--font-mono);
   font-size: var(--text-2xs);

@@ -1,55 +1,78 @@
-/* Lattice design tokens.
-   Calibrated for the WebMCP Challenge demo: calm, restrained, "Linear for researchers".
-   Light + dark modes, dark default. One accent (violet, the agent color).
-*/
+/* Lattice design tokens — v2 "the marked manuscript".
+ *
+ * The system is semantic, not decorative: color tells you WHO is
+ * speaking. Ink-dark ground (lamplight on a desk at 2am),
+ * paper-cream text, proofreader's red for anything a human must
+ * act on or a citation anchors, cool violet for the machine's
+ * voice, verdigris for verified-true. Every accent has exactly
+ * one meaning — no color does two jobs.
+ *
+ * Four type voices: Fraunces (journal — display), Newsreader
+ * (reading voice — paper text; this is a reading product), Inter
+ * (tool chrome), JetBrains Mono (data: ids, args, logs).
+ */
 
 :root {
-  /* Color */
-  --bg: #0a0a0c;
-  --bg-elev-1: #131318;
-  --bg-elev-2: #1a1a20;
-  --fg: #ececf1;
-  --fg-muted: #9aa0aa;
-  --border: #232329;
-  --border-strong: #34343c;
-  --accent: #7c6cff;
-  --accent-soft: #5a4eff33;
-  --agent: #b69bff;
-  --warn: #d97706;
-  --err: #ef4444;
-  --ok: #10b981;
-  --trust-fetched: #f97316;
-  --trust-signed: #10b981;
-  --trust-workspace: #7c6cff;
+  /* ── Ground & ink ─────────────────────────────── */
+  --bg: #16130f;          /* warm ink-black, lamplight */
+  --bg-elev-1: #201c17;   /* card surface */
+  --bg-elev-2: #2a251f;   /* raised surface */
+  --bg-sink: #100d0a;     /* wells: chat scroller, inputs */
+  --fg: #efe7d8;          /* paper cream */
+  --fg-muted: #a29483;    /* faded ink */
+  --fg-faint: #6b6154;    /* watermark */
 
-  /* Type */
-  --font-sans:
-    'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
-  --font-mono:
-    'JetBrains Mono', 'SF Mono', 'Menlo', 'Consolas', ui-monospace, monospace;
+  /* ── The four voices ──────────────────────────── */
+  --accent: #e8503a;              /* proofreader's red: actions, citations, human focus */
+  --accent-soft: #e8503a26;
+  --agent: #8f7ff0;               /* the machine: agent messages, AI affordances */
+  --agent-soft: #8f7ff026;
+  --ok: #2f9f7b;                  /* verdigris: verified, persisted, healthy */
+  --ok-soft: #2f9f7b26;
+
+  /* Semantic aliases — use these in components */
+  --human: var(--accent);
+  --machine: var(--agent);
+  --verified: var(--ok);
+  --err: #d64545;
+
+  /* Provenance states (where a paper came from) */
+  --src-fetched: #c98a2d;         /* amber: pulled from arXiv */
+  --src-workspace: var(--agent);  /* violet: born in this workspace */
+  --warn: var(--src-fetched);     /* legacy alias: amber = caution */
+
+  /* ── Type: four voices ────────────────────────── */
+  --font-display: 'Fraunces', 'Iowan Old Style', Georgia, serif;
+  --font-read: 'Newsreader', Georgia, 'Times New Roman', serif;
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', 'SF Mono', Menlo, ui-monospace, monospace;
+
+  /* Scale — the reading voice is larger: this is a reading product */
   --text-2xs: 10px;
   --text-xs: 11px;
-  --text-sm: 12px;
-  --text-base: 13px;
-  --text-md: 15px;
-  --text-lg: 18px;
-  --text-xl: 22px;
-  --text-2xl: 28px;
-  --text-3xl: 36px;
+  --text-sm: 13px;
+  --text-base: 14px;    /* tool chrome */
+  --text-read: 17px;    /* paper body — Newsreader */
+  --text-md: 18px;
+  --text-lg: 22px;
+  --text-xl: 28px;
+  --text-2xl: 36px;
+  --text-3xl: 48px;
+
   --leading-tight: 1.2;
-  --leading-normal: 1.45;
-  --leading-relaxed: 1.65;
-  --tracking-tight: -0.02em;
+  --leading-normal: 1.5;
+  --leading-read: 1.75;   /* paper body rhythm */
+  --tracking-tight: -0.015em;
   --tracking-normal: 0;
-  --tracking-wide: 0.04em;
-  --tracking-wider: 0.08em;
+  --tracking-wide: 0.05em;
+  --tracking-wider: 0.1em;
 
-  /* Radii */
-  --r-sm: 4px;
-  --r-md: 8px;
-  --r-lg: 12px;
+  /* ── Radii: soft, paper-like ─────────────────── */
+  --r-sm: 5px;
+  --r-md: 9px;
+  --r-lg: 14px;
 
-  /* Spacing — 4px grid */
+  /* ── Spacing: 4px grid ────────────────────────── */
   --sp-1: 4px;
   --sp-2: 8px;
   --sp-3: 12px;
@@ -60,60 +83,76 @@
   --sp-10: 40px;
   --sp-12: 48px;
 
-  /* Motion */
+  /* ── Motion ──────────────────────────────────── */
   --ease: cubic-bezier(0.2, 0, 0, 1);
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
   --dur-fast: 150ms;
-  --dur: 200ms;
-  --dur-slow: 300ms;
+  --dur: 220ms;
+  --dur-slow: 340ms;
 
-  /* Layout */
-  --rail-left-w: 280px;
-  --rail-right-w: 380px;
-  --header-h: 56px;
+  /* ── Layout ───────────────────────────────────── */
+  --rail-left-w: 300px;
+  --rail-right-w: 400px;
+  --header-h: 60px;
   --max-content-w: 1200px;
 
-  /* Elevation */
-  --shadow-1: 0 1px 2px rgba(0, 0, 0, 0.24);
-  --shadow-2: 0 2px 8px rgba(0, 0, 0, 0.28);
-  --shadow-3: 0 4px 16px rgba(0, 0, 0, 0.32);
-  --shadow-4: 0 8px 32px rgba(0, 0, 0, 0.4);
-  --shadow-glow: 0 0 0 1px var(--accent-soft), 0 0 16px var(--accent-soft);
+  /* ── Elevation: warm, not black ───────────────── */
+  --shadow-1: 0 1px 2px rgba(20, 12, 4, 0.35);
+  --shadow-2: 0 2px 8px rgba(20, 12, 4, 0.4);
+  --shadow-3: 0 4px 16px rgba(20, 12, 4, 0.45);
+  --shadow-4: 0 8px 32px rgba(20, 12, 4, 0.5);
+  --shadow-red: 0 0 0 1px var(--accent-soft), 0 0 20px var(--accent-soft);
 }
 
+/* ── Daylight: the same manuscript, morning desk ── */
 @media (prefers-color-scheme: light) {
-  :root {
-    --bg: #fafafa;
-    --bg-elev-1: #ffffff;
-    --bg-elev-2: #f4f4f6;
-    --fg: #0a0a0c;
-    --fg-muted: #5e5e66;
-    --border: #e4e4e8;
-    --border-strong: #d2d2d8;
-    --accent-soft: #5a4eff1a;
+  :root:not([data-theme="dark"]) {
+    --bg: #f6f1e7;        /* warm paper */
+    --bg-elev-1: #fffdf7;
+    --bg-elev-2: #f0eadd;
+    --bg-sink: #ede6d8;
+    --fg: #241f18;
+    --fg-muted: #6d6355;
+    --fg-faint: #a39781;
+    --accent: #c2331f;    /* the same red, deeper for paper */
+    --accent-soft: #c2331f1e;
+    --agent: #5f4dc9;
+    --agent-soft: #5f4dc917;
+    --ok: #1d7a5c;
+    --ok-soft: #1d7a5c1c;
+    --err: #bb2d2d;
+    --src-fetched: #9a6a1a;
+    --border: #e0d6c3;
+    --border-strong: #cbbfa8;
+    --shadow-1: 0 1px 2px rgba(60, 42, 16, 0.08);
+    --shadow-2: 0 2px 8px rgba(60, 42, 16, 0.1);
+    --shadow-3: 0 4px 16px rgba(60, 42, 16, 0.12);
+    --shadow-4: 0 8px 32px rgba(60, 42, 16, 0.14);
   }
 }
 
-/* Explicit theme overrides win over the system preference. */
-:root[data-theme="light"] {
-  --bg: #fafafa;
-  --bg-elev-1: #ffffff;
-  --bg-elev-2: #f4f4f6;
-  --fg: #0a0a0c;
-  --fg-muted: #5e5e66;
-  --border: #e4e4e8;
-  --border-strong: #d2d2d8;
-  --accent-soft: #5a4eff1a;
+:root[data-theme="dark"] {
+  --bg: #16130f;
+  --bg-elev-1: #201c17;
+  --bg-elev-2: #2a251f;
+  --bg-sink: #100d0a;
+  --fg: #efe7d8;
+  --fg-muted: #a29483;
+  --fg-faint: #6b6154;
+  --border: #382f26;
+  --border-strong: #4d4136;
 }
 
-:root[data-theme="dark"] {
-  --bg: #0a0a0c;
-  --bg-elev-1: #131318;
-  --bg-elev-2: #1a1a20;
-  --fg: #ececf1;
-  --fg-muted: #9aa0aa;
-  --border: #232329;
-  --border-strong: #34343c;
-  --accent-soft: #5a4eff33;
+:root[data-theme="light"] {
+  --bg: #f6f1e7;
+  --bg-elev-1: #fffdf7;
+  --bg-elev-2: #f0eadd;
+  --bg-sink: #ede6d8;
+  --fg: #241f18;
+  --fg-muted: #6d6355;
+  --fg-faint: #a39781;
+  --border: #e0d6c3;
+  --border-strong: #cbbfa8;
 }
 
 @media (prefers-reduced-motion: reduce) {
