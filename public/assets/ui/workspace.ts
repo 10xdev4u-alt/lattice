@@ -138,11 +138,11 @@ function installKeyboardShortcuts(root: HTMLElement): void {
             mountSessionHashOverlay();
             announce('Session hash opened');
           });
-        } else if (e2.key === 'h') {
-          // Open the session hash overlay
-          void import('../session-hash').then(({ mountSessionHashOverlay }) => {
-            mountSessionHashOverlay();
-            announce('Session hash opened');
+        } else if (e2.key === 'a') {
+          // Open the build-bibliography overlay
+          void import('./build-bibliography').then(({ mountBuildBibliographyOverlay }) => {
+            mountBuildBibliographyOverlay();
+            announce('Build bibliography opened');
           });
         }
       };
