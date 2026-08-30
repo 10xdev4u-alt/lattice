@@ -7,7 +7,7 @@
  */
 
 import { addPaper } from '../library';
-import { fetchArxivMetadata } from '../../../netlify/functions/_lib/arxiv';
+import { fetchArxivMetadata } from '../arxiv-client';
 import { resolveDoi } from '../doi';
 
 export function mountIngestOverlay(): void {

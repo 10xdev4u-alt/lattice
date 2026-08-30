@@ -9,7 +9,7 @@
  */
 
 import { addPaper } from './library';
-import { fetchArxivMetadata } from '../../netlify/functions/_lib/arxiv';
+import { fetchArxivMetadata } from './arxiv-client';
 
 export interface SavedSearch {
   id: string;

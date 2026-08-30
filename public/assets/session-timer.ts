@@ -23,7 +23,12 @@ interface State {
 function read(): State {
   if (typeof localStorage === 'undefined') return { accumulatedMs: 0, lastStartedAt: 0, paused: false };
   try {
-    return JSON.parse(localStorage.getItem(STORAGE_KEY) ?? '{}') as State;
+    const parsed = JSON.parse(localStorage.getItem(STORAGE_KEY) ?? '{}') as Partial<State>;
+    return {
+      accumulatedMs: typeof parsed.accumulatedMs === 'number' ? parsed.accumulatedMs : 0,
+      lastStartedAt: typeof parsed.lastStartedAt === 'number' ? parsed.lastStartedAt : 0,
+      paused: parsed.paused === true,
+    };
   } catch {
     return { accumulatedMs: 0, lastStartedAt: 0, paused: false };
   }

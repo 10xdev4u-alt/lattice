@@ -10,7 +10,7 @@
 
 import { loadSampleLibrary } from '../sample-library';
 import { addPaper } from '../library';
-import { fetchArxivSource } from '../../../netlify/functions/_lib/arxiv';
+import { fetchArxivMetadata } from '../arxiv-client';
 
 export function mountEmptyState(root: HTMLElement): void {
   root.innerHTML = `
@@ -115,23 +115,23 @@ export function mountEmptyState(root: HTMLElement): void {
   arxivBtn?.addEventListener('click', async () => {
     const id = window.prompt('Paste an arXiv ID (e.g. 1706.03762):');
     if (!id) return;
-    const result = await fetchArxivSource(id);
-    if (!result) {
+    const meta = await fetchArxivMetadata(id);
+    if (!meta) {
       window.alert(`Could not fetch ${id}. Check the ID and try again.`);
       return;
     }
     addPaper({
-      id: `arxiv-${result.metadata.arxiv_id.replace(/[^\w]/g, '')}`,
-      title: result.metadata.title,
-      authors: result.metadata.authors.map((name) => {
+      id: `arxiv-${meta.arxiv_id.replace(/[^\w]/g, '')}`,
+      title: meta.title,
+      authors: meta.authors.map((name) => {
         const parts = name.split(/\s+/);
         const family = parts.pop() ?? name;
         return { family, given: parts.join(' ') };
       }),
-      year: result.metadata.published ? Number(result.metadata.published.slice(0, 4)) : undefined,
-      doi: result.metadata.doi ?? undefined,
-      arxivId: result.metadata.arxiv_id,
-      abstract: result.metadata.summary,
+      year: meta.published ? Number(meta.published.slice(0, 4)) : undefined,
+      doi: meta.doi ?? undefined,
+      arxivId: meta.arxiv_id,
+      abstract: meta.summary,
       source: 'arxiv',
       addedAt: new Date().toISOString(),
     });

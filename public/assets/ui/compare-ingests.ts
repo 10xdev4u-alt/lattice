@@ -10,14 +10,15 @@
 
 import { getLibrary } from '../library';
 import { diffPages, diffStats, mountPaperDiff } from './paper-diff';
-import { getStore } from '../../../netlify/functions/_lib/arxiv-shim';
 
 async function loadText(paperId: string): Promise<Array<{ page_number: number; text: string }> | null> {
+  // Read the extracted text via the API instead of touching Netlify
+  // Blobs directly — the browser bundle can't load @netlify/blobs.
   try {
-    const store = getStore('lattice');
-    const meta = await store.getWithMetadata(`papers/${paperId}/text.json`, { type: 'json' });
-    if (!meta) return null;
-    return meta.data as Array<{ page_number: number; text: string }>;
+    const res = await fetch(`/api/papers/${encodeURIComponent(paperId)}/file`);
+    if (!res.ok) return null;
+    const body = (await res.json()) as { text?: Array<{ page_number: number; text: string }> };
+    return body.text ?? null;
   } catch {
     return null;
   }

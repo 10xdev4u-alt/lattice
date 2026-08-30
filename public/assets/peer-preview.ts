@@ -10,7 +10,7 @@
  * triggers a real challenge.
  */
 
-import { fetchArxivMetadata } from '../../netlify/functions/_lib/arxiv';
+import { fetchArxivMetadata } from './arxiv-client';
 import { challengeClaim } from './ui/peer-reviewer';
 
 interface PreviewState {
