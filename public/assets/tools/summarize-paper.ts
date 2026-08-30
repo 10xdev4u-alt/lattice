@@ -11,7 +11,6 @@
 
 import type { ToolDefinition, ToolResult } from './types';
 import { getPaper } from '../library';
-import { completePrompt } from '../llm';
 
 export const summarizePaper: ToolDefinition = {
   name: 'summarize_paper',
@@ -57,13 +56,65 @@ export const summarizePaper: ToolDefinition = {
         isError: true,
       };
     }
-    const prompt = `Summarize the paper "${paper.title}" by ${paper.authors
-      .map((a) => `${a.given ?? ''} ${a.family}`.trim())
-      .join(', ')} (${paper.year ?? 'n.d.'}) for a ${audience} audience in at most ${max_words} words. Abstract: ${paper.abstract ?? '(no abstract available)'.slice(0, 2000)}`;
 
-    const summary = await completePrompt(prompt, { signal: opts.signal, maxTokens: Math.min(max_words * 2, 1500) });
+    // Prefer the server endpoint: it summarizes the full extracted
+    // text (not just the abstract) and returns the model's answer
+    // with page citations and a confidence rating. Fall back to
+    // the abstract when the paper was never ingested server-side.
+    try {
+      const res = await fetch('/api/papers/summarize', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ paper_id: serverPaperId(paper.id), audience, max_words: max_words }),
+        signal: opts.signal,
+      });
+      if (res.ok) {
+        const data = (await res.json()) as {
+          summary?: string;
+          page_citations?: number[];
+          confidence?: string;
+        };
+        if (data.summary && data.summary.trim() !== '') {
+          const citations =
+            data.page_citations && data.page_citations.length > 0
+              ? ` (pages cited: ${data.page_citations.join(', ')})`
+              : '';
+          return {
+            content: [
+              {
+                type: 'text',
+                text: `${data.summary}${citations} [confidence: ${data.confidence ?? 'mixed'}]`,
+              },
+            ],
+          };
+        }
+      }
+    } catch {
+      // fall through to the abstract-only path
+    }
+
+    const abstract = paper.abstract ?? '(no abstract available)';
     return {
-      content: [{ type: 'text', text: summary }],
+      content: [
+        {
+          type: 'text',
+          text: `${paper.title} (${paper.year ?? 'n.d.'}) by ${paper.authors
+            .map((a) => `${a.given ?? ''} ${a.family}`.trim())
+            .join(', ')}. Abstract: ${abstract.slice(0, 2000)}`,
+        },
+      ],
     };
   },
 };
+
+// Library-id → server-store-id. The sample papers use
+// "arxiv:1706.03762"; ingested records use "arxiv-170603762v7"
+// (dots stripped, version suffix — the store lookup tolerates
+// both because arXiv ids are digit-unique either way).
+function serverPaperId(id: string): string {
+  if (id.startsWith('arxiv:')) {
+    const digits = id.slice(6).replace(/[^0-9]/g, '');
+    return `arxiv-${digits}`;
+  }
+  return id;
+}

@@ -35,7 +35,7 @@ function getBase(): string {
 }
 
 function getModel(): string {
-  return (globalThis as { LATTICE_LLM_MODEL?: string }).LATTICE_LLM_MODEL ?? 'kilo-auto/free';
+  return (globalThis as { LATTICE_LLM_MODEL?: string }).LATTICE_LLM_MODEL ?? 'tencent/hy3:free';
 }
 
 export async function streamCompletePrompt(
@@ -82,9 +82,12 @@ export async function streamCompletePrompt(
       if (payload === '[DONE]') continue;
       try {
         const json = JSON.parse(payload) as {
-          choices: Array<{ delta?: { content?: string } }>;
+          choices: Array<{ delta?: { content?: string; reasoning?: string } }>;
         };
-        const delta = json.choices?.[0]?.delta?.content;
+        // Reasoning models put tokens in delta.reasoning with an
+        // empty delta.content; prefer content, fall back so the
+        // stream never renders blank.
+        const delta = json.choices?.[0]?.delta?.content || json.choices?.[0]?.delta?.reasoning;
         if (delta) {
           fullText += delta;
           onDelta(delta);

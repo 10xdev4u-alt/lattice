@@ -13,7 +13,7 @@
  */
 
 import type { Config, Context } from './_lib/types';
-import { getStore } from './_lib/store';
+import { getStore, resolvePaperId } from './_lib/store';
 import { completePrompt } from './_lib/llm';
 import { extractJson } from './_lib/extract-json';
 import { excerptWindows } from './_lib/excerpt';
@@ -48,7 +48,11 @@ export default async (req: Request, _ctx: Context): Promise<Response> => {
   const maxQuotes = body.max_quotes ?? 2;
   const stance = body.stance ?? 'any';
   const store = getStore('lattice');
-  const textMeta = await store.getWithMetadata(`papers/${body.paper_id}/text.json`, { type: 'json' });
+  const paperId = await resolvePaperId(store, body.paper_id);
+  if (!paperId) {
+    return json({ error: { code: 'NOT_FOUND', message: 'No text.json for that paper.' } }, 404);
+  }
+  const textMeta = await store.getWithMetadata(`papers/${paperId}/text.json`, { type: 'json' });
   if (!textMeta) {
     return json({ error: { code: 'NOT_FOUND', message: 'No text.json for that paper.' } }, 404);
   }
@@ -63,7 +67,7 @@ Stance: ${stance}
 Number of quotes to return: ${maxQuotes}
 
 Paper text (paginated):
-${excerptWindows(pages, body.paper_id)}
+${excerptWindows(pages, paperId)}
 
 Output format: a single JSON object with one key "quotes" — an array of objects, each with keys "page" (integer), "text" (a verbatim quote you copied from the paper above), "score" (0.0-1.0).
 

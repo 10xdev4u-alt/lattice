@@ -53,8 +53,12 @@ function saveChat(messages: ChatMessage[]): void {
 export function mountAgentRail(root: HTMLElement): void {
   render(root);
 
-  const form = root.querySelector<HTMLFormElement>('[data-agent-form]');
-  form?.addEventListener('submit', (e) => {
+  // Event delegation on root: render() replaces root.innerHTML, which
+  // would orphan any listener bound directly to the form node. The
+  // submit event bubbles, so this binding survives re-renders.
+  root.addEventListener('submit', (e) => {
+    const form = (e.target as HTMLElement).closest('[data-agent-form]');
+    if (!form) return;
     e.preventDefault();
     void handleSubmit(root);
   });

@@ -11,7 +11,7 @@
  */
 
 import type { Config, Context } from './_lib/types';
-import { getStore } from './_lib/store';
+import { getStore, resolvePaperId } from './_lib/store';
 import { completePrompt } from './_lib/llm';
 import { extractJson } from './_lib/extract-json';
 import { excerptWindows } from './_lib/excerpt';
@@ -51,12 +51,18 @@ export default async (req: Request, _ctx: Context): Promise<Response> => {
 
   const maxWords = body.max_words ?? 200;
   const store = getStore('lattice');
-  const textMeta = await store.getWithMetadata(`papers/${body.paper_id}/text.json`, { type: 'json' });
+  // Library ids and ingest ids differ in version suffixes; match
+  // on the digit core either way.
+  const paperId = await resolvePaperId(store, body.paper_id);
+  if (!paperId) {
+    return json({ error: { code: 'NOT_FOUND', message: 'No text.json for that paper.' } }, 404);
+  }
+  const textMeta = await store.getWithMetadata(`papers/${paperId}/text.json`, { type: 'json' });
   if (!textMeta) {
     return json({ error: { code: 'NOT_FOUND', message: 'No text.json for that paper.' } }, 404);
   }
   const parsed = textMeta.data as { pages: PageText[] };
-  const excerpt = excerptWindows(parsed.pages, body.paper_id);
+  const excerpt = excerptWindows(parsed.pages, paperId);
 
   const prompt = `Summarize the following paper for ${AUDIENCE_PROMPTS[body.audience]}. Stay under ${maxWords} words. Cite the page number for any specific claim.
 

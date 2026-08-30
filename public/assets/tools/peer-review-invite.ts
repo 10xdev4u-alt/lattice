@@ -36,6 +36,10 @@ export const peerReviewInvite: ToolDefinition = {
     additionalProperties: false,
   },
   annotations: {
+    // Inviting the reviewer persona sends a request — no library
+    // or trail data is written — so it runs without the write-tool
+    // confirmation modal.
+    readOnlyHint: true,
     destructiveHint: false,
   },
   async execute(args): Promise<ToolResult> {

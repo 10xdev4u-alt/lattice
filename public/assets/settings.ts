@@ -19,7 +19,7 @@ const STORAGE_KEY = 'lattice.settings.v1';
 const DEFAULTS: Settings = {
   confirm_writes: true,
   default_audience: 'grad',
-  llm_model: 'kilo-auto/free',
+  llm_model: 'tencent/hy3:free',
   llm_base: '/api/llm',
   enable_peer_reviewer: false,
 };

@@ -63,7 +63,7 @@ export async function runAgentLoop(
   // Route through our /api/llm proxy — the browser can't call the
   // LLM gateway directly (CORS).
   const base = (globalThis as { LATTICE_LLM_BASE?: string }).LATTICE_LLM_BASE ?? '/api/llm';
-  const model = opts.model ?? (globalThis as { LATTICE_LLM_MODEL?: string }).LATTICE_LLM_MODEL ?? 'kilo-auto/free';
+  const model = opts.model ?? (globalThis as { LATTICE_LLM_MODEL?: string }).LATTICE_LLM_MODEL ?? 'tencent/hy3:free';
 
   const tools = await listTools();
   const messages: ChatMessage[] = [

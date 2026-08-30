@@ -154,3 +154,38 @@ export function getStore(name: string): BlobStore {
     },
   };
 }
+
+/**
+ * Resolve a client-supplied paper id to the id the store actually
+ * holds. Ingest keys papers by the arXiv metadata id (which may
+ * carry a version, e.g. arxiv-170603762v7) while library ids
+ * drop it (arxiv:1706.03762 → arxiv-170603762). Lists the
+ * papers/ prefix and matches on the version-stripped digit core —
+ * the vN suffix must go first or its digit pollutes the match.
+ */
+export async function resolvePaperId(
+  store: BlobStore,
+  requested: string,
+): Promise<string | null> {
+  const direct = requested.replace(/^arxiv:/, 'arxiv-');
+  const exact = await store.getWithMetadata(`papers/${direct}/text.json`, { type: 'json' });
+  if (exact) return direct;
+
+  // Strip a trailing version (v7, v2…) from BOTH sides, then
+  // compare digit cores: 1706.03762v7 → 170603762.
+  const core = (id: string): string =>
+    id
+      .replace(/v\d+$/i, '')
+      .replace(/[^0-9]/g, '');
+  const want = core(direct);
+  if (want.length < 4) return null;
+  const { blobs } = await store.list({ prefix: 'papers/' });
+  const seen = new Set<string>();
+  for (const blob of blobs) {
+    const id = blob.key.split('/')[1];
+    if (!id || seen.has(id)) continue;
+    seen.add(id);
+    if (core(id) === want) return id;
+  }
+  return null;
+}

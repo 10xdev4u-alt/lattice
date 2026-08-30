@@ -28,7 +28,6 @@ import { searchLibrary } from './search-library';
 import { addToBibliography } from './add-to-bibliography';
 import { removeFromBibliography } from './remove-from-bibliography';
 import { exportBibliography } from './export-bibliography';
-import { explainEvidence } from './explain-evidence';
 import { showWorkflowTrail } from './show-workflow-trail';
 import { composeReview } from './compose-review';
 
@@ -36,6 +35,9 @@ import { composeReview } from './compose-review';
 // (per the secure-tools guide, "always allow for this session" toggle).
 const sessionAllowed = new Set<string>();
 
+// explain_evidence is registered per-paper (in per-paper.ts), not
+// always-on: it needs an open paper's full text to work from,
+// and a duplicate registration would make open_paper fail.
 const ALWAYS_ON_TOOLS: ToolDefinition[] = [
   listPapers,
   openPaper,
@@ -43,7 +45,6 @@ const ALWAYS_ON_TOOLS: ToolDefinition[] = [
   addToBibliography,
   removeFromBibliography,
   exportBibliography,
-  explainEvidence,
   showWorkflowTrail,
   composeReview,
 ];

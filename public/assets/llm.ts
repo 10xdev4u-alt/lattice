@@ -16,7 +16,7 @@
 // LATTICE_LLM_BASE overrides this for local dev against a proxy
 // that permits browser origins.
 const DEFAULT_BASE = '/api/llm';
-const DEFAULT_MODEL = 'kilo-auto/free';
+const DEFAULT_MODEL = 'tencent/hy3:free';
 const MAX_RETRIES = 3;
 
 interface CompleteOptions {

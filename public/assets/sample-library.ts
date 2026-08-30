@@ -81,4 +81,30 @@ export function loadSampleLibrary(): void {
   for (const paper of SAMPLE_PAPERS) {
     addPaper({ ...paper, addedAt: now });
   }
+  // Fire the real ingests so the LLM-backed tools have actual
+  // paper text to work from (the server fetches the LaTeX and
+  // builds the search index). Best-effort and off the critical
+  // path: the library is usable immediately from metadata.
+  void ingestAll();
+}
+
+async function ingestAll(): Promise<void> {
+  for (const paper of SAMPLE_PAPERS) {
+    if (!paper.arxivId) continue;
+    try {
+      const res = await fetch('/api/papers/from-arxiv', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ arxiv_id: paper.arxivId }),
+      });
+      // 409 = already ingested; anything else non-201 we ignore so
+      // one bad paper can't stall the rest.
+      if (!res.ok && res.status !== 409) {
+        console.warn(`sample ingest for ${paper.arxivId} returned ${res.status}`);
+      }
+    } catch {
+      // network hiccup — metadata-only is fine for this paper
+    }
+  }
+  document.dispatchEvent(new CustomEvent('lattice:library-changed'));
 }

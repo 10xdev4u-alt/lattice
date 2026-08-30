@@ -88,4 +88,17 @@ describe('filesystem store', () => {
     const raw = await readFile(join(storeDir, 'test', 'papers/x/source.tex'), 'utf8');
     expect(raw).toBe('persisted');
   });
+
+  it('resolves a versionless id to the stored versioned id', async () => {
+    await store.setJSON('papers/arxiv-170603762v7/text.json', { pages: [] });
+    const { resolvePaperId } = await import('../api/_lib/store');
+    // library id form (dots, no version)
+    expect(await resolvePaperId(store, 'arxiv:1706.03762')).toBe('arxiv-170603762v7');
+    // dashed form without version
+    expect(await resolvePaperId(store, 'arxiv-170603762')).toBe('arxiv-170603762v7');
+    // exact form passes through
+    expect(await resolvePaperId(store, 'arxiv-170603762v7')).toBe('arxiv-170603762v7');
+    // the vN suffix digit must not pollute the match
+    expect(await resolvePaperId(store, 'arxiv:9999.99999')).toBeNull();
+  });
 });

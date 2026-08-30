@@ -13,6 +13,7 @@
  */
 
 import { createReadStream, existsSync } from 'node:fs';
+import { Readable } from 'node:stream';
 import { readdir, readFile, stat } from 'node:fs/promises';
 import { extname, join, normalize } from 'node:path';
 import { createServer } from 'node:http';

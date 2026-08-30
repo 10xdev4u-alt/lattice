@@ -33,6 +33,10 @@ export const openPaper: ToolDefinition = {
     additionalProperties: false,
   },
   annotations: {
+    // Opening a paper only registers its per-paper tools —
+    // nothing is written or deleted — so it runs without the
+    // write-tool confirmation modal.
+    readOnlyHint: true,
     destructiveHint: false,
     idempotentHint: true,
   },
