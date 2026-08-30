@@ -56,6 +56,12 @@ async function main(): Promise<void> {
     if (host) mountSessionTimer(host);
   });
 
+  // Next-action carousel on the empty state. Rotates every 5s.
+  void import('./ui/next-action-carousel').then(({ mountNextActionCarousel }) => {
+    const host = document.querySelector<HTMLElement>('[data-carousel-host]');
+    if (host) mountNextActionCarousel(host);
+  });
+
   // Peer-reviewer preview: hover a citation chip, see the challenge.
   void import('./peer-preview').then(({ mountPeerPreview }) => mountPeerPreview());
 

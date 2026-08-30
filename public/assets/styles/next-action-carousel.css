@@ -1,0 +1,28 @@
+/* Next-action carousel */
+.next-action {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-3);
+  padding: var(--sp-2) var(--sp-3);
+  background: var(--bg-elev-1);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  margin: var(--sp-2) 0;
+}
+.next-action-label {
+  flex: 1;
+  font-size: var(--text-sm);
+  color: var(--fg-muted);
+  line-height: 1.5;
+}
+.next-action button {
+  font-size: var(--text-xs);
+  padding: var(--sp-1) var(--sp-3);
+  background: var(--accent);
+  color: white;
+  border: none;
+  border-radius: var(--r-sm);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.next-action button:hover { filter: brightness(1.1); }

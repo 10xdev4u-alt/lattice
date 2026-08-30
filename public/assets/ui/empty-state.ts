@@ -41,6 +41,7 @@ export function mountEmptyState(root: HTMLElement): void {
         <button data-action="annotations">Annotations</button>
       </div>
       <p class="empty-hint">A judge who clicks this should: load the sample library, then watch the Live Tool Array light up as the agent acts. Or click "30-second tour" for an auto-cycled walkthrough.</p>
+      <div data-carousel-host></div>
     </section>
   `;
 
