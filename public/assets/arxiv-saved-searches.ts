@@ -136,8 +136,9 @@ function render(root: HTMLElement): void {
           <option value="stat.ML">stat.ML</option>
           <option value="q-bio.NC">q-bio.NC</option>
         </select>
-        <button type="submit">Save</button>
+        <button type="submit">Save this search</button>
       </form>
+      <p class="saved-searches-hint">Save a search to see the latest arXiv papers in that category+query. Click "Check for new" to fetch fresh results.</p>
       <ul class="saved-searches-list" role="list">
         ${searches
           .map(

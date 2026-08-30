@@ -53,17 +53,26 @@ export function mountStatsPageOverlay(): void {
       </section>
       <section class="stats-section">
         <h3>Feedback</h3>
-        <ul>
-          <li><span class="stats-num stats-good">${upCount}</span> thumbs up</li>
-          <li><span class="stats-num stats-warn">${downCount}</span> thumbs down</li>
-          ${approval !== null ? `<li>approval: <span class="stats-num ${approval >= 70 ? 'stats-good' : approval >= 40 ? 'stats-warn' : 'stats-bad'}">${approval}%</span></li>` : '<li>no ratings yet</li>'}
-        </ul>
+        <p>summary: ${upCount} 👍 / ${downCount} 👎${approval !== null ? ` (${approval}% approval)` : ''}</p>
+        <button data-action="drilldown">Drill into feedback</button>
       </section>
     </div>
   `;
   overlay.addEventListener('click', (e) => {
     const t = e.target as HTMLElement;
     if (t.dataset.action === 'close' || t === overlay) overlay.remove();
+    if (t.dataset.action === 'drilldown') {
+      const drilldown = document.createElement('div');
+      drilldown.className = 'kg-overlay';
+      drilldown.innerHTML = `<div class="kg-modal" role="dialog" aria-modal="true" style="width: 92vw; max-width: 880px; padding: var(--sp-4)"><button data-action="close">Close</button><div data-feedback-host></div></div>`;
+      drilldown.addEventListener('click', (e2) => {
+        const t2 = e2.target as HTMLElement;
+        if (t2.dataset.action === 'close' || t2 === drilldown) drilldown.remove();
+      });
+      document.body.appendChild(drilldown);
+      const host = drilldown.querySelector<HTMLElement>('[data-feedback-host]');
+      if (host) void import('./feedback-tab').then(({ mountFeedbackTab }) => mountFeedbackTab(host));
+    }
   });
   document.body.appendChild(overlay);
 }
