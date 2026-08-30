@@ -83,6 +83,14 @@ async function main(): Promise<void> {
     }
   });
 
+  // Command palette (Cmd/Ctrl+K).
+  document.addEventListener('keydown', (e) => {
+    if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+      e.preventDefault();
+      void import('./ui/command-palette').then(({ mountCommandPalette }) => mountCommandPalette());
+    }
+  });
+
   // Report-a-problem button: copy a diagnostic bundle to the clipboard.
   document.querySelector<HTMLButtonElement>('[data-action="report-problem"]')?.addEventListener('click', async () => {
     const { copyDiagnosticBundleToClipboard } = await import('./diagnostics');
