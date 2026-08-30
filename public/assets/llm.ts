@@ -11,9 +11,12 @@
  * and network errors. 4xx errors are not retried.
  */
 
-const DEFAULT_BASE = 'https://api.kilo.ai/api/gateway/v1';
+// The browser can't call the LLM gateway directly (CORS), so every
+// client LLM call routes through our /api/llm Netlify Function.
+// LATTICE_LLM_BASE overrides this for local dev against a proxy
+// that permits browser origins.
+const DEFAULT_BASE = '/api/llm';
 const DEFAULT_MODEL = 'poolside-laguna-free';
-const DEFAULT_KEY = 'latticex';
 const MAX_RETRIES = 3;
 
 interface CompleteOptions {
@@ -24,15 +27,11 @@ interface CompleteOptions {
 }
 
 function getBase(): string {
-  return (globalThis as any).LATTICE_LLM_BASE ?? DEFAULT_BASE;
+  return (globalThis as { LATTICE_LLM_BASE?: string }).LATTICE_LLM_BASE ?? DEFAULT_BASE;
 }
 
 function getModel(): string {
-  return (globalThis as any).LATTICE_LLM_MODEL ?? DEFAULT_MODEL;
-}
-
-function getKey(): string {
-  return (globalThis as any).LATTICE_LLM_KEY ?? DEFAULT_KEY;
+  return (globalThis as { LATTICE_LLM_MODEL?: string }).LATTICE_LLM_MODEL ?? DEFAULT_MODEL;
 }
 
 function sleep(ms: number, signal: AbortSignal): Promise<void> {
@@ -61,12 +60,9 @@ export async function completePrompt(prompt: string, opts: CompleteOptions): Pro
   let lastErr: Error | null = null;
   for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
     try {
-      const res = await fetch(`${base}/chat/completions`, {
+      const res = await fetch(base, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${getKey()}`,
-        },
+        headers: { 'Content-Type': 'application/json' },
         body,
         signal: opts.signal,
       });

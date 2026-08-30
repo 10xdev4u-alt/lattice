@@ -20,7 +20,7 @@ const DEFAULTS: Settings = {
   confirm_writes: true,
   default_audience: 'grad',
   llm_model: 'poolside-laguna-free',
-  llm_base: 'https://api.kilo.ai/api/gateway/v1',
+  llm_base: '/api/llm',
   enable_peer_reviewer: false,
 };
 

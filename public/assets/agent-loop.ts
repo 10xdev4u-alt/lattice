@@ -60,9 +60,10 @@ export async function runAgentLoop(
   history: ChatMessage[],
   opts: AgentLoopOptions,
 ): Promise<AgentLoopResult> {
-  const base = (globalThis as any).LATTICE_LLM_BASE ?? 'https://api.kilo.ai/api/gateway/v1';
-  const model = opts.model ?? (globalThis as any).LATTICE_LLM_MODEL ?? 'poolside-laguna-free';
-  const key = (globalThis as any).LATTICE_LLM_KEY ?? 'latticex';
+  // Route through our /api/llm proxy — the browser can't call the
+  // LLM gateway directly (CORS).
+  const base = (globalThis as { LATTICE_LLM_BASE?: string }).LATTICE_LLM_BASE ?? '/api/llm';
+  const model = opts.model ?? (globalThis as { LATTICE_LLM_MODEL?: string }).LATTICE_LLM_MODEL ?? 'poolside-laguna-free';
 
   const tools = await listTools();
   const messages: ChatMessage[] = [
@@ -77,12 +78,9 @@ export async function runAgentLoop(
   let finalMessage = '';
 
   while (turns++ < maxTurns) {
-    const res = await fetch(`${base.replace(/\/$/, '')}/chat/completions`, {
+    const res = await fetch(base, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${key}`,
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         model,
         messages,

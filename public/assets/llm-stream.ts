@@ -29,15 +29,13 @@ interface StreamResult {
 }
 
 function getBase(): string {
-  return (globalThis as any).LATTICE_LLM_BASE ?? 'https://api.kilo.ai/api/gateway/v1';
+  // Route through our /api/llm proxy — the browser can't call the
+  // LLM gateway directly (CORS).
+  return (globalThis as { LATTICE_LLM_BASE?: string }).LATTICE_LLM_BASE ?? '/api/llm';
 }
 
 function getModel(): string {
-  return (globalThis as any).LATTICE_LLM_MODEL ?? 'poolside-laguna-free';
-}
-
-function getKey(): string {
-  return (globalThis as any).LATTICE_LLM_KEY ?? 'latticex';
+  return (globalThis as { LATTICE_LLM_MODEL?: string }).LATTICE_LLM_MODEL ?? 'poolside-laguna-free';
 }
 
 export async function streamCompletePrompt(
@@ -46,13 +44,9 @@ export async function streamCompletePrompt(
   onDelta: (delta: string) => void,
 ): Promise<StreamResult> {
   const start = performance.now();
-  const base = getBase().replace(/\/$/, '');
-  const res = await fetch(`${base}/chat/completions`, {
+  const res = await fetch(getBase(), {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${getKey()}`,
-    },
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
       model: opts.model ?? getModel(),
       messages: [
