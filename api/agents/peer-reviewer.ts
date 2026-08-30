@@ -10,7 +10,7 @@
  * to get a second opinion from a different reviewer archetype.
  */
 
-import type { Config, Context } from '@netlify/functions';
+import type { Config, Context } from '../_lib/types';
 
 interface Req {
   claim: string;

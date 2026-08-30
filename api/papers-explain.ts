@@ -13,8 +13,8 @@
  * Closes the polish item: real explain_evidence.
  */
 
-import type { Config, Context } from '@netlify/functions';
-import { getStore } from '@netlify/blobs';
+import type { Config, Context } from './_lib/types';
+import { getStore } from './_lib/store';
 import { completePrompt } from './_lib/llm';
 
 interface ExplainRequest {

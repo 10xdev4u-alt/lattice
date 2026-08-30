@@ -12,7 +12,7 @@ import {
   searchIndex,
   snippetAroundTermInText,
   type PageText,
-} from '../netlify/functions/_lib/search-index';
+} from '../api/_lib/search-index';
 
 describe('search-index end-to-end', () => {
   it('indexes a multi-page paper and returns ranked hits', () => {

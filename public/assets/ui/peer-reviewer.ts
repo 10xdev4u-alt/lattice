@@ -7,7 +7,7 @@
  * workflow trail.
  *
  * For the demo the second agent is server-rendered at
- * /api/agents/peer-reviewer (see netlify/functions/agents/peer-reviewer.ts).
+ * /api/agents/peer-reviewer (see api/agents/peer-reviewer.ts).
  * The persona's challenges stream into the chat in violet so the
  * human can tell which agent is which.
  *

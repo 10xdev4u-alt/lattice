@@ -96,10 +96,12 @@ Three reasons:
 ## What about my data?
 
 In the demo, the library and trail live in your browser's
-localStorage. The PDF source and the search index live in Netlify
-Blobs scoped to the Lattice site. No third-party analytics, no
-tracking, no cookies beyond the session. The magic-link auth (when
-shipped) will scope persistence to your account.
+localStorage. The PDF source and the search index live in the
+server's filesystem store (`LATTICE_STORE_DIR`, `/data` in the
+Docker image) — a mounted volume, so your papers stay yours. No
+third-party analytics, no tracking, no cookies beyond the
+session. The magic-link auth (when shipped) will scope
+persistence to your account.
 
 ## What can I do with the command palette?
 

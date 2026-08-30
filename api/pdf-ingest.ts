@@ -12,8 +12,8 @@
  * paper is uploaded, validated, stored, and its raw text is extracted.
  */
 
-import type { Config, Context } from '@netlify/functions';
-import { getStore } from '@netlify/blobs';
+import type { Config, Context } from './_lib/types';
+import { getStore } from './_lib/store';
 import { createHash } from 'node:crypto';
 import { extractPdfText } from './_lib/pdf-text';
 import { buildIndex, type PageText } from './_lib/search-index';

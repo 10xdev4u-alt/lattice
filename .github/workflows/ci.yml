@@ -29,3 +29,46 @@ jobs:
         run: npm run lint:tools
       - name: Build
         run: npm run build
+
+  docker:
+    name: Docker build, test, artifact
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      # Test target: build + run the whole vitest suite in-container.
+      - name: Build & run test target
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          target: test
+          push: false
+          load: true
+          tags: lattice:test
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+      # Runtime target: the shippable image. Exported as a
+      # gzipped tarball artifact (~57MB vs ~238MB raw).
+      - name: Build runtime image
+        run: docker build --target runtime -t lattice:runtime .
+      - name: Smoke test the runtime container
+        run: |
+          docker run -d --name lattice-smoke -p 8888:8888 lattice:runtime
+          for i in $(seq 1 20); do
+            if curl -sf http://localhost:8888/api/healthz >/dev/null 2>&1; then break; fi
+            sleep 1
+          done
+          curl -sf http://localhost:8888/api/healthz
+          curl -sf -o /dev/null http://localhost:8888/
+          curl -sI http://localhost:8888/api/healthz | grep -qi 'permissions-policy: tools=(self)'
+          docker rm -f lattice-smoke
+      - name: Export compressed artifact
+        run: docker save lattice:runtime | gzip -6 > lattice-image.tar.gz
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: lattice-image
+          path: lattice-image.tar.gz
+          retention-days: 7
+

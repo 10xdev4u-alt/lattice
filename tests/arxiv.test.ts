@@ -6,7 +6,7 @@
  */
 
 import { describe, expect, it } from 'vitest';
-import { stripArxivId, stripLatex } from '../netlify/functions/_lib/arxiv';
+import { stripArxivId, stripLatex } from '../api/_lib/arxiv';
 
 describe('stripArxivId', () => {
   it('parses a plain new-style ID', () => {

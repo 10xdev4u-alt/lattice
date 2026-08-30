@@ -10,7 +10,7 @@
  * to pdfjs-dist's getDocument().
  *
  * The real two-column read order is applied per page (the strategy
- * from netlify/functions/_lib/column-detector.ts), so text-layer
+ * from api/_lib/column-detector.ts), so text-layer
  * selection is in reading order even on multi-column papers.
  *
  * Per-paper highlights (from `highlights.ts`) render as marker spans

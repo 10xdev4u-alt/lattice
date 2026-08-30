@@ -6,8 +6,8 @@
  * be scoped to the user.
  */
 
-import type { Config, Context } from '@netlify/functions';
-import { getStore } from '@netlify/blobs';
+import type { Config, Context } from './_lib/types';
+import { getStore } from './_lib/store';
 
 export default async (req: Request, _ctx: Context): Promise<Response> => {
   const id = new URL(req.url).pathname.match(/\/api\/sessions\/([^/]+)/)?.[1];

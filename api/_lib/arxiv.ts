@@ -15,6 +15,7 @@
  */
 
 import { gunzipSync } from 'node:zlib';
+import { safeFetch } from './url-guard';
 
 const ARXIV_API = 'http://export.arxiv.org/api/query';
 const ARXIV_EPRINT = 'https://arxiv.org/e-print';
@@ -41,7 +42,7 @@ export async function fetchArxivMetadata(arxivId: string): Promise<ArxivMetadata
   if (!cleaned) return null;
 
   try {
-    const res = await fetch(`${ARXIV_API}?id_list=${encodeURIComponent(cleaned)}`, {
+    const res = await safeFetch(`${ARXIV_API}?id_list=${encodeURIComponent(cleaned)}`, {
       headers: { Accept: 'application/atom+xml' },
     });
     if (!res.ok) return null;
@@ -58,7 +59,7 @@ export async function fetchArxivSource(arxivId: string): Promise<ArxivSourceResu
 
   let res: Response;
   try {
-    res = await fetch(`${ARXIV_EPRINT}/${encodeURIComponent(cleaned)}`, {
+    res = await safeFetch(`${ARXIV_EPRINT}/${encodeURIComponent(cleaned)}`, {
       headers: { Accept: 'application/x-eprint' },
     });
   } catch {

@@ -1,13 +1,13 @@
 /**
  * Unit tests for the rate limiter.
  *
- * The real rate limiter lives in netlify/functions/_lib/rate-limit.ts
+ * The real rate limiter lives in api/_lib/rate-limit.ts
  * and uses a module-scoped Map. We import it and exercise the
  * short-window and long-window rules.
  */
 
 import { describe, expect, it } from 'vitest';
-import { checkRateLimit } from '../netlify/functions/_lib/rate-limit';
+import { checkRateLimit } from '../api/_lib/rate-limit';
 
 describe('rate limiter', () => {
   it('allows up to 60 calls per minute', () => {

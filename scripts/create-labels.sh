@@ -33,9 +33,9 @@ priority: low|cccccc|Polish, nice-to-have
 area: webmcp|0e8a16|WebMCP API surface, tool registration, annotations
 area: pdf|0e8a16|PDF parsing, text extraction, layout analysis
 area: ai|0e8a16|LLM calls, prompt engineering, response handling
-area: storage|0e8a16|Netlify Blobs, persistence, migrations
+area: storage|0e8a16|filesystem store, persistence, migrations
 area: auth|0e8a16|Auth, sessions, rate limits, abuse
-area: deploy|0e8a16|netlify.toml, env, CI/CD
+area: deploy|0e8a16|Dockerfile, compose, env, CI/CD
 area: design|0e8a16|Tokens, components, motion, accessibility
 area: content|0e8a16|Sample papers, copy, README, submission text
 needs-triage|ededed|Issue has not been reviewed for priority/area

@@ -4,7 +4,7 @@
  * Invites a second agent (a peer-reviewer persona) into the page.
  * The cross-agent demo. For the scaffold we set a flag; the real
  * orchestration lives in `cross-agent.ts` and the persona prompt
- * lives in `netlify/functions/agents/peer-reviewer.ts`.
+ * lives in `api/agents/peer-reviewer.ts`.
  *
  * Closes: #21
  */

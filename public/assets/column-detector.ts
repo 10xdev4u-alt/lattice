@@ -2,7 +2,7 @@
  * Two-column read-order reconstruction for academic PDFs — client copy.
  *
  * This is a browser-safe duplicate of
- * netlify/functions/_lib/column-detector.ts. The two must stay in
+ * api/_lib/column-detector.ts. The two must stay in
  * sync; the tests in tests/column-detector.test.ts import the server
  * copy, so a change here requires the same change there.
  *

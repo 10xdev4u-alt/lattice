@@ -1,43 +1,77 @@
 # syntax=docker/dockerfile:1.7
-# Lattice — multi-stage build, image size budget: < 200MB.
+# Lattice — multi-stage Docker build. Image size budget: < 200MB.
 #
-# Stage 1: build the static site + functions
-# Stage 2: serve with Node, install prod deps only, drop the build chain.
+# targets:
+#   builder  — full toolchain, builds dist/ (client) + dist-api/ (server)
+#   test     — builder + vitest run (CI uses this to verify in-docker)
+#   runtime  — bare node + the built artifacts (~3MB of app)
+#
+# The whole app (client + API + store) is one self-contained
+# process: `node server.mjs`. No platform lock-in. The app layer
+# is ~3MB; the node:alpine base accounts for the rest of the
+# image. For a compact shippable artifact use
+#   docker save lattice:runtime | gzip > lattice.tar.gz
+# (see scripts/docker-artifact.sh).
 
-ARG NODE_VERSION=20
-ARG IMAGE_SIZE_BUDGET_MB=200
+ARG NODE_VERSION=22
+ARG APP_SIZE_BUDGET_MB=200
 
+# ---------------------------------------------------------------------------
 FROM node:${NODE_VERSION}-alpine AS builder
 WORKDIR /app
+
+# Build-time env (no prod deps needed for the build itself)
+RUN apk add --no-cache git
+
 COPY package.json package-lock.json* ./
 RUN npm ci --no-audit --no-fund
-COPY tsconfig.json vite.config.ts netlify.toml ./
-COPY public ./public
-COPY netlify ./netlify
-RUN npm run build
 
+COPY tsconfig.json eslint.config.js vite.config.json* vite.config.ts ./
+COPY public ./public
+COPY api ./api
+COPY server.mjs ./
+COPY scripts ./scripts
+COPY tests ./tests
+
+RUN npm run build && node scripts/build-api.mjs
+
+# ---------------------------------------------------------------------------
+# Optional target: run the test suite inside the built image.
+#   docker build --target test .
+#   docker run --rm <id>   (exits non-zero on failure)
+FROM builder AS test
+RUN npm test
+
+# ---------------------------------------------------------------------------
 FROM node:${NODE_VERSION}-alpine AS runtime
 WORKDIR /app
+ARG APP_SIZE_BUDGET_MB=200
 ENV NODE_ENV=production
 ENV PORT=8888
-COPY package.json package-lock.json* ./
-RUN npm ci --omit=dev --no-audit --no-fund \
-  && npm cache clean --force \
-  && rm -rf /root/.npm
-COPY --from=builder /app/dist ./dist
-COPY --from=builder /app/netlify ./netlify
-COPY netlify.toml ./
+ENV LATTICE_STORE_DIR=/data
 
-# Run as a non-root user for safety
-RUN addgroup -S lattice && adduser -S lattice -G lattice
+# The server runtime is pure Node builtins (fs, http, path, zlib,
+# dns, crypto) — every client dep is already bundled into dist/.
+# No npm install, no node_modules: the image is just node + the
+# built artifacts.
+COPY server.mjs ./
+COPY --from=builder /app/dist ./dist
+COPY --from=builder /app/dist-api ./dist-api
+
+# Persistent store (papers, sessions) — mount a volume here.
+RUN mkdir -p /data \
+  && addgroup -S lattice \
+  && adduser -S lattice -G lattice \
+  && chown -R lattice:lattice /app /data
 USER lattice
 
 EXPOSE 8888
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s \
+  CMD wget -qO- http://127.0.0.1:8888/api/healthz || exit 1
 
-# A tiny static + functions server. Netlify CLI does the heavy lifting
-# in dev; in prod we serve the dist via @netlify/cli's serve.
-CMD ["npx", "--yes", "netlify", "cli", "serve", "--port", "8888"]
+CMD ["node", "server.mjs"]
 
-# Image size sanity check
-RUN echo "Image size budget: ${IMAGE_SIZE_BUDGET_MB}MB" && \
-    du -sh /app | awk '{ if ($1+0 > '${IMAGE_SIZE_BUDGET_MB}') { print "WARN: image exceeds budget: "$1; exit 1 } else { print "OK: image size "$1" under budget" } }'
+# Size sanity check: the app layer (dist + dist-api) must stay tiny —
+# the node base (~230MB) is fixed overhead, ours is the part we control.
+RUN SIZE_MB=$(du -sm /app | cut -f1) && echo "app layer: ${SIZE_MB}MB (budget ${APP_SIZE_BUDGET_MB}MB)" \
+    && if [ "$SIZE_MB" -gt "$APP_SIZE_BUDGET_MB" ]; then echo "FATAL: over budget"; exit 1; fi

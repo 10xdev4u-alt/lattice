@@ -11,6 +11,8 @@ const DEFAULT_BASE = 'https://api.kilo.ai/api/gateway/v1';
 const DEFAULT_MODEL = 'poolside-laguna-free';
 const DEFAULT_KEY = 'latticex';
 
+import { safeFetch } from './url-guard';
+
 function getBase(): string {
   return process.env.LATTICE_LLM_BASE ?? DEFAULT_BASE;
 }
@@ -28,7 +30,7 @@ export async function completePrompt(
   opts: { signal: AbortSignal; maxTokens?: number; temperature?: number; system?: string },
 ): Promise<string> {
   const base = getBase().replace(/\/$/, '');
-  const res = await fetch(`${base}/chat/completions`, {
+  const res = await safeFetch(`${base}/chat/completions`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',

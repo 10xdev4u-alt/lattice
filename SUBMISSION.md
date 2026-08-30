@@ -20,4 +20,4 @@ Existing WebMCP demos are stores, bookings, and games. Lattice is the first work
 
 ## Stack
 
-Vanilla TypeScript on Netlify Functions + Blobs + AI Gateway. pdf.js for PDF extraction, @citation-js for bibliography export. Apache 2.0. The Lattice source is on GitHub; the research briefs, the issue tracker, and the demo are all public.
+Vanilla TypeScript on a plain-Node server — client, API, and filesystem store in one `node server.mjs` process, no platform lock-in. Docker-first: multi-stage alpine build, in-container test suite, ~57MB gzipped image artifact. pdf.js for PDF extraction, @citation-js for bibliography export. Apache 2.0. The Lattice source is on GitHub; the research briefs, the issue tracker, and the demo are all public.

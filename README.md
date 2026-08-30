@@ -21,20 +21,30 @@ You bring a library of research PDFs. Lattice registers 14 typed WebMCP tools th
 
 ## Try it
 
-The app is the `public/` directory served by Vite. Run it with one of:
+Docker-first — one image runs the client, the API, and the store:
 
 ```bash
-# Option A — Vite dev server
+# Option A — Docker (recommended)
+docker build --target runtime -t lattice:runtime .
+docker run --rm -p 8888:8888 lattice:runtime
+# → http://localhost:8888
+
+# Compressed shippable artifact (~57MB gz)
+scripts/docker-artifact.sh lattice-image.tar.gz
+gunzip -c lattice-image.tar.gz | docker load
+
+# Dev/test via compose
+docker compose up prod -d     # the running app on :8888
+docker compose run --rm test  # the vitest suite in-container
+docker compose up dev         # vite + API server, hot reload
+
+# Option B — local Node (no Docker)
 npm install
-npm run dev          # http://localhost:8888
+npm run build
+npm start            # → http://localhost:8888
 
-# Option B — Netlify Functions included
-npm install -g netlify-cli
-netlify dev          # http://localhost:8888
-
-# Option C — Docker
-docker build -t lattice:dev .
-docker run --rm -p 8888:8888 lattice:dev
+# Option C — dev with hot reload
+npm run dev          # vite on :5173, API on :8888
 ```
 
 For the full WebMCP experience, open in **Chrome 149+ with the flag enabled at `chrome://flags/#enable-webmcp-testing`**, or in the **ChatGPT desktop in-app browser**. The polyfill keeps the page fully usable in Safari and Firefox.
@@ -70,9 +80,10 @@ Every tool: snake_case, ≤ 30 char name, ≤ 500 char description, JSON-Schema 
 
 | | |
 |---|---|
-| **Stack** | Vanilla TypeScript, Vite, Netlify Functions, Netlify Blobs, pdf.js, @citation-js |
-| **LLM** | OpenAI-compatible endpoint at `https://api.kilo.ai/api/gateway/v1`, model `poolside-laguna-free`, key `latticex` (swap via env var) |
-| **Storage** | Netlify Blobs for papers (`papers/<id>/source.pdf`, `text.json`, `index.json`); localStorage for the trail in the demo |
+| **Stack** | Vanilla TypeScript, Vite, plain-Node API (one `node server.mjs` process), pdf.js, @citation-js |
+| **LLM** | OpenAI-compatible endpoint at `https://api.kilo.ai/api/gateway/v1`, model `poolside-laguna-free`, key `latticex` (swap via env var); browser calls route through `/api/llm` |
+| **Storage** | Filesystem KV under `LATTICE_STORE_DIR` for papers (`papers/<id>/source.pdf`, `text.json`, `index.json`); localStorage for the trail in the demo |
+| **Docker** | Multi-stage alpine build: `test` target (in-container vitest), `runtime` target (~3MB app layer on node:22-alpine), 57MB gzipped artifact via `scripts/docker-artifact.sh` |
 | **WebMCP** | Imperative API only, with a no-op polyfill for absent `document.modelContext` |
 | **License** | Apache 2.0 |
 | **Status** | 10-day sprint, deadline Sept 3, 2026 1pm PT |

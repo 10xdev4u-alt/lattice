@@ -1,0 +1,50 @@
+# Lattice — one container, no platform lock-in.
+#
+#   docker compose up dev      # vite client + API server, hot reload
+#   docker compose up test     # run the vitest suite in-container
+#   docker compose up prod -d  # the real thing on :8888
+
+services:
+  prod:
+    build:
+      context: .
+      target: runtime
+    ports:
+      - '8888:8888'
+    environment:
+      LATTICE_LLM_BASE: ${LATTICE_LLM_BASE:-https://api.kilo.ai/api/gateway/v1}
+      LATTICE_LLM_MODEL: ${LATTICE_LLM_MODEL:-poolside-laguna-free}
+      LATTICE_LLM_KEY: ${LATTICE_LLM_KEY:-latticex}
+      LATTICE_STORE_DIR: /data
+    volumes:
+      - lattice-data:/data
+    restart: unless-stopped
+
+  test:
+    build:
+      context: .
+      target: test
+    command: npm test
+    profiles: ['test']
+
+  dev:
+    build:
+      context: .
+      target: builder
+    command: npm run dev
+    ports:
+      - '5173:5173'
+      - '8888:8888'
+    environment:
+      LATTICE_LLM_BASE: ${LATTICE_LLM_BASE:-https://api.kilo.ai/api/gateway/v1}
+      LATTICE_LLM_MODEL: ${LATTICE_LLM_MODEL:-poolside-laguna-free}
+      LATTICE_LLM_KEY: ${LATTICE_LLM_KEY:-latticex}
+    volumes:
+      - ./public:/app/public
+      - ./api:/app/api
+      - ./server.mjs:/app/server.mjs
+      - ./scripts:/app/scripts
+    profiles: ['dev']
+
+volumes:
+  lattice-data:

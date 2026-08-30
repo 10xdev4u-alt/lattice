@@ -11,7 +11,7 @@ branch from main (name: feat/<scope>-<short-desc> or fix/<scope>-<short-desc>)
    ↓
 small commits, conventional commit messages, 6-word title
    ↓
-local validation (npm run typecheck, npm run lint, npm run test, netlify dev smoke)
+local validation (npm run typecheck, npm run lint, npm run test, docker compose up prod smoke)
    ↓
 push branch, open PR referencing the issue ("Closes #N" in the body)
    ↓

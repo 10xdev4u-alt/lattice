@@ -5,7 +5,7 @@
  * Closes: #107.
  */
 
-import type { Config, Context } from '@netlify/functions';
+import type { Config, Context } from './_lib/types';
 
 export default async (_req: Request, _context: Context): Promise<Response> => {
   const checks: Record<string, string> = {

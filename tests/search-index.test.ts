@@ -3,7 +3,7 @@
  */
 
 import { describe, expect, it } from 'vitest';
-import { buildIndex, searchIndex, snippetAroundTermInText, type PageText } from '../netlify/functions/_lib/search-index';
+import { buildIndex, searchIndex, snippetAroundTermInText, type PageText } from '../api/_lib/search-index';
 
 describe('buildIndex', () => {
   it('counts terms per page', () => {

@@ -1,9 +1,14 @@
 node_modules
 dist
+dist-api
+.lattice-data
 .netlify
 coverage
 .git
+.github
 .mimosa
 .DS_Store
 *.log
 .vite
+research
+design

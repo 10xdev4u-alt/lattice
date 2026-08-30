@@ -11,8 +11,8 @@
  * Closes the polish item: the search tool now returns real hits.
  */
 
-import type { Config, Context } from '@netlify/functions';
-import { getStore } from '@netlify/blobs';
+import type { Config, Context } from './_lib/types';
+import { getStore } from './_lib/store';
 import { searchIndex, type SearchIndex, snippetAroundTermInText } from './_lib/search-index';
 
 interface SearchRequest {

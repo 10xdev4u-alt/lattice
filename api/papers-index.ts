@@ -13,8 +13,8 @@
  * Closes the polish item: list_papers reads from the server.
  */
 
-import type { Config, Context } from '@netlify/functions';
-import { getStore } from '@netlify/blobs';
+import type { Config, Context } from './_lib/types';
+import { getStore } from './_lib/store';
 
 export default async (_req: Request, _ctx: Context): Promise<Response> => {
   const store = getStore('lattice');

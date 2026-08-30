@@ -17,7 +17,7 @@ pass() { echo "PASS: $*"; PASS=$((PASS+1)); }
 fail() { echo "FAIL: $*"; FAIL=$((FAIL+1)); }
 
 # 1. Required files exist
-for f in README.md LICENSE CONTRIBUTING.md HANDOFF.md CHANGELOG.md FAQ.md SUBMISSION.md package.json netlify.toml vite.config.ts tsconfig.json; do
+for f in README.md LICENSE CONTRIBUTING.md HANDOFF.md CHANGELOG.md FAQ.md SUBMISSION.md package.json docker-compose.yml vite.config.ts tsconfig.json server.mjs Dockerfile; do
   if [ -f "$f" ]; then pass "$f exists"; else fail "$f missing"; fi
 done
 
@@ -30,9 +30,9 @@ done
 TOOLS=$(ls public/assets/tools/*.ts 2>/dev/null | wc -l)
 if [ "$TOOLS" -ge 14 ]; then pass "$TOOLS tool files"; else fail "expected >=14 tool files, got $TOOLS"; fi
 
-# 4. The Functions exist
-FNS=$(ls netlify/functions/*.ts 2>/dev/null | wc -l)
-if [ "$FNS" -ge 6 ]; then pass "$FNS Function files"; else fail "expected >=6 Functions, got $FNS"; fi
+# 4. The API handlers exist
+FNS=$(ls api/*.ts 2>/dev/null | wc -l)
+if [ "$FNS" -ge 6 ]; then pass "$FNS API handler files"; else fail "expected >=6 API handlers, got $FNS"; fi
 
 # 5. The HTML pages
 for f in public/index.html public/share.html public/landing.html; do
@@ -66,9 +66,9 @@ for f in scripts/issues.json .github/labels.yml .github/labeler.yml; do
   fi
 done
 
-# 9. netlify.toml has the WebMCP headers
-if grep -q 'Origin-Agent-Cluster' netlify.toml; then pass "WebMCP headers in netlify.toml"; else fail "WebMCP headers missing from netlify.toml"; fi
-if grep -q 'tools=(self)' netlify.toml; then pass "tools permission policy in netlify.toml"; else fail "tools permission policy missing"; fi
+# 9. server.mjs sets the WebMCP headers on every response
+if grep -q 'Origin-Agent-Cluster' server.mjs; then pass "WebMCP origin isolation in server.mjs"; else fail "WebMCP headers missing from server.mjs"; fi
+if grep -q 'tools=(self)' server.mjs; then pass "tools permission policy in server.mjs"; else fail "tools permission policy missing"; fi
 
 # 10. Dockerfile size check
 if [ -f Dockerfile ]; then pass "Dockerfile present"; else fail "Dockerfile missing"; fi

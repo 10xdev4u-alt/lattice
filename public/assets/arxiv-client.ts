@@ -1,7 +1,7 @@
 /**
  * Client-safe arXiv metadata fetcher.
  *
- * This is the browser-facing half of netlify/functions/_lib/arxiv.ts.
+ * This is the browser-facing half of api/_lib/arxiv.ts.
  * The server version also fetches the gzipped .tex source via
  * node:zlib, which cannot run in the browser — so any client import
  * of the server module crashes the whole app at boot.

@@ -3,7 +3,7 @@
  */
 
 import { describe, expect, it } from 'vitest';
-import { reconstructPage, type TextItem } from '../netlify/functions/_lib/column-detector';
+import { reconstructPage, type TextItem } from '../api/_lib/column-detector';
 
 function item(x: number, y: number, str: string, w = 50, h = 10): TextItem {
   return { str, x, y, width: w, height: h };

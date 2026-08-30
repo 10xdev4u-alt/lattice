@@ -5,11 +5,14 @@ node_modules/
 
 # Build artifacts
 dist/
+dist-api/
 build/
-.netlify/
-.netlify-build/
 .cache/
 .turbo/
+
+# Server-side KV store (runtime data — papers, sessions)
+.lattice-data/
+lattice-image.tar.gz
 
 # Test artifacts
 coverage/
@@ -39,9 +42,6 @@ Thumbs.db
 .env.development.local
 .env.test.local
 .env.production.local
-
-# Netlify
-.netlify/
 
 # Local research notes that shouldn't ship
 *.local.md
