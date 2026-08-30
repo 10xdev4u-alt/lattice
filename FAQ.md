@@ -100,3 +100,36 @@ localStorage. The PDF source and the search index live in Netlify
 Blobs scoped to the Lattice site. No third-party analytics, no
 tracking, no cookies beyond the session. The magic-link auth (when
 shipped) will scope persistence to your account.
+
+## What can I do with the command palette?
+
+Press **Cmd/Ctrl+K**. It lists 17 actions: load sample, tour,
+ingest a paper, stats, peer review, bibliography, batch extract,
+knowledge graph, arXiv feed, saved searches, share, restore,
+prompt diff, what's wrong, scratchpad, settings, help. Type to
+filter, arrow keys to navigate, Enter to run.
+
+## What are all the keyboard shortcuts?
+
+- **Cmd/Ctrl+K** — command palette
+- **Cmd/Ctrl+B** — toggle the paper list rail
+- **Cmd/Ctrl+R** — toggle the agent rail
+- **Cmd/Ctrl+Shift+R** — float the agent rail over the canvas
+- **Cmd/Ctrl+,** — settings panel
+- **Cmd/Ctrl+Shift+P** — "what's in the prompt" debug view
+- **g w** — workflow trail tab
+- **g l** — chat tab
+- **g t** — tools tab
+- **g k** — knowledge graph
+- **g f** — arXiv feed
+- **g s** — stats panel
+- **g n** — scratchpad
+- **g b** — branch diff
+- **g h** — session hash (share URL)
+- **g p** — prompt diff (last 2 submissions)
+- **g d** — routine detector
+- **g a** — build bibliography
+- **g r** — restore a session
+- **g i** — ingest one paper
+- **g e** — batch extract quotes
+- **?** — this help
