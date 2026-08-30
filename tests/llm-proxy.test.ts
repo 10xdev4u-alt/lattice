@@ -57,21 +57,24 @@ describe('llm-proxy', () => {
     expect(calls[0]?.url).toBe('https://api.kilo.ai/api/gateway/v1/chat/completions');
   });
 
-  it('validates LATTICE_LLM_BASE but pins the origin to the default', async () => {
-    // Only the path of the configured base is honored; the fetch
-    // origin is the compile-time default, so no env value can
-    // redirect the request to another host.
+  it('switches to an allowed base by exact match', async () => {
+    // LATTICE_LLM_BASE may only select a base the build shipped
+    // with — exact string match, never a novel URL.
     process.env.LATTICE_LLM_BASE = 'https://api.openai.com/v1';
     const res = await post({ messages: [{ role: 'user', content: 'hi' }] });
     expect(res.status).toBe(200);
-    expect(calls[0]?.url).toBe('https://api.kilo.ai/v1/chat/completions');
+    expect(calls[0]?.url).toBe('https://api.openai.com/v1/chat/completions');
   });
 
-  it('honors a custom path on the allowlisted default origin', async () => {
+  it('rejects a same-origin path variant that is not an allowed base', async () => {
+    // A path tweak on an allowlisted origin is still an unknown
+    // URL — it must fail closed.
     process.env.LATTICE_LLM_BASE = 'https://api.kilo.ai/custom/v2';
     const res = await post({ messages: [{ role: 'user', content: 'hi' }] });
-    expect(res.status).toBe(200);
-    expect(calls[0]?.url).toBe('https://api.kilo.ai/custom/v2/chat/completions');
+    expect(res.status).toBe(400);
+    const err = (await res.json()) as { error: { code: string } };
+    expect(err.error.code).toBe('GATEWAY_NOT_ALLOWED');
+    expect(calls).toHaveLength(0);
   });
 
   it('rejects a gateway outside the allowlist before fetching', async () => {

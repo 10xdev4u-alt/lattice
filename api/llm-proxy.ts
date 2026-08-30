@@ -3,29 +3,22 @@
  *
  * The browser can't call api.kilo.ai directly (no
  * Access-Control-Allow-Origin on their end), so every client-side
- * LLM call goes through this Function instead. The Function forwards
- * the request server-side, where CORS doesn't apply, and streams the
- * response back.
+ * LLM call goes through this Function instead. The Function
+ * forwards the request server-side, where CORS doesn't apply, and
+ * streams the response back.
  *
- * The upstream gateway is validated by safeFetch: http/https only,
- * and the host must not resolve to localhost, loopback, link-local,
- * private, or reserved ranges. Any LATTICE_LLM_BASE that tries to
- * reach an internal address is rejected before the request goes out.
+ * SSRF posture: the upstream base is one of a fixed set of
+ * compile-time constants (see _lib/gateway.ts). LATTICE_LLM_BASE
+ * selects among them by exact match and nothing else; the request
+ * body can only choose the model string (validated against a
+ * vendor-charset regex). The URL passed to fetch is therefore a
+ * constant for any given deployment, and assertUrlAllowed
+ * re-validates the resolved host as a second gate.
  */
 
 import type { Config, Context } from './_lib/types';
+import { resolveGatewayBase } from './_lib/gateway';
 import { UrlNotAllowedError, assertUrlAllowed } from './_lib/url-guard';
-
-// The upstream origin is a compile-time constant. Operators may
-// point LATTICE_LLM_BASE at any allowlisted origin to switch
-// gateways; the URL built from it is validated against this list
-// and only its *path* ever reaches the fetch target.
-const DEFAULT_GATEWAY_ORIGIN = 'https://api.kilo.ai';
-const ALLOWED_GATEWAY_ORIGINS = [
-  DEFAULT_GATEWAY_ORIGIN,
-  'https://api.openai.com',
-  'https://api.anthropic.com',
-];
 
 // Model ids are vendor strings: letters, digits, dashes, dots,
 // colons, slashes, underscores. Anything else (newlines, header
@@ -56,38 +49,22 @@ export default async (req: Request, _ctx: Context): Promise<Response> => {
     return json({ error: { code: 'BAD_MODEL', message: 'Invalid model id.' } }, 400);
   }
 
-  // Destination: a compile-time-constant origin, plus a path that
-  // env may narrow to a prefix. The request body never touches
-  // the URL; safeFetch re-validates the host as a second gate.
-  let path: string;
-  try {
-    const configured = new URL(
-      (process.env.LATTICE_LLM_BASE ?? 'https://api.kilo.ai/api/gateway/v1').replace(/\/$/, ''),
-    );
-    if (!ALLOWED_GATEWAY_ORIGINS.includes(configured.origin)) {
-      return json(
-        {
-          error: {
-            code: 'GATEWAY_NOT_ALLOWED',
-            message: `LATTICE_LLM_BASE origin must be one of: ${ALLOWED_GATEWAY_ORIGINS.join(', ')}`,
-          },
+  const base = resolveGatewayBase();
+  if (!base) {
+    return json(
+      {
+        error: {
+          code: 'GATEWAY_NOT_ALLOWED',
+          message: 'LATTICE_LLM_BASE is not one of the allowed gateway bases.',
         },
-        400,
-      );
-    }
-    path = configured.pathname.replace(/\/$/, '');
-  } catch {
-    return json({ error: { code: 'GATEWAY_NOT_ALLOWED', message: 'LATTICE_LLM_BASE is not a URL.' } }, 400);
+      },
+      400,
+    );
   }
 
   let upstream: Response;
   try {
-    // Two independent gates before any bytes leave the process:
-    // 1. the target is built from the compile-time default origin
-    //    (env can only narrow the path), and
-    // 2. assertUrlAllowed validates the resolved destination
-    //    against the SSRF blocklist.
-    const target = await assertUrlAllowed(`${DEFAULT_GATEWAY_ORIGIN}${path}/chat/completions`);
+    const target = await assertUrlAllowed(`${base}/chat/completions`);
     upstream = await fetch(target, {
       method: 'POST',
       headers: {
@@ -105,7 +82,7 @@ export default async (req: Request, _ctx: Context): Promise<Response> => {
   } catch (err) {
     if (err instanceof UrlNotAllowedError) {
       return json(
-        { error: { code: 'GATEWAY_NOT_ALLOWED', message: 'LATTICE_LLM_BASE points at a blocked address.' } },
+        { error: { code: 'GATEWAY_NOT_ALLOWED', message: 'The gateway address is blocked.' } },
         400,
       );
     }
