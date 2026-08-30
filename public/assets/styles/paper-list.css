@@ -111,6 +111,18 @@
   cursor: pointer;
 }
 .paper-tag-add:hover { color: var(--accent); border-color: var(--accent); }
+.paper-row-summarize {
+  font-size: 10px;
+  padding: 2px 6px;
+  background: var(--accent-soft);
+  color: var(--accent);
+  border: 1px solid var(--accent);
+  border-radius: var(--r-sm);
+  cursor: pointer;
+  margin-top: 4px;
+}
+.paper-row-summarize:hover { background: var(--accent); color: white; }
+.paper-row-summarize:disabled { opacity: 0.5; cursor: not-allowed; }
 
 /* Tag filter pills */
 .paper-list-tags {

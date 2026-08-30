@@ -148,6 +148,9 @@ function render(root: HTMLElement): void {
   });
 
   root.querySelectorAll<HTMLLIElement>('[data-paper-id]').forEach((li) => {
+    void import('../ui/summarize-action').then(({ attachSummarizeButton }) => {
+      attachSummarizeButton(li, li.dataset.paperId!);
+    });
     li.addEventListener('click', (e) => {
       const target = e.target as HTMLElement;
       if (target.dataset.action === 'pin') {
