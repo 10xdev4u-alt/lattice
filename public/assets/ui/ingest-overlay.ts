@@ -8,6 +8,7 @@
 
 import { addPaper } from '../library';
 import { fetchArxivMetadata } from '../../../netlify/functions/_lib/arxiv';
+import { resolveDoi } from '../doi';
 
 export function mountIngestOverlay(): void {
   const overlay = document.createElement('div');
@@ -16,9 +17,9 @@ export function mountIngestOverlay(): void {
     <div class="kg-modal" role="dialog" aria-modal="true" style="width: 420px; padding: var(--sp-4)">
       <button data-action="close">Close</button>
       <h2>Ingest one paper</h2>
-      <p class="canvas-empty">Paste an arXiv ID (e.g. 1706.03762) or an arXiv abstract URL. For DOI support see the DOI-fetching PR (next).</p>
+      <p class="canvas-empty">Paste an arXiv ID (e.g. 1706.03762), an arXiv abstract URL, or a DOI (e.g. 10.1234/abc).</p>
       <form data-form>
-        <input data-input placeholder="arXiv ID or URL" required />
+        <input data-input placeholder="arXiv ID, arXiv URL, or DOI" required />
         <button type="submit">Ingest</button>
       </form>
       <p data-status></p>
@@ -34,6 +35,30 @@ export function mountIngestOverlay(): void {
       if (!input || !status) return;
       const id = input.value.trim();
       if (!id) return;
+      const isDoi = /10\.\d{4,}\/\S+/.test(id) || /^https?:\/\/(dx\.)?doi\.org\//.test(id);
+      if (isDoi) {
+        status.textContent = 'Fetching from Crossref...';
+        const meta = await resolveDoi(id);
+        if (!meta) {
+          status.textContent = `Could not resolve DOI ${id}.`;
+          return;
+        }
+        addPaper({
+          id: `doi-${meta.doi.replace(/[^\w]/g, '')}`,
+          title: meta.title,
+          authors: meta.authors,
+          year: meta.year,
+          doi: meta.doi,
+          url: meta.url,
+          abstract: '',
+          source: 'doi-resolve',
+          addedAt: new Date().toISOString(),
+        });
+        status.textContent = `Added "${meta.title.slice(0, 60)}..."`;
+        input.value = '';
+        document.dispatchEvent(new CustomEvent('lattice:library-changed'));
+        return;
+      }
       status.textContent = 'Fetching from arXiv...';
       const meta = await fetchArxivMetadata(id);
       if (!meta) {
@@ -43,7 +68,7 @@ export function mountIngestOverlay(): void {
       addPaper({
         id: `arxiv-${meta.arxiv_id.replace(/[^\w]/g, '')}`,
         title: meta.title,
-        authors: meta.authors.map((name) => {
+        authors: meta.authors.map((name: string) => {
           const parts = name.split(/\s+/);
           const family = parts.pop() ?? name;
           return { family, given: parts.join(' ') };
