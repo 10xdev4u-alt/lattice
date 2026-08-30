@@ -1,19 +1,32 @@
-/* Command palette */
-.command-palette-overlay { align-items: flex-start; padding-top: 12vh; }
+/* ── Command palette ────────────────────────────── */
+
+.command-palette-overlay {
+  align-items: flex-start;
+  padding-top: 14vh;
+  z-index: 300;
+}
+
 .command-palette {
   width: 560px;
   max-width: 92vw;
   background: var(--bg-elev-1);
   border: 1px solid var(--border-strong);
-  border-radius: var(--r-md);
-  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow-4);
   overflow: hidden;
+  animation: palette-drop var(--dur-slow) var(--ease);
 }
+
+@keyframes palette-drop {
+  from { transform: translateY(-8px) scale(0.98); opacity: 0; }
+  to { transform: translateY(0) scale(1); opacity: 1; }
+}
+
 .command-palette input {
   width: 100%;
   font: inherit;
   font-size: var(--text-md);
-  padding: var(--sp-3) var(--sp-4);
+  padding: var(--sp-4) var(--sp-4);
   background: transparent;
   border: none;
   border-bottom: 1px solid var(--border);
@@ -21,7 +34,15 @@
   outline: none;
 }
 .command-palette input::placeholder { color: var(--fg-muted); }
-.command-palette ul { list-style: none; margin: 0; padding: var(--sp-1); max-height: 320px; overflow: auto; }
+
+.command-palette ul {
+  list-style: none;
+  margin: 0;
+  padding: var(--sp-1);
+  max-height: 320px;
+  overflow: auto;
+}
+
 .palette-item {
   display: flex;
   justify-content: space-between;
@@ -30,16 +51,33 @@
   padding: var(--sp-2) var(--sp-3);
   border-radius: var(--r-sm);
   cursor: pointer;
+  transition: background var(--dur-fast) var(--ease);
 }
-.palette-item.selected { background: var(--accent-soft); }
 .palette-item:hover { background: var(--bg-elev-2); }
-.palette-label { font-size: var(--text-sm); color: var(--fg); }
-.palette-hint-text { font-size: var(--text-xs); color: var(--fg-muted); }
+.palette-item.selected {
+  background: var(--accent-soft);
+  box-shadow: inset 2px 0 0 var(--accent);
+}
+.palette-label {
+  font-size: var(--text-sm);
+  color: var(--fg);
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.palette-hint-text {
+  font-size: var(--text-2xs);
+  color: var(--fg-muted);
+  white-space: nowrap;
+}
+
 .palette-hint {
   margin: 0;
   padding: var(--sp-2) var(--sp-4);
-  font-size: 10px;
+  font-size: var(--text-2xs);
   color: var(--fg-muted);
   font-family: var(--font-mono);
   border-top: 1px solid var(--border);
+  background: var(--bg-elev-1);
 }
