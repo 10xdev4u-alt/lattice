@@ -1,0 +1,49 @@
+/* Cite paper */
+.cite-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: var(--sp-2); margin: var(--sp-2) 0; }
+.cite-card {
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  padding: var(--sp-2);
+  background: var(--bg-elev-1);
+}
+.cite-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--sp-1);
+}
+.cite-card-header strong { font-size: var(--text-sm); }
+.cite-card-header button {
+  font-size: 10px;
+  padding: 1px 6px;
+  background: var(--accent);
+  color: white;
+  border: none;
+  border-radius: var(--r-sm);
+  cursor: pointer;
+}
+.cite-card pre {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  line-height: 1.5;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  padding: var(--sp-1);
+  margin: 0;
+  max-height: 160px;
+  overflow: auto;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+.cite-export-actions { text-align: center; margin-top: var(--sp-2); }
+.cite-export-actions button {
+  font-size: var(--text-xs);
+  padding: var(--sp-1) var(--sp-3);
+  background: var(--bg);
+  color: var(--fg);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  cursor: pointer;
+}
+.cite-export-actions button:hover { color: var(--accent); border-color: var(--accent); }
