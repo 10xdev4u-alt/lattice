@@ -1,0 +1,9 @@
+/* Self-hosted Inter + JetBrains Mono via fontsource CDN.
+   Loaded as CSS imports so the fonts arrive with the stylesheet
+   (no render-blocking <link> round-trip per weight). */
+
+@import url('https://cdn.jsdelivr.net/fontsource/fonts/inter@latest/latin-400-normal.css');
+@import url('https://cdn.jsdelivr.net/fontsource/fonts/inter@latest/latin-500-normal.css');
+@import url('https://cdn.jsdelivr.net/fontsource/fonts/inter@latest/latin-600-normal.css');
+@import url('https://cdn.jsdelivr.net/fontsource/fonts/jetbrains-mono@latest/latin-400-normal.css');
+@import url('https://cdn.jsdelivr.net/fontsource/fonts/jetbrains-mono@latest/latin-500-normal.css');

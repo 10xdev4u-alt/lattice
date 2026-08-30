@@ -34,12 +34,22 @@
     <link rel="stylesheet" href="/assets/styles/peer-reviewer-tab.css" />
     <link rel="stylesheet" href="/assets/styles/command-palette.css" />
     <link rel="stylesheet" href="/assets/styles/latency-chart.css" />
+    <link rel="stylesheet" href="/assets/styles/fonts.css" />
+    <link rel="stylesheet" href="/assets/styles/overlay.css" />
   </head>
   <body>
     <div id="app" data-state="loading">
       <header class="app-header" role="banner">
-        <h1 class="app-title">Lattice</h1>
-        <p class="app-tagline" id="webmcp-status">Checking WebMCP…</p>
+        <div class="app-logo">
+          <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
+            <path d="M8 8 L24 8 M8 8 L8 24 M24 8 L24 24 M8 24 L24 24 M16 8 L16 24 M8 16 L24 16" />
+          </svg>
+          <h1 class="app-title">Lattice</h1>
+        </div>
+        <p class="app-tagline" id="webmcp-status">
+          <span class="status-dot" data-state="warn" aria-hidden="true"></span>
+          <span data-status-text>Checking WebMCP…</span>
+        </p>
       </header>
       <div id="session-timer-host" style="position: absolute; top: 16px; right: 16px;"></div>
     <div id="session-timestamp-host" style="position: absolute; bottom: 6px; right: 16px; font-size: 10px; color: var(--fg-muted); font-family: var(--font-mono);"></div>
