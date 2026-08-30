@@ -81,7 +81,7 @@ Every tool: snake_case, ≤ 30 char name, ≤ 500 char description, JSON-Schema 
 | | |
 |---|---|
 | **Stack** | Vanilla TypeScript, Vite, plain-Node API (one `node server.mjs` process), pdf.js, @citation-js |
-| **LLM** | OpenAI-compatible endpoint at `https://api.kilo.ai/api/gateway/v1`, model `poolside-laguna-free`, key `latticex` (swap via env var); browser calls route through `/api/llm` |
+| **LLM** | OpenAI-compatible endpoint at `https://api.kilo.ai/api/gateway/v1`, model `kilo-auto/free`, key `latticex` (swap via env var); browser calls route through `/api/llm` |
 | **Storage** | Filesystem KV under `LATTICE_STORE_DIR` for papers (`papers/<id>/source.pdf`, `text.json`, `index.json`); localStorage for the trail in the demo |
 | **Docker** | Multi-stage alpine build: `test` target (in-container vitest), `runtime` target (~3MB app layer on node:22-alpine), 57MB gzipped artifact via `scripts/docker-artifact.sh` |
 | **WebMCP** | Imperative API only, with a no-op polyfill for absent `document.modelContext` |

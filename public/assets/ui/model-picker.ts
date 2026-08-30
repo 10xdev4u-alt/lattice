@@ -10,9 +10,10 @@
 const STORAGE_KEY = 'lattice.llm-model.v1';
 
 const MODELS: Array<{ id: string; label: string; note: string }> = [
-  { id: 'poolside-laguna-free', label: 'poolside-laguna-free', note: 'default; free; fast' },
-  { id: 'gpt-4o-mini', label: 'gpt-4o-mini', note: 'cheap; good for short answers' },
-  { id: 'gpt-4o', label: 'gpt-4o', note: 'best quality; slower; costs more' },
+  { id: 'kilo-auto/free', label: 'kilo-auto/free', note: 'default; free; auto-routes; tools' },
+  { id: 'poolside/laguna-s-2.1:free', label: 'poolside/laguna-s-2.1:free', note: 'free; code-strong' },
+  { id: 'stepfun/step-3.7-flash:free', label: 'stepfun/step-3.7-flash:free', note: 'free; fast' },
+  { id: 'openrouter/free', label: 'openrouter/free', note: 'free; broad router' },
 ];
 
 export function getCurrentModel(): string {

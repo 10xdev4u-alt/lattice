@@ -2,7 +2,7 @@
  * LLM client for the Functions. Mirrors public/assets/llm.ts.
  *
  * Default base: https://api.kilo.ai/api/gateway/v1
- * Default model: poolside-laguna-free
+ * Default model: kilo-auto/free
  * Override via LATTICE_LLM_BASE / LATTICE_LLM_MODEL / LATTICE_LLM_KEY
  * env vars.
  *
@@ -14,7 +14,10 @@
 import { resolveGatewayBase } from './gateway';
 import { safeFetch } from './url-guard';
 
-const DEFAULT_MODEL = 'poolside-laguna-free';
+// Server-side handlers pin a specific model (not the auto router)
+// so demo behavior is deterministic: the router's pick can be a
+// reasoning model that ignores `reasoning: {enabled: false}`.
+const DEFAULT_MODEL = 'tencent/hy3:free';
 const DEFAULT_KEY = 'latticex';
 
 function getModel(): string {
@@ -47,6 +50,10 @@ export async function completePrompt(
       ],
       max_tokens: opts.maxTokens ?? 800,
       temperature: opts.temperature ?? 0.2,
+      // Reasoning-capable routers (kilo-auto/free → tencent/hy3)
+      // otherwise spend the whole budget thinking and return an
+      // empty content field.
+      reasoning: { enabled: false },
     }),
     signal: opts.signal,
   });
@@ -54,6 +61,11 @@ export async function completePrompt(
     const text = await res.text();
     throw new Error(`LLM ${res.status}: ${text.slice(0, 200)}`);
   }
-  const data = (await res.json()) as { choices: Array<{ message: { content: string } }> };
-  return data.choices?.[0]?.message?.content ?? '';
+  // Reasoning models may leave content null; fall back to the
+  // reasoning text so callers always get a usable string.
+  const data = (await res.json()) as {
+    choices: Array<{ message: { content: string | null; reasoning?: string } }>;
+  };
+  const msg = data.choices?.[0]?.message;
+  return msg?.content ?? msg?.reasoning ?? '';
 }

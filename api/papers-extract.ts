@@ -15,6 +15,8 @@
 import type { Config, Context } from './_lib/types';
 import { getStore } from './_lib/store';
 import { completePrompt } from './_lib/llm';
+import { extractJson } from './_lib/extract-json';
+import { excerptWindows } from './_lib/excerpt';
 
 interface ExtractRequest {
   paper_id: string;
@@ -61,34 +63,28 @@ Stance: ${stance}
 Number of quotes to return: ${maxQuotes}
 
 Paper text (paginated):
-${pages.map((p) => `--- page ${p.page_number} ---\n${p.text.slice(0, 3000)}`).join('\n\n')}
+${excerptWindows(pages, body.paper_id)}
 
-Return JSON only. Schema:
-{
-  "quotes": [
-    { "page": <int>, "text": "<verbatim quote>", "score": <0.0-1.0> }
-  ]
-}
+Output format: a single JSON object with one key "quotes" — an array of objects, each with keys "page" (integer), "text" (a verbatim quote you copied from the paper above), "score" (0.0-1.0).
 
 Rules:
 - Verbatim. Copy the text exactly. Do not paraphrase.
+- Write the quotes yourself from the paper text. Never output placeholder text.
 - Include the page number.
 - The score reflects how well the quote matches the concept.
-- If the paper does not mention the concept, return {"quotes": []}.`;
+- If the paper does not mention the concept, output {"quotes": []}.
+- Output the JSON object only — no markdown fences, no explanations.`;
 
   try {
     const reply = await completePrompt(prompt, { signal: req.signal, maxTokens: 800, temperature: 0.1 });
-    const jsonStart = reply.indexOf('{');
-    const jsonEnd = reply.lastIndexOf('}');
-    if (jsonStart !== -1 && jsonEnd > jsonStart) {
-      const parsed = JSON.parse(reply.slice(jsonStart, jsonEnd + 1)) as { quotes: Array<{ page: number; text: string; score: number }> };
-      return json({ paper_id: body.paper_id, concept: body.concept, quotes: parsed.quotes });
-    }
+    const parsed = extractJson(reply);
+    const quotes = Array.isArray(parsed?.quotes)
+      ? (parsed!.quotes as Array<{ page: number; text: string; score: number }>)
+      : [];
+    return json({ paper_id: body.paper_id, concept: body.concept, quotes });
   } catch (err) {
     return json({ error: { code: 'LLM_FAILED', message: (err as Error).message } }, 502);
   }
-
-  return json({ paper_id: body.paper_id, concept: body.concept, quotes: [] });
 };
 
 function json(body: unknown, status = 200): Response {

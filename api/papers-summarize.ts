@@ -13,6 +13,8 @@
 import type { Config, Context } from './_lib/types';
 import { getStore } from './_lib/store';
 import { completePrompt } from './_lib/llm';
+import { extractJson } from './_lib/extract-json';
+import { excerptWindows } from './_lib/excerpt';
 
 interface SummarizeRequest {
   paper_id: string;
@@ -54,40 +56,53 @@ export default async (req: Request, _ctx: Context): Promise<Response> => {
     return json({ error: { code: 'NOT_FOUND', message: 'No text.json for that paper.' } }, 404);
   }
   const parsed = textMeta.data as { pages: PageText[] };
-  const excerpt = parsed.pages
-    .slice(0, 3)
-    .map((p) => `--- page ${p.page_number} ---\n${p.text.slice(0, 1500)}`)
-    .join('\n\n');
+  const excerpt = excerptWindows(parsed.pages, body.paper_id);
 
-  const prompt = `Summarize the following paper for ${AUDIENCE_PROMPTS[body.audience]}. Stay under ${maxWords} words. Cite the page number for any specific claim. End with a one-sentence 'confidence' note: 'well-sourced' (most claims backed by the excerpt), 'mixed' (some claims inferred), or 'speculative' (most claims inferred).
+  const prompt = `Summarize the following paper for ${AUDIENCE_PROMPTS[body.audience]}. Stay under ${maxWords} words. Cite the page number for any specific claim.
 
 Paper text:
 ${excerpt}
 
-Return JSON only. Schema:
-{
-  "summary": "<prose>",
-  "page_citations": [<int>],
-  "confidence": "well-sourced" | "mixed" | "speculative"
-}`;
+Output format: a single JSON object with three keys: "summary" (your ${maxWords}-word summary of the actual paper above), "page_citations" (array of page numbers you cited), "confidence" (one of "well-sourced", "mixed", or "speculative").
+
+Rules:
+- Write the summary yourself from the paper text. Never output placeholder text.
+- "page_citations" values must be integers, e.g. [1, 3].
+- Output the JSON object only — no markdown fences, no explanations.`;
 
   try {
     const reply = await completePrompt(prompt, {
       signal: req.signal,
-      maxTokens: Math.min(maxWords * 2, 1500),
+      maxTokens: Math.min(maxWords * 3, 2000),
       temperature: 0.2,
     });
-    const start = reply.indexOf('{');
-    const end = reply.lastIndexOf('}');
-    if (start !== -1 && end > start) {
-      const parsed = JSON.parse(reply.slice(start, end + 1)) as {
-        summary: string;
-        page_citations: number[];
-        confidence: 'well-sourced' | 'mixed' | 'speculative';
-      };
-      return json({ paper_id: body.paper_id, audience: body.audience, ...parsed });
+    const parsed = extractJson(reply);
+    if (parsed) {
+      const summary = typeof parsed.summary === 'string' ? parsed.summary : '';
+      const pageCitations = Array.isArray(parsed.page_citations)
+        ? parsed.page_citations.filter((n: unknown) => typeof n === 'number')
+        : [];
+      const confidence =
+        parsed.confidence === 'well-sourced' || parsed.confidence === 'speculative'
+          ? parsed.confidence
+          : 'mixed';
+      return json({
+        paper_id: body.paper_id,
+        audience: body.audience,
+        summary,
+        page_citations: pageCitations,
+        confidence,
+      });
     }
-    return json({ paper_id: body.paper_id, audience: body.audience, summary: reply, page_citations: [], confidence: 'mixed' });
+    // No JSON at all — treat the whole reply as the summary so
+    // the user still gets the model's work.
+    return json({
+      paper_id: body.paper_id,
+      audience: body.audience,
+      summary: reply,
+      page_citations: [],
+      confidence: 'mixed',
+    });
   } catch (err) {
     return json({ error: { code: 'LLM_FAILED', message: (err as Error).message } }, 502);
   }

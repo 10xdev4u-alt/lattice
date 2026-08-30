@@ -35,7 +35,7 @@ function getBase(): string {
 }
 
 function getModel(): string {
-  return (globalThis as { LATTICE_LLM_MODEL?: string }).LATTICE_LLM_MODEL ?? 'poolside-laguna-free';
+  return (globalThis as { LATTICE_LLM_MODEL?: string }).LATTICE_LLM_MODEL ?? 'kilo-auto/free';
 }
 
 export async function streamCompletePrompt(
@@ -56,6 +56,9 @@ export async function streamCompletePrompt(
       max_tokens: opts.maxTokens ?? 800,
       temperature: opts.temperature ?? 0.2,
       stream: true,
+      // Reasoning-capable routers otherwise spend the budget
+      // thinking and stream no content deltas at all.
+      reasoning: { enabled: false },
     }),
     signal: opts.signal,
   });

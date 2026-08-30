@@ -12,6 +12,8 @@
 import type { Config, Context } from './_lib/types';
 import { getStore } from './_lib/store';
 import { completePrompt } from './_lib/llm';
+import { extractJson } from './_lib/extract-json';
+import { excerptWindows } from './_lib/excerpt';
 
 interface CompareRequest {
   paper_id_a: string;
@@ -64,8 +66,8 @@ export default async (req: Request, _ctx: Context): Promise<Response> => {
   }
   const aPages = (aMeta.data as { pages: PageText[] }).pages;
   const bPages = (bMeta.data as { pages: PageText[] }).pages;
-  const aExcerpt = aPages.slice(0, 3).map((p) => `--- ${body.paper_id_a} page ${p.page_number} ---\n${p.text.slice(0, 1500)}`).join('\n\n');
-  const bExcerpt = bPages.slice(0, 3).map((p) => `--- ${body.paper_id_b} page ${p.page_number} ---\n${p.text.slice(0, 1500)}`).join('\n\n');
+  const aExcerpt = excerptWindows(aPages, body.paper_id_a);
+  const bExcerpt = excerptWindows(bPages, body.paper_id_b);
 
   const prompt = `You are comparing two research papers on the topic "${body.topic}". Surface up to ${maxClaims} claims where the papers agree or conflict. For each claim, quote a verbatim sentence from each paper and note the page number.
 
@@ -75,45 +77,29 @@ ${aExcerpt}
 Paper B:
 ${bExcerpt}
 
-Return JSON only. Schema:
-{
-  "topic": "${body.topic}",
-  "claims": [
-    {
-      "type": "agreement" | "conflict" | "mention",
-      "topic": "<short label>",
-      "text_a": "<verbatim quote from A>",
-      "page_a": <int>,
-      "text_b": "<verbatim quote from B>",
-      "page_b": <int>,
-      "score": <0.0-1.0>
-    }
-  ]
-}
+Output format: a single JSON object with one key "claims" — an array of objects, each with keys "type" ("agreement", "conflict", or "mention"), "topic" (a short label), "text_a" (a verbatim quote from paper A), "page_a" (integer), "text_b" (a verbatim quote from paper B), "page_b" (integer), "score" (0.0-1.0).
 
 Rules:
-- Verbatim quotes. Copy the text exactly.
+- The papers almost certainly both discuss the topic — find their positions on it before deciding they don't address it. Only output {"claims": []} if neither excerpt truly mentions the topic.
+- Write the quotes yourself by copying text from the papers above. Never output placeholder text.
 - Prefer claims that are concrete (a number, a result, a method).
-- If the papers do not address the topic, return {"claims": []}.`;
+- "mention" is a valid type for positions that are related but neither agree nor conflict.
+- Output the JSON object only — no markdown fences, no explanations.`;
 
   try {
     const reply = await completePrompt(prompt, {
       signal: req.signal,
-      maxTokens: 1500,
+      maxTokens: 1800,
       temperature: 0.2,
     });
-    const start = reply.indexOf('{');
-    const end = reply.lastIndexOf('}');
-    if (start !== -1 && end > start) {
-      const parsed = JSON.parse(reply.slice(start, end + 1)) as { claims: Claim[] };
-      return json({
-        paper_a: body.paper_id_a,
-        paper_b: body.paper_id_b,
-        topic: body.topic,
-        claims: parsed.claims,
-      });
-    }
-    return json({ paper_a: body.paper_id_a, paper_b: body.paper_id_b, topic: body.topic, claims: [] });
+    const parsed = extractJson(reply);
+    const claims = Array.isArray(parsed?.claims) ? (parsed!.claims as Claim[]) : [];
+    return json({
+      paper_a: body.paper_id_a,
+      paper_b: body.paper_id_b,
+      topic: body.topic,
+      claims,
+    });
   } catch (err) {
     return json({ error: { code: 'LLM_FAILED', message: (err as Error).message } }, 502);
   }

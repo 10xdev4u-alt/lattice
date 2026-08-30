@@ -16,6 +16,8 @@
 import type { Config, Context } from './_lib/types';
 import { getStore } from './_lib/store';
 import { completePrompt } from './_lib/llm';
+import { extractJson } from './_lib/extract-json';
+import { excerptWindows } from './_lib/excerpt';
 
 interface ExplainRequest {
   claim: string;
@@ -60,8 +62,9 @@ export default async (req: Request, _ctx: Context): Promise<Response> => {
     // ignore
   }
 
-  // Build a per-paper excerpt bundle. Cap total context at 12k chars
-  // so we don't blow the model's input budget.
+  // Build a per-paper excerpt bundle. Each paper contributes
+  // head+middle windows (~7k chars); with up to 8 papers the
+  // prompt stays within the model's input budget.
   const bundle: Array<{ paper_id: string; excerpt: string }> = [];
   for (const key of paperKeys) {
     if (!key.endsWith('/text.json')) continue;
@@ -69,12 +72,7 @@ export default async (req: Request, _ctx: Context): Promise<Response> => {
     const meta = await store.getWithMetadata(key, { type: 'json' });
     if (!meta) continue;
     const pages = (meta.data as { pages: PageText[] }).pages;
-    const excerpt = pages
-      .slice(0, 4)
-      .map((p) => `--- ${paperId} page ${p.page_number} ---\n${p.text.slice(0, 800)}`)
-      .join('\n\n')
-      .slice(0, 4000);
-    bundle.push({ paper_id: paperId, excerpt });
+    bundle.push({ paper_id: paperId, excerpt: excerptWindows(pages, paperId) });
     if (bundle.length >= 8) break;
   }
 
@@ -89,23 +87,13 @@ Claim: "${body.claim}"
 Library (paper_id: excerpt):
 ${bundle.map((b) => `--- ${b.paper_id} ---\n${b.excerpt}`).join('\n\n')}
 
-Return JSON only. Schema:
-{
-  "evidence": [
-    {
-      "paper_id": "<id>",
-      "stance": "supporting" | "refuting" | "mentioning",
-      "quote": "<verbatim sentence from the paper>",
-      "page": <int>,
-      "score": <0.0-1.0>
-    }
-  ]
-}
+Output format: a single JSON object with one key "evidence" — an array of objects, each with keys "paper_id", "stance" ("supporting", "refuting", or "mentioning"), "quote" (a verbatim sentence you copied from that paper), "page" (integer), "score" (0.0-1.0).
 
 Rules:
-- Verbatim quotes. Copy the text exactly.
-- If no paper mentions the claim, return {"evidence": []}.
-- Cap the list at ${maxPapers} entries, ranked by score.`;
+- Verbatim quotes. Copy the text exactly. Write them yourself — never placeholder text.
+- If no paper mentions the claim, output {"evidence": []}.
+- Cap the list at ${maxPapers} entries, ranked by score.
+- Output the JSON object only — no markdown fences, no explanations.`;
 
   try {
     const reply = await completePrompt(prompt, {
@@ -113,13 +101,9 @@ Rules:
       maxTokens: 1500,
       temperature: 0.1,
     });
-    const start = reply.indexOf('{');
-    const end = reply.lastIndexOf('}');
-    if (start !== -1 && end > start) {
-      const parsed = JSON.parse(reply.slice(start, end + 1)) as { evidence: Evidence[] };
-      return json({ claim: body.claim, evidence: parsed.evidence });
-    }
-    return json({ claim: body.claim, evidence: [] });
+    const parsed = extractJson(reply);
+    const evidence = Array.isArray(parsed?.evidence) ? (parsed!.evidence as Evidence[]) : [];
+    return json({ claim: body.claim, evidence });
   } catch (err) {
     return json({ error: { code: 'LLM_FAILED', message: (err as Error).message } }, 502);
   }

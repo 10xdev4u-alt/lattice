@@ -36,15 +36,25 @@ export default async (req: Request, _ctx: Context): Promise<Response> => {
     max_tokens?: number;
     temperature?: number;
     stream?: boolean;
-  };
+    reasoning?: unknown;
+    tools?: unknown;
+    tool_choice?: unknown;
+  } & Record<string, unknown>;
   try {
     body = (await req.json()) as typeof body;
   } catch {
     return json({ error: { code: 'BAD_JSON', message: 'Body is not valid JSON.' } }, 400);
   }
+  // Strip auth- and transport-shaped fields before forwarding:
+  // the key lives only in this Function's env, and the upstream
+  // request is constructed here.
+  delete (body as Record<string, unknown>).signal;
+  for (const banned of ['key', 'api_key', 'apiKey', 'authorization', 'headers']) {
+    delete (body as Record<string, unknown>)[banned];
+  }
 
   const key = process.env.LATTICE_LLM_KEY ?? 'latticex';
-  const model = body.model ?? process.env.LATTICE_LLM_MODEL ?? 'poolside-laguna-free';
+  const model = body.model ?? process.env.LATTICE_LLM_MODEL ?? 'tencent/hy3:free';
   if (!MODEL_RE.test(model)) {
     return json({ error: { code: 'BAD_MODEL', message: 'Invalid model id.' } }, 400);
   }
@@ -71,13 +81,13 @@ export default async (req: Request, _ctx: Context): Promise<Response> => {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${key}`,
       },
-      body: JSON.stringify({
-        model,
-        messages: body.messages,
-        max_tokens: body.max_tokens ?? 800,
-        temperature: body.temperature ?? 0.2,
-        stream: body.stream ?? false,
-      }),
+      // Forward the validated body as-is. The model is charset-
+      // checked above and the destination is a pinned allowlist
+      // constant, so the client keeps control of its own
+      // sampling params — including `reasoning`, which
+      // thinking-capable models need set to false to produce
+      // non-empty content, and `tools` for the agent loop.
+      body: JSON.stringify(body),
     });
   } catch (err) {
     if (err instanceof UrlNotAllowedError) {

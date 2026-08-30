@@ -13,7 +13,7 @@ services:
       - '8888:8888'
     environment:
       LATTICE_LLM_BASE: ${LATTICE_LLM_BASE:-https://api.kilo.ai/api/gateway/v1}
-      LATTICE_LLM_MODEL: ${LATTICE_LLM_MODEL:-poolside-laguna-free}
+      LATTICE_LLM_MODEL: ${LATTICE_LLM_MODEL:-kilo-auto/free}
       LATTICE_LLM_KEY: ${LATTICE_LLM_KEY:-latticex}
       LATTICE_STORE_DIR: /data
     volumes:
@@ -37,7 +37,7 @@ services:
       - '8888:8888'
     environment:
       LATTICE_LLM_BASE: ${LATTICE_LLM_BASE:-https://api.kilo.ai/api/gateway/v1}
-      LATTICE_LLM_MODEL: ${LATTICE_LLM_MODEL:-poolside-laguna-free}
+      LATTICE_LLM_MODEL: ${LATTICE_LLM_MODEL:-kilo-auto/free}
       LATTICE_LLM_KEY: ${LATTICE_LLM_KEY:-latticex}
     volumes:
       - ./public:/app/public

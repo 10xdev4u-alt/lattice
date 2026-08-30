@@ -2,7 +2,7 @@
  * LLM client — thin OpenAI-compatible wrapper.
  *
  * Default base: https://api.kilo.ai/api/gateway/v1
- * Default model: poolside-laguna-free
+ * Default model: kilo-auto/free
  * Override via LATTICE_LLM_BASE and LATTICE_LLM_MODEL env vars (or the
  * Settings panel in the UI, once it ships).
  *
@@ -16,7 +16,7 @@
 // LATTICE_LLM_BASE overrides this for local dev against a proxy
 // that permits browser origins.
 const DEFAULT_BASE = '/api/llm';
-const DEFAULT_MODEL = 'poolside-laguna-free';
+const DEFAULT_MODEL = 'kilo-auto/free';
 const MAX_RETRIES = 3;
 
 interface CompleteOptions {
@@ -55,6 +55,9 @@ export async function completePrompt(prompt: string, opts: CompleteOptions): Pro
     ],
     max_tokens: opts.maxTokens ?? 800,
     temperature: opts.temperature ?? 0.2,
+    // Reasoning-capable routers otherwise spend the budget
+    // thinking and return an empty content field.
+    reasoning: { enabled: false },
   });
 
   let lastErr: Error | null = null;
@@ -73,9 +76,10 @@ export async function completePrompt(prompt: string, opts: CompleteOptions): Pro
       }
       if (res.ok) {
         const data = (await res.json()) as {
-          choices: Array<{ message: { content: string } }>;
+          choices: Array<{ message: { content: string | null; reasoning?: string } }>;
         };
-        return data.choices?.[0]?.message?.content ?? '';
+        const msg = data.choices?.[0]?.message;
+        return msg?.content ?? msg?.reasoning ?? '';
       }
       if (res.status >= 400 && res.status < 500) {
         const text = await res.text();

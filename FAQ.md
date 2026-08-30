@@ -55,7 +55,7 @@ The image is multi-stage, non-root, and stays under 200MB.
 
 ## Which model is the agent using?
 
-By default, `poolside-laguna-free` on the OpenAI-compatible endpoint
+By default, `kilo-auto/free` on the OpenAI-compatible endpoint
 at `https://api.kilo.ai/api/gateway/v1`. Swap via the Settings panel
 (Ctrl/Cmd+,), or the `LATTICE_LLM_BASE` / `LATTICE_LLM_MODEL` env
 vars. Any OpenAI-compatible endpoint works.

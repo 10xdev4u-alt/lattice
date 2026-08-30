@@ -63,7 +63,7 @@ export async function runAgentLoop(
   // Route through our /api/llm proxy — the browser can't call the
   // LLM gateway directly (CORS).
   const base = (globalThis as { LATTICE_LLM_BASE?: string }).LATTICE_LLM_BASE ?? '/api/llm';
-  const model = opts.model ?? (globalThis as { LATTICE_LLM_MODEL?: string }).LATTICE_LLM_MODEL ?? 'poolside-laguna-free';
+  const model = opts.model ?? (globalThis as { LATTICE_LLM_MODEL?: string }).LATTICE_LLM_MODEL ?? 'kilo-auto/free';
 
   const tools = await listTools();
   const messages: ChatMessage[] = [
@@ -88,6 +88,9 @@ export async function runAgentLoop(
         tool_choice: tools.length > 0 ? 'auto' : undefined,
         max_tokens: 800,
         temperature: 0.2,
+        // Keep the agent loop direct: reasoning models would
+        // spend the budget thinking before calling tools.
+        reasoning: { enabled: false },
       }),
       signal: opts.signal,
     });

@@ -69,7 +69,17 @@ export async function fetchArxivSource(arxivId: string): Promise<ArxivSourceResu
 
   const buffer = Buffer.from(await res.arrayBuffer());
   const isGzipped = buffer.length >= 2 && buffer[0] === 0x1f && buffer[1] === 0x8b;
-  const text = isGzipped ? gunzipSync(buffer).toString('utf8') : buffer.toString('utf8');
+  let text: string;
+  if (isGzipped) {
+    const unzipped = gunzipSync(buffer);
+    // arXiv e-prints are gzipped *tarballs* of the LaTeX source,
+    // not a single file. Untar and concatenate the .tex members;
+    // without this the "text" is raw tar bytes (nulls + octal
+    // headers) and no downstream LLM call sees real prose.
+    text = isTar(unzipped) ? extractTexFromTar(unzipped) : unzipped.toString('utf8');
+  } else {
+    text = buffer.toString('utf8');
+  }
 
   const metadata = await fetchArxivMetadata(cleaned);
   if (!metadata) return null;
@@ -80,6 +90,42 @@ export async function fetchArxivSource(arxivId: string): Promise<ArxivSourceResu
     byte_size: buffer.length,
     is_gzipped: isGzipped,
   };
+}
+
+/** ustar magic sits at offset 257: "ustar" + NUL. */
+function isTar(buf: Buffer): boolean {
+  return buf.length > 262 && buf.slice(257, 262).toString('latin1') === 'ustar';
+}
+
+/** Pull every .tex/.bbl member out of a tar buffer, concatenated. */
+function extractTexFromTar(buf: Buffer): string {
+  const parts: string[] = [];
+  let offset = 0;
+  while (offset + 512 <= buf.length) {
+    const header = buf.slice(offset, offset + 512);
+    const name = header.toString('utf8', 0, 100).replace(/\0.*$/, '');
+    // Octal size field, possibly space/NUL terminated.
+    const sizeField = header.toString('latin1', 124, 136).replace(/[\0 ]/g, '');
+    const size = parseInt(sizeField, 8);
+    if (!Number.isFinite(size)) break;
+    const dataStart = offset + 512;
+    // Two consecutive zero blocks mark the end of the archive.
+    if (name === '') {
+      offset += 512;
+      if (header.every((b) => b === 0)) {
+        const next = buf.slice(offset, offset + 512);
+        if (next.every((b) => b === 0)) break;
+        continue;
+      }
+      continue;
+    }
+    if (/\.(tex|bbl)$/i.test(name) && size > 0 && dataStart + size <= buf.length) {
+      parts.push(buf.toString('utf8', dataStart, dataStart + size));
+    }
+    // Members are padded to 512-byte blocks.
+    offset = dataStart + Math.ceil(size / 512) * 512;
+  }
+  return parts.join('\n\n');
 }
 
 export function stripArxivId(input: string): string | null {

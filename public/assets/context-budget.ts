@@ -5,7 +5,7 @@
  *
  * The estimate uses the ~4 chars per token heuristic. The LLM
  * endpoint is queried for its context window (default 8k for
- * poolside-laguna-free). When the chat history exceeds 80% of the
+ * kilo-auto/free). When the chat history exceeds 80% of the
  * window, the bar turns warn-color.
  *
  * Closes the polish item: a real "context budget" indicator.
