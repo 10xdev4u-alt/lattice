@@ -71,7 +71,13 @@ export function mountStatsPageOverlay(): void {
       });
       document.body.appendChild(drilldown);
       const host = drilldown.querySelector<HTMLElement>('[data-feedback-host]');
-      if (host) void import('./feedback-tab').then(({ mountFeedbackTab }) => mountFeedbackTab(host));
+      if (host) {
+        void import('./feedback-tab').then(({ mountFeedbackTab }) => mountFeedbackTab(host));
+        // Append the chart below the table.
+        const chartHost = document.createElement('div');
+        host.appendChild(chartHost);
+        void import('./feedback-chart').then(({ mountFeedbackChart }) => mountFeedbackChart(chartHost));
+      }
     }
   });
   document.body.appendChild(overlay);

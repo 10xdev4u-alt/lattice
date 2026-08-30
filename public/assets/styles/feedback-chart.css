@@ -1,0 +1,31 @@
+/* Feedback chart */
+.feedback-chart {
+  display: flex;
+  align-items: flex-end;
+  gap: 6px;
+  height: 120px;
+  padding: var(--sp-2) 0;
+  border-bottom: 1px solid var(--border);
+  margin: var(--sp-2) 0;
+}
+.feedback-chart-col { display: flex; flex-direction: column; align-items: center; gap: 4px; flex: 1; }
+.feedback-chart-bar {
+  width: 100%;
+  min-height: 4px;
+  display: flex;
+  flex-direction: column-reverse;
+  border-radius: 2px 2px 0 0;
+  overflow: hidden;
+}
+.feedback-chart-up { background: var(--ok); width: 100%; }
+.feedback-chart-down { background: var(--err); width: 100%; }
+.feedback-chart-label {
+  font-size: 9px;
+  color: var(--fg-muted);
+  font-family: var(--font-mono);
+  white-space: nowrap;
+}
+.feedback-chart-legend { display: flex; gap: var(--sp-3); font-size: var(--text-xs); color: var(--fg-muted); }
+.feedback-chart-legend .dot { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 4px; vertical-align: middle; }
+.dot-up { background: var(--ok); }
+.dot-down { background: var(--err); }
