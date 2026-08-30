@@ -12,28 +12,29 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { mkdtemp, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import { getStore as getStoreRaw, _resetRoot } from '../api/_lib/store';
+import { buildIndex } from '../api/_lib/search-index';
+import { default as searchHandler } from '../api/papers-search';
 
 type Handler = (req: Request, ctx: unknown) => Promise<Response>;
 
 let handler: Handler;
 let storeDir: string;
-let getStore: (typeof import('../api/_lib/store'))['getStore'];
-let _resetRoot: (typeof import('../api/_lib/store'))['_resetRoot'];
+let getStore: typeof getStoreRaw;
+let _resetRootFn: typeof _resetRoot;
 
 beforeEach(async () => {
   storeDir = await mkdtemp(join(tmpdir(), 'lattice-search-'));
   process.env.LATTICE_STORE_DIR = storeDir;
-  const storeMod = await import('../api/_lib/store');
-  getStore = storeMod.getStore;
-  _resetRoot = storeMod._resetRoot;
-  _resetRoot();
-  const mod = await import('../api/papers-search');
-  handler = mod.default as Handler;
+  getStore = getStoreRaw;
+  _resetRootFn = _resetRoot;
+  _resetRootFn();
+  handler = searchHandler as Handler;
 });
 
 afterEach(async () => {
   delete process.env.LATTICE_STORE_DIR;
-  _resetRoot();
+  _resetRootFn();
   await rm(storeDir, { recursive: true, force: true });
 });
 
@@ -51,7 +52,6 @@ function post(body: unknown): Promise<Response> {
 describe('papers-search', () => {
   it('returns hits for a paper with a stored index.json', async () => {
     const store = getStore('lattice');
-    const { buildIndex } = await import('../api/_lib/search-index');
     const pages = [{ page_number: 1, text: 'The attention mechanism attends over tokens. Attention is weighted.' }];
     await store.setJSON('papers/p1/text.json', { pages });
     await store.setJSON('papers/p1/index.json', buildIndex('p1', pages));
