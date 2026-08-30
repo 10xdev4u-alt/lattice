@@ -55,12 +55,25 @@ export function mountStatsPageOverlay(): void {
         <h3>Feedback</h3>
         <p>summary: ${upCount} 👍 / ${downCount} 👎${approval !== null ? ` (${approval}% approval)` : ''}</p>
         <button data-action="drilldown">Drill into feedback</button>
+        <button data-action="peer-review">Peer review</button>
       </section>
     </div>
   `;
   overlay.addEventListener('click', (e) => {
     const t = e.target as HTMLElement;
     if (t.dataset.action === 'close' || t === overlay) overlay.remove();
+    if (t.dataset.action === 'peer-review') {
+      const peerOverlay = document.createElement('div');
+      peerOverlay.className = 'kg-overlay';
+      peerOverlay.innerHTML = `<div class="kg-modal" role="dialog" aria-modal="true" style="width: 92vw; max-width: 880px; padding: var(--sp-4); max-height: 80vh; overflow: auto"><button data-action="close">Close</button><div data-peer-host></div></div>`;
+      peerOverlay.addEventListener('click', (e2) => {
+        const t2 = e2.target as HTMLElement;
+        if (t2.dataset.action === 'close' || t2 === peerOverlay) peerOverlay.remove();
+      });
+      document.body.appendChild(peerOverlay);
+      const peerHost = peerOverlay.querySelector<HTMLElement>('[data-peer-host]');
+      if (peerHost) void import('./peer-reviewer-tab').then(({ mountPeerReviewerTab }) => mountPeerReviewerTab(peerHost));
+    }
     if (t.dataset.action === 'drilldown') {
       const drilldown = document.createElement('div');
       drilldown.className = 'kg-overlay';
