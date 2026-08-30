@@ -1,0 +1,140 @@
+/* ── Shared overlay base ──────────────────────────
+   Every modal in Lattice uses .kg-overlay > .kg-modal.
+   This file styles the shared chrome so all 15+ overlays
+   look identical: backdrop blur, card elevation, close
+   button, and the fade/scale entrance. */
+
+.kg-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(3px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 150;
+  animation: overlay-fade var(--dur) var(--ease);
+  padding: var(--sp-4);
+}
+
+@keyframes overlay-fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.kg-modal {
+  background: var(--bg-elev-1);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--r-lg);
+  padding: var(--sp-5);
+  max-width: 640px;
+  width: 90vw;
+  max-height: 85vh;
+  overflow: auto;
+  box-shadow: var(--shadow-4);
+  position: relative;
+  animation: overlay-scale var(--dur) var(--ease);
+}
+
+@keyframes overlay-scale {
+  from { transform: scale(0.97) translateY(4px); opacity: 0; }
+  to { transform: scale(1) translateY(0); opacity: 1; }
+}
+
+/* Close button — always top-right */
+.kg-modal > button:first-child {
+  position: absolute;
+  top: var(--sp-3);
+  right: var(--sp-3);
+  font-size: var(--text-xs);
+  color: var(--fg-muted);
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: var(--sp-1) var(--sp-3);
+  cursor: pointer;
+  transition: all var(--dur-fast) var(--ease);
+}
+.kg-modal > button:first-child:hover {
+  color: var(--fg);
+  border-color: var(--border-strong);
+  background: var(--bg-elev-2);
+}
+
+/* Headings inside overlays */
+.kg-modal h2 {
+  font-size: var(--text-lg);
+  font-weight: 600;
+  margin: 0 0 var(--sp-3);
+  letter-spacing: var(--tracking-tight);
+  padding-right: var(--sp-10);
+}
+
+.kg-modal h3 {
+  font-size: var(--text-xs);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-wider);
+  color: var(--fg-muted);
+  margin: var(--sp-5) 0 var(--sp-2);
+}
+
+.kg-modal h4 {
+  font-size: var(--text-sm);
+  font-weight: 500;
+  margin: var(--sp-4) 0 var(--sp-1);
+}
+
+/* Body text */
+.kg-modal p {
+  font-size: var(--text-sm);
+  line-height: var(--leading-relaxed);
+  margin: 0 0 var(--sp-3);
+}
+
+/* Tables */
+.kg-modal table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--text-sm);
+}
+.kg-modal th,
+.kg-modal td {
+  padding: var(--sp-2);
+  text-align: left;
+  border-bottom: 1px solid var(--border);
+  vertical-align: top;
+}
+.kg-modal th {
+  color: var(--fg-muted);
+  font-weight: 500;
+  font-size: var(--text-2xs);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-wide);
+}
+
+/* Lists */
+.kg-modal ul, .kg-modal ol {
+  margin: 0 0 var(--sp-3);
+  padding-left: var(--sp-5);
+}
+.kg-modal li {
+  font-size: var(--text-sm);
+  line-height: var(--leading-relaxed);
+  margin-bottom: var(--sp-1);
+}
+
+/* Code blocks */
+.kg-modal pre {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--r-sm);
+  padding: var(--sp-3);
+  overflow: auto;
+  white-space: pre-wrap;
+  word-break: break-word;
+  line-height: 1.55;
+  margin: 0 0 var(--sp-3);
+}

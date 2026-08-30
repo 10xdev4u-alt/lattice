@@ -32,13 +32,13 @@ export function mountEmptyState(root: HTMLElement): void {
         </li>
       </ol>
       <div class="empty-actions">
-        <button data-action="load-sample">Load sample library</button>
+        <button data-action="load-sample" class="btn-primary">Load sample library</button>
+        <button data-action="start-tour">30-second tour</button>
         <button data-action="paste-arxiv">Paste an arXiv ID</button>
         <button data-action="drop-pdf">Drop a PDF</button>
-        <button data-action="start-tour">30-second tour</button>
-        <button data-action="compare-ingests">Compare ingests</button>
-        <button data-action="load-session">Load saved session</button>
-        <button data-action="annotations">Annotations</button>
+        <button data-action="load-session" class="btn-ghost">Load saved session</button>
+        <button data-action="compare-ingests" class="btn-ghost">Compare ingests</button>
+        <button data-action="annotations" class="btn-ghost">Annotations</button>
       </div>
       <p class="empty-hint">A judge who clicks this should: load the sample library, then watch the Live Tool Array light up as the agent acts. Or click "30-second tour" for an auto-cycled walkthrough.</p>
       <div data-carousel-host></div>

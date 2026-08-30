@@ -18,7 +18,10 @@ async function main(): Promise<void> {
   if (statusEl) {
     const ctx = document.modelContext;
     const hasWebMCP = !!ctx && 'registerTool' in ctx;
-    statusEl.textContent = hasWebMCP ? 'WebMCP ready' : 'WebMCP not detected';
+    const dot = statusEl.querySelector<HTMLElement>('.status-dot');
+    const text = statusEl.querySelector<HTMLElement>('[data-status-text]');
+    if (dot) dot.dataset.state = hasWebMCP ? 'ok' : 'warn';
+    if (text) text.textContent = hasWebMCP ? 'WebMCP ready' : 'WebMCP not detected';
     statusEl.dataset.state = hasWebMCP ? 'ok' : 'warn';
   }
 
