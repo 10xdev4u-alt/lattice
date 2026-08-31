@@ -27,6 +27,13 @@ export function mountWorkflowTrail(root: HTMLElement): void {
 function render(root: HTMLElement): void {
   const session = getSession();
   const steps = [...session.steps].reverse(); // newest first
+  // The step lookup the row actions use (re-run, skeptic,
+  // inspect): rebuilt on every render so it always reflects the
+  // steps actually shown.
+  STEP_INDEX.clear();
+  for (const s of session.steps) {
+    STEP_INDEX.set(s.step_id, { tool_name: s.tool_name, result_summary: s.result_summary, args: s.args });
+  }
   root.innerHTML = `
     <div class="trail-header">
       <h2>Workflow trail</h2>
@@ -123,7 +130,11 @@ function render(root: HTMLElement): void {
     const toggle = li.querySelector<HTMLDivElement>('[data-step-toggle]');
     const detail = li.querySelector<HTMLDivElement>('[data-step-detail]');
     if (!toggle || !detail) return;
-    toggle.addEventListener('click', (e) => {
+    // The action buttons (anchor, rerun, skeptic, branch, inspect)
+    // live in the DETAIL panel — a sibling of the toggle — so the
+    // action dispatch must listen on the row, not the toggle, or
+    // those clicks never reach a handler.
+    const handleAction = (e: Event): void => {
       const t = e.target as HTMLElement;
       if (t.dataset.action === 'anchor') {
         const id = Number(t.dataset.stepId);
@@ -170,10 +181,25 @@ function render(root: HTMLElement): void {
         });
         return;
       }
+      if (t.closest('[data-step-detail]')) {
+        // A click inside the open detail that wasn't an action
+        // button (the copy row) shouldn't collapse the panel.
+        return;
+      }
       const open = detail.hasAttribute('hidden');
       if (open) detail.removeAttribute('hidden');
       else detail.setAttribute('hidden', '');
       toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+    };
+    li.addEventListener('click', handleAction);
+    toggle.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        const open = detail.hasAttribute('hidden');
+        if (open) detail.removeAttribute('hidden');
+        else detail.setAttribute('hidden', '');
+        toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+      }
     });
   });
 }

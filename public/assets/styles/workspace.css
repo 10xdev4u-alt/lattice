@@ -624,3 +624,24 @@
   margin: 0 0 var(--sp-4);
   line-height: var(--leading-relaxed);
 }
+
+/* Overlay chrome for palette-mounted panels (peer review, graph,
+   saved searches, scratchpad). Title in the journal voice, close
+   always top-right. */
+.overlay-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-4);
+  margin-bottom: var(--sp-3);
+  padding-bottom: var(--sp-3);
+  border-bottom: 1px solid var(--border);
+}
+.overlay-header h2 {
+  font-family: var(--font-display);
+  font-size: var(--text-lg);
+  font-weight: 600;
+  letter-spacing: var(--tracking-tight);
+  margin: 0;
+  color: var(--fg);
+}

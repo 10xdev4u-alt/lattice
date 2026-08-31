@@ -93,7 +93,13 @@ function render(root: HTMLElement): void {
   const themeSelect = root.querySelector<HTMLSelectElement>('[data-theme-select]');
   if (themeSelect) {
     void import('./theme').then(({ getTheme, setTheme }) => {
-      themeSelect.value = getTheme();
+      // Show the live attribute when the stored choice is
+      // 'system' — the boot script pins a concrete scheme so
+      // the select never lies about what's on screen.
+      const stored = getTheme();
+      const applied = document.documentElement.getAttribute('data-theme');
+      themeSelect.value =
+        stored === 'system' && (applied === 'light' || applied === 'dark') ? applied : stored;
       themeSelect.addEventListener('change', () => {
         setTheme(themeSelect.value as 'light' | 'dark' | 'system');
       });
