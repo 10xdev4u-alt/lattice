@@ -30,6 +30,7 @@ export function mountWebmcpAuditOverlay(): void {
         <div>
           <p class="audit-eyebrow">Compliance, verified on this page</p>
           <h2 id="audit-title">WebMCP self-audit</h2>
+          <p class="audit-lede" data-audit-runtime></p>
           <p class="audit-lede">
             Every check below is a live probe against this document's modelContext, its registered
             tools, and the spec rules that govern them. Nothing is pre-baked — press run and watch.
@@ -61,6 +62,31 @@ export function mountWebmcpAuditOverlay(): void {
     if (e.key === 'Escape') overlay.remove();
   });
   document.body.appendChild(overlay);
+
+  // The honesty line, before any checks run: state which runtime
+  // this page actually has. Verification of a shim is not
+  // verification of the protocol, and the panel says so.
+  void import('../model-context-polyfill').then(({ webmcpRuntime }) => {
+    const el = overlay.querySelector<HTMLElement>('[data-audit-runtime]');
+    if (!el) return;
+    const kind = webmcpRuntime();
+    if (kind === 'native') {
+      el.textContent =
+        'This browser ships native document.modelContext — the checks below probe the real protocol implementation.';
+    } else if (kind === 'polyfill') {
+      el.innerHTML =
+        `<strong>This browser has no native WebMCP</strong> — Lattice's own polyfill is answering these ` +
+        `probes. The checks exercise the spec's API surface faithfully (shapes, budgets, events, ` +
+        `abort scoping), but they are verification of our implementation, not of a browser's. ` +
+        `Open this page in Chrome 149+ with the WebMCP flag, or in the ChatGPT desktop browser, ` +
+        `to audit the native runtime.`;
+      el.style.borderLeft = '2px solid var(--machine)';
+      el.style.paddingLeft = 'var(--sp-3)';
+    } else {
+      el.textContent = 'No modelContext runtime detected on this page.';
+    }
+  });
+
   overlay.querySelector<HTMLButtonElement>('[data-action="run"]')?.focus();
 }
 

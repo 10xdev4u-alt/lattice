@@ -46,6 +46,18 @@ interface ModelContextPolyfill {
 }
 
 let polyfillInstalled = false;
+/**
+ * Which runtime answered this session: 'native' when the browser
+ * ships document.modelContext (Chrome 149+ origin trial, Edge
+ * 150, ChatGPT Desktop), 'polyfill' when this module supplied
+ * it. The self-audit reports this first — verification of a
+ * shim is not verification of the protocol.
+ */
+let runtimeKind: 'native' | 'polyfill' | 'absent' = 'absent';
+
+export function webmcpRuntime(): 'native' | 'polyfill' | 'absent' {
+  return runtimeKind;
+}
 
 export function installModelContextPolyfill(): void {
   if (polyfillInstalled) return;
@@ -53,8 +65,10 @@ export function installModelContextPolyfill(): void {
 
   const hasNative = 'modelContext' in document && 'registerTool' in (document as any).modelContext;
   if (hasNative) {
+    runtimeKind = 'native';
     return;
   }
+  runtimeKind = 'polyfill';
 
   const tools = new Map<
     string,
