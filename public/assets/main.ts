@@ -45,6 +45,14 @@ async function main(): Promise<void> {
 
   mountWorkspace(document.getElementById('app-main') as HTMLElement | null);
 
+  // Hydrate the client library from the server store — the server
+  // is the source of truth. Papers ingested server-side (a past
+  // session, another tab) appear in the rail on boot; the
+  // workspace re-renders when the count changes.
+  void import('./library-hydration').then(({ hydrateLibrary }) => {
+    void hydrateLibrary();
+  });
+
   // Report-a-problem button: copy a diagnostic bundle to the clipboard.
 
   // Trail watcher: badges the Log tab with the count of new steps.
