@@ -1,6 +1,6 @@
 /**
  * Feedback drill-down in the trail — a small overlay attached to
- * the agent-rail that shows the per-message feedback (👍/👎) in a
+ * the agent-rail that shows the per-message feedback (up/down) in a
  * timeline. Lets the user correlate feedback with specific steps.
  *
  * Closes PR #208: a feedback feature in the trail (per-message
@@ -14,7 +14,7 @@ export function mountFeedbackDrilldownOverlay(): void {
   const feedback = getAllFeedback();
   const _session = getSession();
   if (feedback.length === 0) {
-    window.alert('No feedback yet. Click 👍 or 👎 on any agent message first.');
+    window.alert('No feedback yet. Click up or down on any agent message first.');
     return;
   }
   // _session is available for future per-step correlation.
@@ -31,9 +31,9 @@ export function mountFeedbackDrilldownOverlay(): void {
         ${feedback
           .map(
             (f) => `<li class="feedback-drilldown-row">
-              <div class="feedback-drilldown-meta">${f.feedback === 'up' ? '👍' : '👎'} · ${new Date(f.timestamp).toLocaleString()}</div>
+              <div class="feedback-drilldown-meta">${f.feedback === 'up' ? 'up' : 'down'} · ${new Date(f.timestamp).toLocaleString()}</div>
               <div class="feedback-drilldown-text">${escapeHtml(f.text.slice(0, 400))}${f.text.length > 400 ? '…' : ''}</div>
-              ${f.feedback === 'down' ? '<p class="feedback-drilldown-hint">A 👎 — what would have made this answer better? Consider: clearer prompt, more context, or a different tool.</p>' : ''}
+              ${f.feedback === 'down' ? '<p class="feedback-drilldown-hint">A down vote — what would have made this answer better? Consider: clearer prompt, more context, or a different tool.</p>' : ''}
             </li>`,
           )
           .join('')}

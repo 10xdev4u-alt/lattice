@@ -54,6 +54,7 @@ export function mountCommandPalette(): void {
         }, 300);
       } },
     { id: 'scratchpad', label: 'Scratchpad', hint: 'free-form notes', keywords: 'scratchpad notes write', run: () => void import('../scratchpad').then((m) => m.mountScratchpadPanel(document.body)) },
+    { id: 'webmcp-audit', label: 'WebMCP self-audit', hint: 'verify spec compliance, live', keywords: 'webmcp audit spec compliance verify check', run: () => void import('./webmcp-audit-panel').then((m) => m.mountWebmcpAuditOverlay()) },
     { id: 'settings', label: 'Settings', hint: 'theme, model, confirmations', keywords: 'settings preferences theme model', run: () => document.dispatchEvent(new KeyboardEvent('keydown', { key: ',', metaKey: true, bubbles: true })) },
     { id: 'help', label: 'Keyboard shortcuts', hint: 'the full list', keywords: 'help shortcuts keyboard', run: () => document.dispatchEvent(new KeyboardEvent('keydown', { key: '?', bubbles: true })) },
   ];

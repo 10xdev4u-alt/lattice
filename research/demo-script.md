@@ -1,105 +1,115 @@
 # Lattice demo video — 3-minute script
 
-> Total runtime: 2:55. Audio required. Record with OBS or ScreenFlow.
+> Total runtime: 2:50. Audio required. Record with OBS or ScreenFlow.
 > Use a USB mic, not the laptop mic. Captions auto-generated, then
 > hand-corrected.
+>
+> Before recording: load the sample library once so the ingests are
+> warm, then reload the page so the video starts from the empty
+> state. The container should be running at localhost:8888.
 
-## Scene 1 — Setup (0:00–0:20)
+## Scene 1 — The claim (0:00–0:15)
 
-**Visual:** Lattice landing page. Click "Open the demo."
-
-**Voice-over:**
-"Lattice is a research-paper workspace where the page itself is the audit log.
-Fourteen typed tools, not a chat box."
-
-**Action:** The empty state appears. Click "Load sample library."
-
-## Scene 2 — Search & compare (0:20–0:50)
-
-**Visual:** The three-rail workspace appears. The right rail shows the
-Live Tool Array with 9 tools.
+**Visual:** The workspace on the empty state. Fraunces headline:
+"Bring a paper. Watch every claim become traceable."
 
 **Voice-over:**
-"Five well-known papers load. The agent now has access to nine
-read and write tools, all visible here in the Live Tool Array. Every
-tool the agent can call is right there, no hidden surface."
+"Every AI demo asks you to trust the agent. Lattice asks the
+opposite: prove it. This is a research workspace where the page
+itself is the audit log — and it can prove its own compliance."
 
-**Action:** Type in the agent input: "What do Attention Is All You
-Need and BERT disagree about?"
+**Action:** Press Cmd+K, type "self-audit", Enter. Click
+"Run the checks."
 
-**Voice-over:**
-"Watch the right rail. The agent calls list_papers, then
-search_library, then compare_claims. The audit log fills in."
+## Scene 2 — The self-audit (0:15–0:45)
 
-## Scene 3 — Challenge a claim (0:50–1:20)
-
-**Visual:** The chat shows the agent's response with a citations chip.
-
-**Voice-over:**
-"The agent drafts a claim. The citation chip links to the source
-paper. But the user can challenge it."
-
-**Action:** Click the small "challenge" button on the claim.
+**Visual:** The audit panel streams nine checks, each flipping to
+verdigris as it resolves: modelContext present, the three API
+methods, toolchange firing, tool budgets, a live executeTool
+round-trip, the isolation headers read off this origin,
+untrustedContentHint on every content tool, abort scoping,
+exposedTo filtering.
 
 **Voice-over:**
-"The agent re-runs the analysis, defending or retracting."
+"Nine live probes against this page's actual WebMCP surface. Not a
+checklist we wrote — checks that run right now. Register a probe
+tool: toolchange fires. Abort its signal: it unregisters. Ask
+where the tools permissions policy is: the page reads its own
+headers. Nine passing. This is what compliance looks like when
+it's code, not a slide."
 
-## Scene 4 — Add to bibliography (1:20–1:50)
+**Action:** Let all nine resolve. Hover one row so its probe note
+is visible for a beat.
 
-**Visual:** The agent now wants to add a paper to the export list.
+## Scene 3 — The workspace (0:45–1:10)
 
-**Voice-over:**
-"When the agent wants to mutate state — like adding a paper to the
-export list — the user clicks first. This is the WebMCP secure-
-tools pattern. Read tools are free; write tools require consent."
-
-**Action:** Confirmation modal appears. Click "Allow for this session."
-
-**Action:** Click "Export bibliography as CSL-JSON."
-
-**Voice-over:**
-"The export downloads a file the user can drag into Zotero. Round-
-trips cleanly through every reference manager."
-
-## Scene 5 — Show my work (1:50–2:20)
-
-**Visual:** Click the "Log" tab in the right rail.
+**Visual:** Close the audit. The empty state. Click "Load 5 classic
+papers." The three rails fill: library left, the Transformer paper
+center in the reading voice, agent right.
 
 **Voice-over:**
-"This is the killer feature. Every tool call the agent has made
-is here, with timestamp, args, result, and duration. Click any
-step. See the full args, the full result. Export the whole trail
-as a Markdown methods appendix the user can drop into a paper."
+"Five papers load — their full text fetched, extracted, and
+indexed server-side. The reading surface follows the agent: when
+it opens a paper, yours opens too."
 
-**Action:** Click "Export as methods appendix." The file downloads.
+**Action:** In the chat type: "Compare Attention Is All You Need
+with BERT on attention."
 
-**Voice-over:**
-"The page IS the audit log. The user can show their committee
-exactly how the agent got from question to claim."
+## Scene 4 — The red thread (1:10–1:45)
 
-## Scene 6 — Cross-agent peer review (2:20–2:50)
-
-**Visual:** Type: "Invite the peer-reviewer." The agent calls
-peer_review_invite. A violet banner appears above the agent rail.
+**Visual:** The agent streams a reply in violet. Tool chips appear
+inline. The Log tab count climbs.
 
 **Voice-over:**
-"The cross-agent demo. A second agent — the skeptic — joins the
-page. Every claim the primary agent makes, the skeptic challenges."
+"Every tool call lands in the trail as a numbered entry on a red
+spine — the thread of the argument. Expand a step: the exact
+arguments, the exact result, the duration. Press Re-run and the
+same call executes again, appended — same input, fresh result.
+The log grows honestly. It never rewrites."
 
-**Action:** Type: "Compose a peer review of Attention Is All You
-Need." The agent calls compose_review. The skeptic persona
-responds in violet.
+**Action:** Open the Log tab. Expand one step. Click Re-run.
+Watch the new entry appear.
+
+## Scene 5 — Challenge (1:45–2:15)
+
+**Visual:** The peer-reviewer banner. Click "Invite
+peer-reviewer." The skeptic's challenge arrives.
 
 **Voice-over:**
-"The user watches two agents negotiate. The user is the editor."
+"Invite a second agent and it challenges the first — a skeptic
+with its own persona, exposed to exactly this tool surface. Two
+agents, one page, and the human holds the pen. Every write tool
+still asks permission first."
 
-## Scene 7 — End card (2:50–3:00)
+**Action:** Ask the chat to add the paper to the bibliography. The
+confirmation modal appears. Click Allow.
 
-**Visual:** Fade to the Lattice landing page.
+## Scene 6 — Export (2:15–2:50)
+
+**Visual:** The trail exports as a methods appendix — markdown,
+structured, citable.
 
 **Voice-over:**
-"Lattice. Research papers, in conversation. Open source. Apache
-2.0. WebMCP Challenge, 2026."
+"Finally: export the trail. Every claim, traced to a paper, a
+page, a sentence — the methods appendix for your thesis, written
+by the work itself. Lattice: research papers, in conversation —
+and in evidence. Nine checks passing."
 
-**End card text:** Lattice · 10xdev4u-alt + the-ai-developer ·
-github.com/10xdev4u-alt/lattice
+**Action:** Open the Log tab, click "Export as methods appendix."
+Show the downloaded document for the last beat.
+
+---
+
+## Cut-list (if you need to trim to 2:00)
+
+- Cut Scene 3's typing beat (keep the narration).
+- Trim Scene 5 to the invite + one challenge line.
+
+## Recording notes
+
+- 1440x900, dark theme (default) — the warm ink reads better on
+  video than the light paper.
+- Slow your cursor. Hover before clicking; the hover states are
+  part of the story.
+- The LLM is a free tier — if a call stalls, wait; the retry
+  banner is honest and quick.

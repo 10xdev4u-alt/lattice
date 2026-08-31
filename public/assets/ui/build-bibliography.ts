@@ -47,7 +47,7 @@ export function mountBuildBibliographyOverlay(): void {
     if (t.dataset.action === 'copy-fmt' && t instanceof HTMLButtonElement) {
       const f = t.dataset.format as Format;
       void navigator.clipboard?.writeText(formatBibliography(library, f).content ?? '');
-      t.textContent = 'Copied ✓';
+      t.textContent = 'Copied';
     }
   });
   overlay.querySelector<HTMLButtonElement>('[data-action="download"]')?.addEventListener('click', () => {

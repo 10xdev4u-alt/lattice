@@ -36,7 +36,7 @@ interface RegisteredTool extends ToolDefinition {
 }
 
 interface ModelContextPolyfill {
-  registerTool(tool: ToolDefinition, options?: { signal?: AbortSignal }): Promise<void>;
+  registerTool(tool: ToolDefinition, options?: { signal?: AbortSignal; exposedTo?: string[] }): Promise<void>;
   getTools(options?: { fromOrigins?: string[] }): Promise<RegisteredTool[]>;
   executeTool(tool: RegisteredTool, argsJson: string, options?: { signal?: AbortSignal }): Promise<unknown>;
   addEventListener(type: 'toolchange', listener: (event: Event) => void): void;
@@ -54,7 +54,10 @@ export function installModelContextPolyfill(): void {
     return;
   }
 
-  const tools = new Map<string, { tool: ToolDefinition; signal: AbortSignal | undefined }>();
+  const tools = new Map<
+    string,
+    { tool: ToolDefinition; signal: AbortSignal | undefined; exposedTo?: string[] }
+  >();
   const listeners = new Set<(event: Event) => void>();
 
   const fireToolChange = (): void => {
@@ -68,7 +71,7 @@ export function installModelContextPolyfill(): void {
       if (tools.has(tool.name)) {
         throw new Error(`Tool "${tool.name}" is already registered.`);
       }
-      tools.set(tool.name, { tool, signal: options?.signal });
+      tools.set(tool.name, { tool, signal: options?.signal, exposedTo: options?.exposedTo });
 
       if (options?.signal) {
         options.signal.addEventListener('abort', () => {
@@ -81,13 +84,22 @@ export function installModelContextPolyfill(): void {
       fireToolChange();
     },
 
-    async getTools() {
-      return Array.from(tools.values()).map(({ tool }) => ({
-        ...tool,
-        origin: window.location.origin,
-        title: tool.name,
-        window: null,
-      }));
+    // getTools honors the spec's origin filtering: an agent asking
+    // from origins X sees only tools registered with
+    // exposedTo: [..., X] (or with no exposedTo — visible to all).
+    async getTools(options) {
+      const from = options?.fromOrigins;
+      return Array.from(tools.values())
+        .filter(({ exposedTo }) => {
+          if (!from || from.length === 0 || !exposedTo || exposedTo.length === 0) return true;
+          return exposedTo.some((origin) => from!.includes(origin));
+        })
+        .map(({ tool }) => ({
+          ...tool,
+          origin: window.location.origin,
+          title: tool.name,
+          window: null,
+        }));
     },
 
     async executeTool(tool, argsJson, options) {

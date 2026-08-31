@@ -1,8 +1,8 @@
 /**
- * Feedback — 👍/👎 on every agent message.
+ * Feedback — up/down on every agent message.
  *
- * Each agent message gets two buttons. Click 👍 to record a
- * positive signal, 👎 for negative. The data persists to
+ * Each agent message gets two buttons. Click up to record a
+ * positive signal, down for negative. The data persists to
  * localStorage as a session-scoped log. The Lattice team can
  * use this to fine-tune prompts and the tool surface.
  *

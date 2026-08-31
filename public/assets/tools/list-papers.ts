@@ -30,6 +30,7 @@ export const listPapers: ToolDefinition = {
   },
   annotations: {
     readOnlyHint: true,
+    untrustedContentHint: true,
   },
   async execute(_args): Promise<ToolResult> {
     const library = getLibrary();

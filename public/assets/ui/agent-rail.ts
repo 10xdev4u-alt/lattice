@@ -237,7 +237,7 @@ function appendMessage(root: HTMLElement, role: 'user' | 'agent', text: string, 
     const existing = getFeedbackForMessage(session.session_id, messageIndex);
     const upBtn = document.createElement('button');
     upBtn.className = `feedback-btn${existing === 'up' ? ' active-up' : ''}`;
-    upBtn.textContent = '👍';
+    upBtn.textContent = 'up';
     upBtn.title = 'Helpful';
     upBtn.setAttribute('aria-label', 'Helpful');
     upBtn.addEventListener('click', () => {
@@ -247,7 +247,7 @@ function appendMessage(root: HTMLElement, role: 'user' | 'agent', text: string, 
     });
     const downBtn = document.createElement('button');
     downBtn.className = `feedback-btn${existing === 'down' ? ' active-down' : ''}`;
-    downBtn.textContent = '👎';
+    downBtn.textContent = 'down';
     downBtn.title = 'Not helpful (click to regenerate with feedback)';
     downBtn.setAttribute('aria-label', 'Not helpful');
     downBtn.addEventListener('click', () => {
@@ -316,7 +316,7 @@ async function regenerateLast(root: HTMLElement, previousText: string, withFeedb
     tool_name: withFeedback ? 'regenerate_with_feedback' : 'regenerate',
     args: { prompt: lastUserText, previous: previousText.slice(0, 200) },
     result_summary: withFeedback
-      ? 'user gave 👎 feedback and asked the agent to try again'
+      ? 'user gave down feedback and asked the agent to try again'
       : 'user regenerated the agent reply',
     result_full: { prompt: lastUserText, previous: previousText, with_feedback: withFeedback },
     duration_ms: 0,

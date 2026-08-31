@@ -22,7 +22,7 @@ export function mountFeedbackTab(host: HTMLElement): void {
     }
   }
   if (feedback.length === 0) {
-    host.innerHTML = '<p class="canvas-empty">No feedback yet. Click 👍 or 👎 on any agent message to start.</p>';
+    host.innerHTML = '<p class="canvas-empty">No feedback yet. Click up or down on any agent message to start.</p>';
     return;
   }
   host.innerHTML = `
@@ -36,7 +36,7 @@ export function mountFeedbackTab(host: HTMLElement): void {
         ${feedback
           .map(
             (f) => `<tr>
-            <td>${f.feedback === 'up' ? '👍' : '👎'}</td>
+            <td>${f.feedback === 'up' ? 'up' : 'down'}</td>
             <td>${escapeHtml(f.text.slice(0, 200))}${f.text.length > 200 ? '…' : ''}</td>
             <td>${escapeHtml(new Date(f.timestamp).toLocaleString())}</td>
           </tr>`,

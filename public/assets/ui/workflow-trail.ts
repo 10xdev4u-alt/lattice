@@ -12,7 +12,7 @@
  * Closes #109, #94, #43 (UI half).
  */
 
-import { getSession, toMarkdownAppendix, type WorkflowStep } from '../workflow-trail';
+import { getSession, recordStep, toMarkdownAppendix, type WorkflowStep } from '../workflow-trail';
 import { mountTimelineScrubber } from './timeline-scrubber';
 import { renderSessionSummary } from './session-summary';
 import { getAnchor, setAnchor, clearAnchor } from '../anchors';
@@ -146,6 +146,13 @@ function render(root: HTMLElement): void {
         });
         return;
       }
+      if (t.dataset.action === 'rerun') {
+        const id = Number(t.dataset.stepId);
+        const step = STEP_INDEX.get(id);
+        if (!step) return;
+        void rerunStep(step);
+        return;
+      }
       if (t.dataset.action === 'skeptic') {
         const id = Number(t.dataset.stepId);
         const step = STEP_INDEX.get(id);
@@ -183,8 +190,8 @@ function stepRow(step: WorkflowStep): string {
         <span class="trail-step-status trail-step-status-${step.status}">${escapeHtml(step.status)}</span>
         <time class="trail-step-time" datetime="${escapeHtml(step.timestamp)}">${escapeHtml(formatTime(step.timestamp))}</time>
         ${step.model ? `<span class="trail-step-model" title="${escapeHtml(step.base_url ?? '')}">${escapeHtml(step.model)}</span>` : ''}
-        ${anchor ? `<span class="trail-step-anchor" data-anchor-color="${anchor.color}">★ ${escapeHtml(anchor.label)}</span>` : ''}
-        <button class="trail-step-anchor-btn" data-action="${anchor ? 'unanchor' : 'anchor'}" data-step-id="${step.step_id}" title="${anchor ? 'Remove anchor' : 'Mark as anchor'}">${anchor ? '★' : '☆'}</button>
+        ${anchor ? `<span class="trail-step-anchor" data-anchor-color="${anchor.color}">anchored: ${escapeHtml(anchor.label)}</span>` : ''}
+        <button class="trail-step-anchor-btn" data-action="${anchor ? 'unanchor' : 'anchor'}" data-step-id="${step.step_id}" title="${anchor ? 'Remove anchor' : 'Mark as anchor'}">${anchor ? 'unanchor' : 'anchor'}</button>
       </div>
       <div class="trail-step-detail" data-step-detail hidden>
         <dl>
@@ -195,6 +202,7 @@ function stepRow(step: WorkflowStep): string {
           <dt>Result summary</dt><dd><pre>${escapeHtml(step.result_summary.slice(0, 2000))}</pre></dd>
         </dl>
         <div class="trail-step-detail-actions">
+          <button data-action="rerun" data-step-id="${step.step_id}" title="Run this tool again with the same arguments">Re-run</button>
           <button data-action="skeptic" data-step-id="${step.step_id}" title="What would the skeptic say?">Skeptic</button>
           <button data-action="branch-from" data-step-id="${step.step_id}" title="Branch the audit log from this step">Branch from here</button>
           <button data-action="inspect" data-step-id="${step.step_id}" title="See the full request and response JSON">Inspect</button>
@@ -253,6 +261,58 @@ function appendBranchRow(host: HTMLElement, branch: { id: string; name: string; 
 }
 
 const STEP_INDEX = new Map<number, { tool_name: string; result_summary: string; args: unknown }>();
+
+/**
+ * Re-run a recorded step: the same tool, the same arguments, a
+ * fresh execution — appended to the trail as a new entry. This
+ * is the honest form of replay: same input, new result, and the
+ * audit log grows rather than being rewritten.
+ */
+async function rerunStep(step: {
+  tool_name: string;
+  result_summary: string;
+  args: unknown;
+}): Promise<void> {
+  const ctx = (
+    document as unknown as {
+      modelContext?: { executeTool?: (t: { name: string }, a: string, o?: { signal?: AbortSignal }) => Promise<unknown> };
+    }
+  ).modelContext;
+  if (!ctx?.executeTool) return;
+  const start = performance.now();
+  try {
+    const result = await ctx.executeTool(
+      { name: step.tool_name },
+      JSON.stringify(step.args ?? {}),
+      { signal: new AbortController().signal },
+    );
+    const summary =
+      typeof result === 'string' ? result : JSON.stringify(result).slice(0, 500);
+    recordStep({
+      tool_name: step.tool_name,
+      args: step.args,
+      result_summary: `re-run: ${summary.slice(0, 490)}`,
+      result_full: result,
+      duration_ms: Math.round(performance.now() - start),
+      status: 'ok',
+    });
+  } catch (err) {
+    recordStep({
+      tool_name: step.tool_name,
+      args: step.args,
+      result_summary: `re-run failed: ${(err as Error).message.slice(0, 400)}`,
+      result_full: { error: (err as Error).message },
+      duration_ms: Math.round(performance.now() - start),
+      status: 'err',
+    });
+  }
+  render(rootOfTrail());
+}
+
+/** The trail's own mount root — the panel it renders into. */
+function rootOfTrail(): HTMLElement {
+  return document.querySelector<HTMLElement>('[data-workflow-trail]') ?? document.body;
+}
 
 function buildClaimFromStep(step: { tool_name: string; result_summary: string; args: unknown }): string {
   const args = (step.args ?? {}) as Record<string, unknown>;

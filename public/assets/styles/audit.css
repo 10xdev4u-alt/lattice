@@ -1,0 +1,155 @@
+/* WebMCP self-audit — the compliance checklist.
+   The same lab-notebook grammar as the trail: numbered rows,
+   the data voice, verdigris for verified-true, red for a
+   finding. The row number is real sequence — checks run in
+   order and the list is a chronological record of the probe. */
+
+.audit-modal {
+  width: min(720px, 92vw);
+  max-height: 86vh;
+  overflow-y: auto;
+  background: var(--bg-elev-1);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--r-lg);
+  box-shadow: var(--shadow-4);
+  padding: var(--sp-6);
+}
+
+.audit-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: var(--sp-4);
+  margin-bottom: var(--sp-5);
+}
+.audit-eyebrow {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-wider);
+  color: var(--accent);
+  margin: 0 0 var(--sp-2);
+}
+.audit-modal h2 {
+  font-family: var(--font-display);
+  font-size: var(--text-xl);
+  font-weight: 600;
+  letter-spacing: var(--tracking-tight);
+  margin: 0 0 var(--sp-2);
+  color: var(--fg);
+}
+.audit-lede {
+  font-family: var(--font-read);
+  font-size: var(--text-sm);
+  line-height: var(--leading-read);
+  color: var(--fg-muted);
+  margin: 0;
+  max-width: 52ch;
+}
+.audit-actions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  flex-shrink: 0;
+}
+
+.audit-summary {
+  display: flex;
+  gap: var(--sp-3);
+  margin-bottom: var(--sp-4);
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+}
+.audit-count {
+  color: var(--ok);
+}
+.audit-count-fail {
+  color: var(--err);
+}
+
+.audit-list {
+  list-style: none;
+  margin: 0 0 var(--sp-4);
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-1);
+}
+.audit-row {
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  background: var(--bg-elev-2);
+  padding: var(--sp-3) var(--sp-4);
+  transition: border-color var(--dur-fast) var(--ease);
+}
+.audit-row-running {
+  border-color: var(--machine);
+}
+.audit-row-pass {
+  border-left: 2px solid var(--ok);
+}
+.audit-row-fail {
+  border-left: 2px solid var(--err);
+}
+.audit-row-head {
+  display: grid;
+  grid-template-columns: auto 1fr auto auto;
+  gap: var(--sp-3);
+  align-items: baseline;
+}
+.audit-row-num {
+  font-family: var(--font-mono);
+  font-size: var(--text-2xs);
+  color: var(--fg-faint);
+}
+.audit-row-label {
+  font-size: var(--text-base);
+  font-weight: 500;
+  color: var(--fg);
+}
+.audit-row-spec {
+  font-family: var(--font-mono);
+  font-size: var(--text-2xs);
+  color: var(--fg-faint);
+}
+.audit-row-status {
+  font-family: var(--font-mono);
+  font-size: var(--text-2xs);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-wide);
+  color: var(--fg-muted);
+}
+.audit-row-pass .audit-row-status { color: var(--ok); }
+.audit-row-fail .audit-row-status { color: var(--err); }
+.audit-row-running .audit-row-status { color: var(--machine); }
+
+.audit-row-detail {
+  font-size: var(--text-sm);
+  line-height: var(--leading-read);
+  color: var(--fg-muted);
+  margin: var(--sp-2) 0 0;
+}
+.audit-row-note {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--fg);
+  background: var(--bg-sink);
+  border-radius: var(--r-sm);
+  padding: var(--sp-1) var(--sp-2);
+  margin: var(--sp-2) 0 0;
+  max-width: 60ch;
+}
+
+.audit-footnote {
+  font-size: var(--text-xs);
+  color: var(--fg-faint);
+  border-top: 1px solid var(--border);
+  padding-top: var(--sp-3);
+  margin: 0;
+}
+.audit-footnote code {
+  font-family: var(--font-mono);
+  background: var(--bg-sink);
+  padding: 0 var(--sp-1);
+  border-radius: var(--r-sm);
+}

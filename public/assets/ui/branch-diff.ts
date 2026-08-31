@@ -66,10 +66,10 @@ function renderBranchPicker(
       <h2>Branch diff</h2>
       <div class="branch-diff-controls">
         <label>A: <select data-branch-a>${snapshots
-          .map((s, i) => `<option value="${i}" ${i === aIdx ? 'selected' : ''}>${escapeHtml(s.name)} (${a.name === s.name ? s.stepCount + '★' : s.stepCount} steps)</option>`)
+          .map((s, i) => `<option value="${i}" ${i === aIdx ? 'selected' : ''}>${escapeHtml(s.name)} (${a.name === s.name ? s.stepCount + ' (anchored)' : s.stepCount} steps)</option>`)
           .join('')}</select></label>
         <label>B: <select data-branch-b>${snapshots
-          .map((s, i) => `<option value="${i}" ${i === bIdx ? 'selected' : ''}>${escapeHtml(s.name)} (${b.name === s.name ? s.stepCount + '★' : s.stepCount} steps)</option>`)
+          .map((s, i) => `<option value="${i}" ${i === bIdx ? 'selected' : ''}>${escapeHtml(s.name)} (${b.name === s.name ? s.stepCount + ' (anchored)' : s.stepCount} steps)</option>`)
           .join('')}</select></label>
         <button data-action="compare">Compare</button>
       </div>

@@ -102,7 +102,7 @@ export function mountCitePaperOverlay(paperId: string): void {
     if (t.dataset.action === 'copy-style' && t instanceof HTMLButtonElement) {
       const style = t.dataset.style as Style;
       void navigator.clipboard?.writeText(citations[style]);
-      t.textContent = 'Copied ✓';
+      t.textContent = 'Copied';
     }
   });
   overlay.querySelector<HTMLButtonElement>('[data-action="download"]')?.addEventListener('click', () => {

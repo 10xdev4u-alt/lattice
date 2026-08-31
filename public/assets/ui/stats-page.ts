@@ -53,7 +53,7 @@ export function mountStatsPageOverlay(): void {
       </section>
       <section class="stats-section">
         <h3>Feedback</h3>
-        <p>summary: ${upCount} 👍 / ${downCount} 👎${approval !== null ? ` (${approval}% approval)` : ''}</p>
+        <p>summary: ${upCount} up / ${downCount} down${approval !== null ? ` (${approval}% approval)` : ''}</p>
         <button data-action="drilldown">Drill into feedback</button>
         <button data-action="peer-review">Peer review</button>
         <button data-action="latency">Latency chart</button>

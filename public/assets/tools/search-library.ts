@@ -41,6 +41,7 @@ export const searchLibrary: ToolDefinition = {
   },
   annotations: {
     readOnlyHint: true,
+    untrustedContentHint: true,
   },
   async execute(args): Promise<ToolResult> {
     const { query, max_results_per_paper = 3 } = (args ?? {}) as {

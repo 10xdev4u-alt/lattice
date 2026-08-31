@@ -4,7 +4,7 @@
  * history, and the user's last message, with token counts per
  * message and total.
  *
- * Open from the context-budget bar's ⚙ button (or a dedicated
+ * Open from the context-budget bar's Config button (or a dedicated
  * button in the agent rail). Useful for debugging why the LLM
  * is responding the way it is.
  *

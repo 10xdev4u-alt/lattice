@@ -25,7 +25,7 @@ export function mountWhatWouldYouDo(): void {
     { signal: new AbortController().signal, maxTokens: 80, temperature: 0.7 },
   ).then((suggestion) => {
     const trimmed = suggestion.trim();
-    if (trimmed) input.placeholder = `💡 ${trimmed}`;
+    if (trimmed) input.placeholder = trimmed;
   }).catch(() => {
     // keep the default placeholder
   });

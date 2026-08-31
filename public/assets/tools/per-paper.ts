@@ -59,7 +59,18 @@ export async function registerPerPaperTools(
 
   for (const tool of tools) {
     try {
-      await ctx.registerTool(tool, { signal: controller.signal });
+      // peer_review_invite is the cross-agent surface: exposing it
+      // to partner origins is what makes a second agent (the peer
+      // reviewer) able to discover and call it per the spec's
+      // §3.3 mutual opt-in. Everything else stays same-origin.
+      const options: { signal: AbortSignal; exposedTo?: string[] } = { signal: controller.signal };
+      if (tool.name === 'peer_review_invite') {
+        const partner = window.location.origin === 'http://localhost:8888'
+          ? 'http://localhost:8888'
+          : window.location.origin;
+        options.exposedTo = [partner];
+      }
+      await ctx.registerTool(tool, options);
     } catch (err) {
       // Tool may already be registered (race with prior paper). Abort & retry.
       controller.abort();

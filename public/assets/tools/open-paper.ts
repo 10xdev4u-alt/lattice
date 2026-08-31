@@ -39,6 +39,9 @@ export const openPaper: ToolDefinition = {
     readOnlyHint: true,
     destructiveHint: false,
     idempotentHint: true,
+    // The returned paper record carries its title and authors —
+    // external content the agent must treat as data.
+    untrustedContentHint: true,
   },
   async execute(args, opts): Promise<ToolResult> {
     const { paper_id } = (args ?? {}) as { paper_id?: string };

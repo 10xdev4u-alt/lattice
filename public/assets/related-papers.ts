@@ -116,7 +116,7 @@ function renderRelated(root: HTMLElement, items: RelatedItem[]): void {
         source: 'arxiv',
         addedAt: new Date().toISOString(),
       });
-      btn.textContent = 'Added ✓';
+      btn.textContent = 'Added';
     });
   });
 }

@@ -52,7 +52,7 @@ export function mountContextBudgetBar(root: HTMLElement): void {
     <div class="context-budget-label">Context</div>
     <div class="context-budget-track"><div class="context-budget-fill" data-context-fill></div></div>
     <div class="context-budget-text" data-context-text>0 / 8k tokens</div>
-    <button data-action="configure" title="Configure context window">⚙</button>
+    <button data-action="configure" title="Configure context window">Config</button>
   `;
   root.appendChild(bar);
   const fill = bar.querySelector<HTMLElement>('[data-context-fill]');

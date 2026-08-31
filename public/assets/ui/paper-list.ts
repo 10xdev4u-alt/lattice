@@ -238,7 +238,7 @@ function paperRow(p: Paper): string {
   const tooltip = describeWhyAdded(p);
   return `
     <li class="paper-row ${pinned ? 'paper-row-pinned' : ''}" data-paper-id="${p.id}" role="button" tabindex="0" aria-label="Open ${escapeHtml(p.title)}" title="${escapeHtml(tooltip)}">
-      <button class="paper-row-pin" data-action="pin" aria-label="${pinned ? 'Unpin' : 'Pin'} ${escapeHtml(p.title)}" aria-pressed="${pinned}">${pinned ? '★' : '☆'}</button>
+      <button class="paper-row-pin" data-action="pin" aria-label="${pinned ? 'Unpin' : 'Pin'} ${escapeHtml(p.title)}" aria-pressed="${pinned}">${pinned ? 'pinned' : 'pin'}</button>
       <div class="paper-row-title">${escapeHtml(p.title)}</div>
       <div class="paper-row-meta">${escapeHtml(author)}${escapeHtml(more)}${year}</div>
       <div class="paper-row-source">${escapeHtml(p.source)}</div>

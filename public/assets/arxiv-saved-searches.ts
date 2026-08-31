@@ -223,7 +223,7 @@ function render(root: HTMLElement): void {
                 source: 'arxiv',
                 addedAt: new Date().toISOString(),
               });
-              addBtn.textContent = 'Added ✓';
+              addBtn.textContent = 'Added';
             });
           });
         }

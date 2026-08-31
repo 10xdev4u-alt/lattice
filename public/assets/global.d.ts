@@ -13,7 +13,7 @@ declare global {
     modelContext?: {
       registerTool(
         tool: unknown,
-        options?: { signal?: AbortSignal },
+        options?: { signal?: AbortSignal; exposedTo?: string[] },
       ): Promise<void>;
       getTools(options?: { fromOrigins?: string[] }): Promise<unknown[]>;
       executeTool(

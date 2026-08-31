@@ -1,5 +1,5 @@
 /**
- * Feedback chart — a small bar chart of 👍/👎 over time, grouped
+ * Feedback chart — a small bar chart of up/down over time, grouped
  * by hour. Rendered as a pure-CSS bar chart (no chart lib, no
  * bundle cost). Opens inside the stats overlay.
  *
@@ -48,8 +48,8 @@ export function mountFeedbackChart(host: HTMLElement): void {
         .join('')}
     </div>
     <p class="feedback-chart-legend">
-      <span><i class="dot dot-up"></i> 👍</span>
-      <span><i class="dot dot-down"></i> 👎</span>
+      <span><i class="dot dot-up"></i> up</span>
+      <span><i class="dot dot-down"></i> down</span>
     </p>
   `;
 }

@@ -66,7 +66,7 @@ export function mountWhatsWrongOverlay(): void {
             duration_ms: Math.round(performance.now() - start),
             status: 'ok',
           });
-          t.textContent = 'OK ✓';
+          t.textContent = 'Verified';
         })
         .catch((err) => {
           recordStep({
