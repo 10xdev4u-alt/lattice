@@ -69,7 +69,7 @@ function buildCitations(paper: Paper): Record<Style, string> {
 export function mountCitePaperOverlay(paperId: string): void {
   const paper = getPaper(paperId);
   if (!paper) {
-    window.alert('Paper not found.');
+    void import('./overlays').then(({ notice }) => notice('Paper not found', 'That paper is not in the library.'));
     return;
   }
   const citations = buildCitations(paper);

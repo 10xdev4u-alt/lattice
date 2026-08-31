@@ -83,39 +83,57 @@ function render(root: HTMLElement): void {
 
   const shareBtn = root.querySelector<HTMLButtonElement>('[data-action="share"]');
   shareBtn?.addEventListener('click', () => {
-    void import('../share').then(({ buildShareUrl }) => {
-      const wantPass = window.confirm('Encrypt the share URL with a passphrase? Click OK to set one, Cancel to share plain.');
+    void (async () => {
+      const { buildShareUrl } = await import('../share');
+      const { askConfirm, askText, notice } = await import('./overlays');
+      const wantPass = await askConfirm(
+        'Encrypt the share URL?',
+        'A passphrase-protected link can only be opened by someone you give the passphrase to.',
+        'Set a passphrase',
+      );
       let url: string;
       if (wantPass) {
-        const pass = window.prompt('Enter a passphrase (the recipient will need this):') ?? '';
-        if (!pass) return;
-        url = buildShareUrl(pass);
+        const choice = await askText('Passphrase', 'The recipient will need this to open the shared session.', {
+          placeholder: 'passphrase',
+        });
+        if (!choice.ok || !choice.value) return;
+        url = buildShareUrl(choice.value);
       } else {
         url = buildShareUrl();
       }
-      void navigator.clipboard?.writeText(url);
-      window.prompt('Share URL (copied to clipboard):', url);
-    });
+      void navigator.clipboard?.writeText(url).catch(() => undefined);
+      await notice('Share URL copied', url);
+    })();
   });
 
   const forkBtn = root.querySelector<HTMLButtonElement>('[data-action="fork-branch"]');
   forkBtn?.addEventListener('click', () => {
-    void import('../branches').then(({ startFreshBranch, listBranches }) => {
-      const name = window.prompt('Name the new branch:', `Branch ${listBranches().length + 1}`);
-      if (!name) return;
-      const branch = startFreshBranch(name);
+    void (async () => {
+      const { startFreshBranch, listBranches } = await import('../branches');
+      const { askText } = await import('./overlays');
+      const choice = await askText('Name the new branch', 'Branches record tool calls separately so you can try a different path.', {
+        initial: `Branch ${listBranches().length + 1}`,
+      });
+      if (!choice.ok || !choice.value) return;
+      const branch = startFreshBranch(choice.value);
       appendBranchRow(root, branch);
-    });
+    })();
   });
 
   const saveRoutineBtn = root.querySelector<HTMLButtonElement>('[data-action="save-routine"]');
   saveRoutineBtn?.addEventListener('click', () => {
-    void import('../routines').then(({ saveRoutineFromTrail }) => {
-      const name = window.prompt('Routine name:', 'My routine');
-      if (!name) return;
-      const description = window.prompt('Short description:', '') ?? '';
-      saveRoutineFromTrail(name, description);
-    });
+    void (async () => {
+      const { saveRoutineFromTrail } = await import('../routines');
+      const { askText } = await import('./overlays');
+      const nameChoice = await askText('Save this workflow as a routine', 'Routines replay the recorded tool calls against any new paper.', {
+        initial: 'My routine',
+      });
+      if (!nameChoice.ok || !nameChoice.value) return;
+      const desc = await askText('Short description', 'What this routine does, in one line.', {
+        placeholder: 'e.g. summarize + extract quotes',
+      });
+      saveRoutineFromTrail(nameChoice.value, desc.ok ? (desc.value ?? '') : '');
+    })();
   });
 
   const notionBtn = root.querySelector<HTMLButtonElement>('[data-action="export-notion"]');
@@ -138,9 +156,14 @@ function render(root: HTMLElement): void {
       const t = e.target as HTMLElement;
       if (t.dataset.action === 'anchor') {
         const id = Number(t.dataset.stepId);
-        const label = window.prompt('Anchor label:', `Milestone ${id}`) ?? '';
-        if (label) setAnchor(id, label);
-        render(root);
+        void (async () => {
+          const { askText } = await import('./overlays');
+          const choice = await askText('Anchor label', 'Mark this step as a milestone in the audit trail.', {
+            initial: `Milestone ${id}`,
+          });
+          if (choice.ok && choice.value) setAnchor(id, choice.value);
+          render(root);
+        })();
         return;
       }
       if (t.dataset.action === 'unanchor') {
@@ -149,12 +172,18 @@ function render(root: HTMLElement): void {
         return;
       }
       if (t.dataset.action === 'branch-from') {
-        void import('../branches').then(({ forkFromStep, listBranches }) => {
-          const name = window.prompt(`Branch from step #${t.dataset.stepId}:`, `Branch from #${t.dataset.stepId}`);
-          if (!name) return;
-          forkFromStep(Number(t.dataset.stepId), name);
+        void (async () => {
+          const { forkFromStep, listBranches } = await import('../branches');
+          const { askText } = await import('./overlays');
+          const choice = await askText(
+            `Branch from step #${t.dataset.stepId}`,
+            'The audit trail forks here; new tool calls record on the branch.',
+            { initial: `Branch from #${t.dataset.stepId}` },
+          );
+          if (!choice.ok || !choice.value) return;
+          forkFromStep(Number(t.dataset.stepId), choice.value);
           listBranches();
-        });
+        })();
         return;
       }
       if (t.dataset.action === 'rerun') {
@@ -282,7 +311,9 @@ function appendBranchRow(host: HTMLElement, branch: { id: string; name: string; 
   `;
   list.appendChild(row);
   row.querySelector('[data-action="view"]')?.addEventListener('click', () => {
-    window.alert(`Branch "${branch.name}" created. Tool calls now go to this branch. Export the trail to share.`);
+    void import('./overlays').then(({ toast }) =>
+      toast(`Branch "${branch.name}" active — new tool calls record on it`),
+    );
   });
 }
 

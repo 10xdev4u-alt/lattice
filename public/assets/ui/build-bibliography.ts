@@ -12,7 +12,9 @@ import { formatBibliography } from '../format-bibliography';
 export function mountBuildBibliographyOverlay(): void {
   const library = getLibrary();
   if (library.length === 0) {
-    window.alert('No papers in the library. Add some first.');
+    void import('./overlays').then(({ notice }) =>
+      notice('No papers in the library', 'Add papers first — the bibliography cites what you have.'),
+    );
     return;
   }
   const overlay = document.createElement('div');

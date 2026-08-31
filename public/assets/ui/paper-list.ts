@@ -140,7 +140,8 @@ function render(root: HTMLElement): void {
         error?: { code: string; message: string };
       };
       if (!res.ok || !data.paper) {
-        window.alert(data.error?.message ?? `Could not fetch ${id}. Check the ID and try again.`);
+        const { notice } = await import('./overlays');
+        await notice('Could not fetch that paper', data.error?.message ?? 'Check the ID and try again.');
         return;
       }
       const paper = data.paper;
@@ -179,8 +180,13 @@ function render(root: HTMLElement): void {
         return;
       }
       if (target.dataset.action === 'add-tag') {
-        const tag = window.prompt(`Add tag to "${li.dataset.paperId}":`, '');
-        if (tag) addTag(li.dataset.paperId!, tag);
+        void (async () => {
+          const { askText } = await import('./overlays');
+          const choice = await askText('Add a tag', 'Tags group papers in the library filter.', {
+            placeholder: 'e.g. attention, quantization',
+          });
+          if (choice.ok && choice.value) addTag(li.dataset.paperId!, choice.value);
+        })();
         e.stopPropagation();
         return;
       }
