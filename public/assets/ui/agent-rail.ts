@@ -79,7 +79,7 @@ export function mountAgentRail(root: HTMLElement): void {
   // each toolcall event can restore them into fresh rows.
   const lastDurations = new Map<string, number>();
   void import('../webmcp-live').then(({ onCallStart, onCallEnd }) => {
-    let counters = new Map<string, { interval: number; start: number }>();
+    const counters = new Map<string, { interval: number; start: number }>();
     const rowFor = (name: string): HTMLElement | null =>
       root.querySelector(`[data-tool-name="${cssEscape(name)}"]`);
     onCallStart(({ toolName }) => {
