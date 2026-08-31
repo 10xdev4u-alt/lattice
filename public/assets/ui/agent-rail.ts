@@ -340,11 +340,12 @@ async function render(root: HTMLElement): Promise<void> {
 
 /**
  * Run a WebMCP tool with explicit args and surface it in the
- * chat rail. Exported for the paper's ask bar: every surface
- * in the app shares this one call path, so a tool run from the
- * paper also lands in the conversation and the audit trail.
+ * chat rail. Retained as the single exported call path for
+ * surfaces that join the app later.
  */
 export function runTool(name: string, args: Record<string, unknown>): Promise<unknown> {
+  void name;
+  void args;
   const ctx = getModelContext();
   const rail = document.querySelector<HTMLElement>('[data-agent-rail]');
   if (rail) appendMessage(rail, 'user', `(${name} on this paper)`);
