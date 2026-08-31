@@ -11,6 +11,8 @@
 
 import { getModelContext } from '../model-context-polyfill';
 import { getSession, recordStep } from '../workflow-trail';
+import { runWithCard, pagesFromResult, textFromResult } from '../response-cards';
+import { audienceOf, tailOf } from '../phrase-helpers';
 import { mountWorkflowTrail } from './workflow-trail';
 import { setPeerReviewerActive, isPeerReviewerActive } from './peer-reviewer';
 import { mountPeerPreview } from '../peer-preview';
@@ -246,9 +248,84 @@ async function render(root: HTMLElement): Promise<void> {
     });
   });
 
+  // The paper's ask bar emits lattice:askbar-verb with the verb
+  // id; this is the same approved call path the Try it buttons
+  // use. The bar itself never touches a tool call.
+  const ASK_VERBS: Array<{ needles: string[]; toolName: string; argsFor: (paperId: string, phrase: string) => Record<string, unknown> }> = [
+    { needles: ['explain'], toolName: 'summarize_paper', argsFor: (p) => ({ paper_id: p, audience: 'grad', max_words: 90 }) },
+    {
+      needles: ['quote', 'quotation'],
+      toolName: 'extract_quote',
+      argsFor: (p, phrase) => ({ paper_id: p, concept: tailOf(phrase) ?? 'the core method' }),
+    },
+    { needles: ['cite', 'bibtex', 'citation'], toolName: 'cite_paper', argsFor: (p) => ({ paper_id: p, format: 'bibtex' }) },
+    {
+      needles: ['summar', 'tldr'],
+      toolName: 'summarize_paper',
+      argsFor: (p, phrase) => ({ paper_id: p, audience: audienceOf(phrase) }),
+    },
+    {
+      needles: ['related', 'similar'],
+      toolName: 'search_library',
+      argsFor: (p, phrase) => ({ query: tailOf(phrase) ?? phrase }),
+    },
+  ];
+
+  document.removeEventListener('lattice:askbar-verb', askbarHandler);
+  document.addEventListener('lattice:askbar-verb', askbarHandler);
+
+  async function askbarHandler(e: Event): Promise<void> {
+    const detail = (e as CustomEvent<{ phrase: string; paperId: string; paperTitle: string }>).detail;
+    if (!detail) return;
+    const { phrase, paperId, paperTitle } = detail;
+    const match = ASK_VERBS.find(({ needles }) => needles.some((n) => phrase.toLowerCase().includes(n)));
+    if (!match) {
+      const chatInput = root.querySelector<HTMLInputElement>('[data-agent-input]');
+      if (chatInput) {
+        chatInput.value = `About "${paperTitle}": ${phrase}`;
+        chatInput.closest('form')?.dispatchEvent(new Event('submit', { cancelable: true }));
+      }
+      return;
+    }
+    const sample = match.argsFor(paperId, phrase);
+    appendMessage(root, 'user', `(${match.toolName} on this paper)`);
+    void runWithCard({
+      verb: match.toolName,
+      title: askCardTitle(match.toolName, phrase),
+      paperId,
+      run: () =>
+        getModelContext()
+          .executeTool({ name: match.toolName } as any, JSON.stringify(sample))
+          .catch((err: Error) => {
+            console.error(`${match.toolName} failed`, err);
+            throw err;
+          }),
+      textOf: (result: unknown) => textFromResult(result),
+      pagesOf: (result: unknown) => pagesFromResult(result),
+    });
+  }
+
+  function askCardTitle(toolName: string, phrase: string): string {
+    switch (toolName) {
+      case 'summarize_paper':
+        return phrase.indexOf('explain') !== -1
+          ? 'Explained briefly'
+          : 'Summary';
+      case 'extract_quote':
+        return `Quotes about ${tailOf(phrase) ?? 'the core method'}`;
+      case 'cite_paper':
+        return 'Citation (BibTeX)';
+      case 'summarize_paper':
+        return 'Summary';
+      case 'search_library':
+        return 'Related in your library';
+      default:
+        return phrase.slice(0, 60);
+    }
+  }
+
   const trailRoot = root.querySelector<HTMLDivElement>('[data-workflow-trail]');
   if (trailRoot) mountWorkflowTrail(trailRoot);
-
   // Restore persisted messages on first render
   if (existing === 0 && persisted.length > 0) {
     const chatRoot = root.querySelector<HTMLDivElement>('[data-agent-chat]');
@@ -259,6 +336,19 @@ async function render(root: HTMLElement): Promise<void> {
       }
     }
   }
+}
+
+/**
+ * Run a WebMCP tool with explicit args and surface it in the
+ * chat rail. Exported for the paper's ask bar: every surface
+ * in the app shares this one call path, so a tool run from the
+ * paper also lands in the conversation and the audit trail.
+ */
+export function runTool(name: string, args: Record<string, unknown>): Promise<unknown> {
+  const ctx = getModelContext();
+  const rail = document.querySelector<HTMLElement>('[data-agent-rail]');
+  if (rail) appendMessage(rail, 'user', `(${name} on this paper)`);
+  return ctx.executeTool({ name } as any, JSON.stringify(args));
 }
 
 function appendMessage(root: HTMLElement, role: 'user' | 'agent', text: string, transient = false): void {
