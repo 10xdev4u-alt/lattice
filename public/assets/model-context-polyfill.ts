@@ -13,6 +13,8 @@
  * Closes: #57
  */
 
+import { dispatchCallEnd, dispatchCallStart } from './webmcp-live';
+
 type ToolExecute = (args: unknown, opts: { signal: AbortSignal }) => Promise<unknown>;
 
 interface ToolDefinition {
@@ -103,8 +105,16 @@ export function installModelContextPolyfill(): void {
     },
 
     async executeTool(tool, argsJson, options) {
+      // The instrumentation choke point: every call — from the
+      // chat, the palette, page UI, or a real external agent —
+      // flows through here, so the UI can watch WebMCP live.
+      // The start event fires before the registry lookup so a
+      // call to an unknown tool still traces (in red).
+      dispatchCallStart(tool.name);
+      const t0 = performance.now();
       const entry = tools.get(tool.name);
       if (!entry) {
+        dispatchCallEnd(tool.name, Math.round(performance.now() - t0), false, 'not registered');
         throw new Error(`Tool "${tool.name}" is not registered.`);
       }
       let args: unknown = {};
@@ -112,10 +122,20 @@ export function installModelContextPolyfill(): void {
         try {
           args = JSON.parse(argsJson);
         } catch (err) {
+          dispatchCallEnd(tool.name, Math.round(performance.now() - t0), false, 'bad args');
           throw new Error(`Invalid JSON args: ${(err as Error).message}`);
         }
       }
-      return entry.tool.execute(args, { signal: options?.signal ?? new AbortController().signal });
+      try {
+        const result = await entry.tool.execute(args, {
+          signal: options?.signal ?? new AbortController().signal,
+        });
+        dispatchCallEnd(tool.name, Math.round(performance.now() - t0), true);
+        return result;
+      } catch (err) {
+        dispatchCallEnd(tool.name, Math.round(performance.now() - t0), false, (err as Error).message);
+        throw err;
+      }
     },
 
     addEventListener(type, listener) {

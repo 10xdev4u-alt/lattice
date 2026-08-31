@@ -31,6 +31,18 @@ async function main(): Promise<void> {
     console.error('Tool registration failed', err);
   }
 
+  // Protocol trace + live call indicator: the real-time WebMCP
+  // surface. Every call through the polyfill lands here as it
+  // happens — the trace strip shows the session's shape, the
+  // indicator names the call in flight.
+  void import('./ui/protocol-trace').then(({ mountProtocolTrace }) => {
+    const host = document.getElementById('protocol-trace-host');
+    if (host) mountProtocolTrace(host);
+  });
+  void import('./live-indicator').then(({ mountLiveIndicator }) => {
+    mountLiveIndicator();
+  });
+
   mountWorkspace(document.getElementById('app-main') as HTMLElement | null);
 
   // Report-a-problem button: copy a diagnostic bundle to the clipboard.

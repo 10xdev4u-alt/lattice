@@ -35,6 +35,7 @@
     <link rel="stylesheet" href="/assets/styles/command-palette.css" />
     <link rel="stylesheet" href="/assets/styles/latency-chart.css" />
     <link rel="stylesheet" href="/assets/styles/audit.css" />
+    <link rel="stylesheet" href="/assets/styles/trace.css" />
     <link rel="stylesheet" href="/assets/styles/fonts.css" />
     <link rel="stylesheet" href="/assets/styles/overlay.css" />
   </head>
@@ -47,10 +48,15 @@
           </svg>
           <h1 class="app-title">Lattice</h1>
         </div>
+        <div class="app-trace-host" id="protocol-trace-host"></div>
         <p class="app-tagline" id="webmcp-status">
           <span class="status-dot" data-state="warn" aria-hidden="true"></span>
           <span data-status-text>Checking WebMCP…</span>
         </p>
+        <div class="live-indicator" id="live-indicator" data-live="0" aria-live="polite">
+          <span class="live-dot" aria-hidden="true"></span>
+          <span class="live-tool" data-live-text>idle</span>
+        </div>
       </header>
       <div id="session-timer-host" style="position: absolute; top: 16px; right: 16px;"></div>
     <div id="session-timestamp-host" style="position: absolute; bottom: 6px; right: 16px; font-size: 10px; color: var(--fg-muted); font-family: var(--font-mono);"></div>

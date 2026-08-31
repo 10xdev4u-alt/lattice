@@ -72,6 +72,57 @@ export function mountAgentRail(root: HTMLElement): void {
       setTimeout(() => banner.setAttribute('hidden', ''), 5000);
     }
   });
+
+  // Live tool rows: the running row shows a climbing ms counter;
+  // when the call lands, it keeps its duration beside the name.
+  // Durations live in a module map so the re-render that follows
+  // each toolcall event can restore them into fresh rows.
+  const lastDurations = new Map<string, number>();
+  void import('../webmcp-live').then(({ onCallStart, onCallEnd }) => {
+    let counters = new Map<string, { interval: number; start: number }>();
+    const rowFor = (name: string): HTMLElement | null =>
+      root.querySelector(`[data-tool-name="${cssEscape(name)}"]`);
+    onCallStart(({ toolName }) => {
+      const row = rowFor(toolName);
+      if (!row) return;
+      row.dataset.running = '1';
+      const ms = row.querySelector<HTMLElement>('[data-live-ms]');
+      if (!ms) return;
+      ms.removeAttribute('hidden');
+      const start = performance.now();
+      const interval = window.setInterval(() => {
+        ms.textContent = `${Math.round(performance.now() - start)}ms`;
+      }, 100);
+      counters.set(toolName, { interval, start });
+    });
+    onCallEnd(({ toolName, durationMs }) => {
+      const c = counters.get(toolName);
+      if (c) {
+        window.clearInterval(c.interval);
+        counters.delete(toolName);
+      }
+      lastDurations.set(toolName, durationMs);
+      const row = rowFor(toolName);
+      if (!row) return;
+      row.dataset.running = '0';
+      const live = row.querySelector<HTMLElement>('[data-live-ms]');
+      const last = row.querySelector<HTMLElement>('[data-last-ms]');
+      if (live) live.setAttribute('hidden', '');
+      if (last) last.textContent = `${durationMs}ms`;
+    });
+    // After each toolcall re-render, restore the recorded
+    // durations onto the fresh rows.
+    document.addEventListener('webmcp:toolcall', () => {
+      for (const [name, ms] of lastDurations) {
+        const last = rowFor(name)?.querySelector<HTMLElement>('[data-last-ms]');
+        if (last) last.textContent = `${ms}ms`;
+      }
+    });
+  });
+}
+
+function cssEscape(s: string): string {
+  return (window as unknown as { CSS?: { escape?: (v: string) => string } }).CSS?.escape?.(s) ?? s;
 }
 
 async function handleSubmit(root: HTMLElement): Promise<void> {
@@ -367,10 +418,12 @@ function sampleArgs(name: string): unknown {
 function toolRow(t: RegisteredTool): string {
   const readOnly = t.annotations?.readOnlyHint ?? !!(t.name === 'list_papers' || t.name === 'search_library');
   return `
-    <li class="tool-row" data-tool-name="${escapeHtml(t.name)}">
+    <li class="tool-row" data-tool-name="${escapeHtml(t.name)}" data-running="0">
       <div class="tool-row-head">
         <code class="tool-name">${escapeHtml(t.name)}</code>
         <span class="tool-readonly">${readOnly ? 'read' : 'write'}</span>
+        <span class="tool-live-ms" data-live-ms hidden>0ms</span>
+        <span class="tool-last-ms" data-last-ms></span>
         <button class="tool-tryit" data-tryit="${escapeHtml(t.name)}" title="Try this tool with sample args">Try it</button>
       </div>
       <p class="tool-description">${escapeHtml(t.description)}</p>

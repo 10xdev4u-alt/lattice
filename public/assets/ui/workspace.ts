@@ -25,11 +25,13 @@ export function mountWorkspace(root: HTMLElement | null): void {
       <aside class="rail rail-left" role="complementary" aria-label="Paper library">
         <div data-paper-list></div>
       </aside>
+      <button class="rail-divider" data-divider="left" type="button" aria-label="Resize library rail" aria-hidden="true" tabindex="-1"></button>
       <main class="canvas" role="main">
         <div data-open-papers></div>
         <div data-canvas></div>
         <div data-settings hidden></div>
       </main>
+      <button class="rail-divider" data-divider="right" type="button" aria-label="Resize agent rail" aria-hidden="true" tabindex="-1"></button>
       <aside class="rail rail-right" role="complementary" aria-label="Agent">
         <div data-peer-banner></div>
         <div data-agent-rail></div>
@@ -41,6 +43,8 @@ export function mountWorkspace(root: HTMLElement | null): void {
       <button data-mobile-tab="agent" role="tab" aria-selected="false">Agent</button>
     </nav>
   `;
+
+  installRailResizers(root);
 
   const paperListRoot = root.querySelector<HTMLDivElement>('[data-paper-list]');
   const canvasRoot = root.querySelector<HTMLDivElement>('[data-canvas]');
@@ -78,6 +82,87 @@ export function mountWorkspace(root: HTMLElement | null): void {
 
   installMobileTabs(root);
   installKeyboardShortcuts(root);
+}
+
+/**
+ * Draggable rail dividers. Widths persist to localStorage per
+ * side; double-click resets to the design default. The grid
+ * template reads from custom properties so resizing never fights
+ * the collapsed-rail modifiers.
+ */
+function installRailResizers(root: HTMLElement): void {
+  const workspace = root.querySelector<HTMLElement>('.workspace');
+  if (!workspace) return;
+  const left = root.querySelector<HTMLElement>('[data-divider="left"]');
+  const right = root.querySelector<HTMLElement>('[data-divider="right"]');
+  const KEY = 'lattice.rails.v1';
+
+  const apply = (l: number | null, r: number | null): void => {
+    if (l) workspace.style.setProperty('--rail-left-w', `${l}px`);
+    if (r) workspace.style.setProperty('--rail-right-w', `${r}px`);
+  };
+
+  try {
+    const saved = JSON.parse(localStorage.getItem(KEY) ?? '{}') as { left?: number; right?: number };
+    apply(saved.left ?? null, saved.right ?? null);
+  } catch {
+    /* defaults stand */
+  }
+
+  const makeDrag = (
+    handle: HTMLElement | null,
+    side: 'left' | 'right',
+    min: number,
+    max: number,
+  ): void => {
+    if (!handle) return;
+    const onDown = (e: MouseEvent): void => {
+      e.preventDefault();
+      handle.dataset.dragging = '1';
+      const startX = e.clientX;
+      const startW =
+        (side === 'left'
+          ? workspace.querySelector('.rail-left')
+          : workspace.querySelector('.rail-right')
+        )?.getBoundingClientRect().width ?? 300;
+      const onMove = (ev: MouseEvent): void => {
+        const delta = side === 'left' ? ev.clientX - startX : startX - ev.clientX;
+        const w = Math.max(min, Math.min(max, startW + delta));
+        apply(side === 'left' ? w : null, side === 'right' ? w : null);
+      };
+      const onUp = (): void => {
+        handle.dataset.dragging = '0';
+        document.removeEventListener('mousemove', onMove);
+        document.removeEventListener('mouseup', onUp);
+        try {
+          const saved = JSON.parse(localStorage.getItem(KEY) ?? '{}') as Record<string, number>;
+          const l = parseFloat(
+            getComputedStyle(workspace).getPropertyValue('--rail-left-w'),
+          );
+          const r = parseFloat(
+            getComputedStyle(workspace).getPropertyValue('--rail-right-w'),
+          );
+          localStorage.setItem(KEY, JSON.stringify({ ...saved, left: l, right: r }));
+        } catch {
+          /* persistence is best-effort */
+        }
+      };
+      document.addEventListener('mousemove', onMove);
+      document.addEventListener('mouseup', onUp);
+    };
+    handle.addEventListener('mousedown', onDown);
+    handle.addEventListener('dblclick', () => {
+      workspace.style.removeProperty(side === 'left' ? '--rail-left-w' : '--rail-right-w');
+      try {
+        localStorage.removeItem(KEY);
+      } catch {
+        /* ignore */
+      }
+    });
+  };
+
+  makeDrag(left, 'left', 200, 480);
+  makeDrag(right, 'right', 280, 640);
 }
 
 /* Mobile: the three rails become a bottom-tabbed deck. On
