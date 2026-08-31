@@ -19,7 +19,6 @@ import { mountPeerPreview } from '../peer-preview';
 import { decorateCitations } from '../citation-chips';
 import { inferConfidence, renderConfidenceDot } from '../confidence';
 import { recordFeedback, getFeedbackForMessage } from '../feedback';
-import { streamCompletePrompt } from '../llm-stream';
 
 interface RegisteredTool {
   name: string;
@@ -40,7 +39,12 @@ const CHAT_STORAGE_KEY = 'lattice.chat.v1';
 function loadChat(): ChatMessage[] {
   if (typeof localStorage === 'undefined') return [];
   try {
-    return JSON.parse(localStorage.getItem(CHAT_STORAGE_KEY) ?? '[]') as ChatMessage[];
+    const raw = JSON.parse(localStorage.getItem(CHAT_STORAGE_KEY) ?? '[]') as ChatMessage[];
+    // Drop empty entries: mid-loop re-renders once captured the
+    // user message after a wipe cleared it, and an empty user
+    // turn both pollutes the display and breaks the next loop's
+    // history (upstreams reject empty-content messages).
+    return raw.filter((m) => m.text && m.text.trim() !== '');
   } catch {
     return [];
   }
@@ -135,38 +139,105 @@ async function handleSubmit(root: HTMLElement): Promise<void> {
   appendMessage(root, 'user', text);
   input.value = '';
   setBusy(root, true);
+
+  // Re-renders fire during the loop (each tool call records a
+  // step -> webmcp:toolcall -> render), and render replaces the
+  // chat's children with clones. Any element captured before an
+  // await may be detached by the time we write to it — so every
+  // write re-queries the live DOM instead of holding a stale
+  // reference. The exchange is persisted on completion so a
+  // mid-loop re-render can never lose it.
+  const liveChat = (): HTMLElement | null =>
+    root.querySelector<HTMLElement>('[data-agent-chat]');
+  // The reply <p> lives inside the reply node — every message
+  // has a data-stream-target paragraph, so the query must be
+  // scoped or the answer lands in the user's bubble.
+  const liveStreamTarget = (): HTMLElement | null =>
+    root.querySelector<HTMLElement>('[data-stream-node] > p');
+
+  // The reply surface must exist before the first await.
+  const ensureReplyNode = (): HTMLElement | null => {
+    const chat = liveChat();
+    if (!chat) return null;
+    let node = chat.querySelector<HTMLElement>('[data-stream-node]');
+    if (!node) {
+      node = document.createElement('div');
+      node.className = 'agent-message agent-message-agent';
+      node.dataset.streamNode = '1';
+      node.innerHTML = `<span class="agent-message-role">Agent</span><p data-stream-target></p>`;
+      chat.appendChild(node);
+    }
+    return node;
+  };
+  const scrollToChatEnd = (): void => {
+    const chat = liveChat();
+    if (chat) chat.scrollTo({ top: chat.scrollHeight });
+  };
+  const announce = (line: string): void => {
+    const chat = liveChat();
+    if (!chat) return;
+    const note = document.createElement('div');
+    note.className = 'agent-message agent-message-agent agent-message-tool';
+    note.textContent = line;
+    chat.appendChild(note);
+    scrollToChatEnd();
+  };
+
+  let streamed = '';
   try {
-    const chat = root.querySelector<HTMLDivElement>('[data-agent-chat]');
-    const controller = new AbortController();
-    // Stream the answer directly into a new agent message so the user
-    // sees tokens land in real time.
-    const streamDiv = document.createElement('div');
-    streamDiv.className = 'agent-message agent-message-agent';
-    streamDiv.innerHTML = `<span class="agent-message-role">Agent</span><p data-stream-target></p>`;
-    chat?.appendChild(streamDiv);
-    chat?.scrollTo({ top: chat.scrollHeight });
-    const target = streamDiv.querySelector<HTMLElement>('[data-stream-target]');
-    let streamed = '';
+    const { runAgentLoop, buildHistoryFromChat } = await import('../agent-loop');
+    const history = liveChat() ? buildHistoryFromChat(liveChat()!) : [];
+    ensureReplyNode();
+    scrollToChatEnd();
     try {
-      const system = `You are Lattice, a research-paper assistant. Keep answers short and direct. Use markdown for structure. Cite paper ids when referencing specific papers.`;
-      await streamCompletePrompt(text, { signal: controller.signal, maxTokens: 800, system }, (delta) => {
-        streamed += delta;
-        if (target) target.textContent = streamed;
-        chat?.scrollTo({ top: chat.scrollHeight });
+      const result = await runAgentLoop(text, history, {
+        signal: new AbortController().signal,
+        onToolCall: (name: string) => {
+          announce(`${name} — working`);
+        },
       });
-      if (target) target.innerHTML = escapeHtml(streamed) + renderConfidenceDot(inferConfidence(streamed));
-    } catch (err) {
-      if (target) target.textContent = `Error: ${(err as Error).message}`;
-    } finally {
-      setBusy(root, false);
-      void import('../prompt-diff').then(({ recordPrompt }) => {
-        recordPrompt(text, streamed, undefined);
+      for (const call of result.toolCalls) {
+        announce(`${call.tool} — done`);
+      }
+      streamed = result.finalMessage || '(the agent produced no text)';
+    } catch (loopErr) {
+      // Loop failed (upstream 5xx, malformed tool call, no tools
+      // registered): answer directly rather than dead-ending.
+      console.warn('agent loop fell back to plain completion:', loopErr);
+      const { streamCompletePrompt } = await import('../llm-stream');
+      const system = `You are Lattice, a research-paper assistant. Keep answers short and direct. Use markdown for structure. Cite paper ids when referencing specific papers.`;
+      await streamCompletePrompt(text, { signal: new AbortController().signal, maxTokens: 800, system }, (delta) => {
+        streamed += delta;
+        const t = liveStreamTarget();
+        if (t) t.textContent = streamed;
+        scrollToChatEnd();
       });
     }
+    // Write the final answer into the live node — the node that
+    // survived (or was restored by) any re-render.
+    ensureReplyNode();
+    const t = liveStreamTarget();
+    if (t) t.innerHTML = escapeHtml(streamed) + renderConfidenceDot(inferConfidence(streamed));
+    setBusy(root, false);
+    persistExchange(root, text, streamed);
+    void import('../prompt-diff').then(({ recordPrompt }) => {
+      recordPrompt(text, streamed, undefined);
+    });
   } catch (err) {
     setBusy(root, false);
     appendMessage(root, 'agent', `Error: ${(err as Error).message}`);
   }
+}
+
+/** Store a completed exchange so re-renders reload it intact. */
+function persistExchange(root: HTMLElement, userText: string, agentText: string): void {
+  void root;
+  const chat = loadChat();
+  chat.push({ role: 'user', text: userText, timestamp: new Date().toISOString() });
+  if (agentText) {
+    chat.push({ role: 'agent', text: agentText, timestamp: new Date().toISOString() });
+  }
+  saveChat(chat);
 }
 
 function setBusy(root: HTMLElement, busy: boolean): void {
@@ -189,8 +260,20 @@ async function render(root: HTMLElement): Promise<void> {
   const session = getSession();
   const peerActive = isPeerReviewerActive();
   const chat = root.querySelector<HTMLDivElement>('[data-agent-chat]');
-  const existing = chat ? Array.from(chat.querySelectorAll<HTMLDivElement>('.agent-message')).length : 0;
+  // Capture the LIVE conversation before the wipe: re-renders
+  // fire mid-loop (a tool call records a step -> webmcp:toolcall
+  // -> render) and used to destroy in-flight messages, replacing
+  // an active chat with "No messages yet" while the agent was
+  // mid-answer. The messages survive in the DOM that follows.
+  const liveMessages: HTMLDivElement[] = chat
+    ? (Array.from(chat.querySelectorAll<HTMLDivElement>('.agent-message')).map((el) =>
+        el.cloneNode(true) as HTMLDivElement,
+      ))
+    : [];
   const persisted = loadChat();
+  // Whichever has content wins: live DOM beats storage (storage
+  // only updates after a completed exchange).
+  const toRestore = liveMessages.length > 0 ? liveMessages : persisted.map((m) => messageNode(m));
   root.innerHTML = `
     <div class="agent-rail-tabs" role="tablist">
       <button data-tab="chat" role="tab" aria-selected="true">Chat</button>
@@ -326,16 +409,26 @@ async function render(root: HTMLElement): Promise<void> {
 
   const trailRoot = root.querySelector<HTMLDivElement>('[data-workflow-trail]');
   if (trailRoot) mountWorkflowTrail(trailRoot);
-  // Restore persisted messages on first render
-  if (existing === 0 && persisted.length > 0) {
+  // Restore the conversation: live-captured messages first (they
+  // include anything mid-flight), else the persisted history.
+  if (toRestore.length > 0) {
     const chatRoot = root.querySelector<HTMLDivElement>('[data-agent-chat]');
     if (chatRoot) {
       chatRoot.innerHTML = '';
-      for (const m of persisted) {
-        appendMessage(root, m.role, m.text, m.transient);
-      }
+      for (const m of toRestore) chatRoot.appendChild(m);
     }
   }
+}
+
+/** Build a message node from persisted storage. */
+function messageNode(m: ChatMessage): HTMLDivElement {
+  const div = document.createElement('div');
+  div.className = `agent-message agent-message-${m.role}`;
+  div.innerHTML = `<span class="agent-message-role">${m.role === 'user' ? 'You' : 'Agent'}</span><p></p>`;
+  const p = div.querySelector('p');
+  if (p) p.textContent = m.text;
+  if (m.transient) div.classList.add('agent-message-thinking');
+  return div;
 }
 
 /**
