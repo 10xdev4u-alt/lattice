@@ -80,8 +80,11 @@ async function main(): Promise<void> {
   // Peer-reviewer preview: hover a citation chip, see the challenge.
   void import('./peer-preview').then(({ mountPeerPreview }) => mountPeerPreview());
 
-  // Smart session hint: appears after 90 seconds with a suggestion.
-  void import('./session-hint').then(({ mountSessionHint }) => mountSessionHint(document.body));
+  // Session hint removed: it mounted at 90s over the agent input
+  // (bottom-right, z-50) and computed its suggestion from a stale
+  // empty-library snapshot, telling users with 5 loaded papers to
+  // "Load sample library" while blocking the chat. A hint that
+  // lies and obstructs is worse than none.
 
   // Context budget bar: estimated tokens used vs window.
   void import('./context-budget').then(({ mountContextBudgetBar }) => {
