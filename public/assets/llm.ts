@@ -16,7 +16,6 @@
 // LATTICE_LLM_BASE overrides this for local dev against a proxy
 // that permits browser origins.
 const DEFAULT_BASE = '/api/llm';
-const DEFAULT_MODEL = 'tencent/hy3:free';
 const MAX_RETRIES = 3;
 
 interface CompleteOptions {
@@ -28,10 +27,6 @@ interface CompleteOptions {
 
 function getBase(): string {
   return (globalThis as { LATTICE_LLM_BASE?: string }).LATTICE_LLM_BASE ?? DEFAULT_BASE;
-}
-
-function getModel(): string {
-  return (globalThis as { LATTICE_LLM_MODEL?: string }).LATTICE_LLM_MODEL ?? DEFAULT_MODEL;
 }
 
 function sleep(ms: number, signal: AbortSignal): Promise<void> {
@@ -47,51 +42,61 @@ function sleep(ms: number, signal: AbortSignal): Promise<void> {
 
 export async function completePrompt(prompt: string, opts: CompleteOptions): Promise<string> {
   const base = getBase().replace(/\/$/, '');
-  const body = JSON.stringify({
-    model: getModel(),
-    messages: [
-      ...(opts.system ? [{ role: 'system', content: opts.system }] : []),
-      { role: 'user', content: prompt },
-    ],
-    max_tokens: opts.maxTokens ?? 800,
-    temperature: opts.temperature ?? 0.2,
-    // Reasoning-capable routers otherwise spend the budget
-    // thinking and return an empty content field.
-    reasoning: { enabled: false },
-  });
-
+  // Free-tier models rotate out without notice — tencent/hy3:free
+  // died mid-sprint and every consumer of this module failed
+  // with a stream of 502s. Try the pool in order; the first
+  // model that answers wins.
+  const { modelOrder } = await import('./model-pool');
   let lastErr: Error | null = null;
-  for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
-    try {
-      const res = await fetch(base, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body,
-        signal: opts.signal,
-      });
-      if (res.status === 429) {
-        // Rate limited. Surface a rate-limit event so the UI can react.
-        document.dispatchEvent(new CustomEvent('lattice:rate-limited', { detail: { status: 429 } }));
-        throw new Error('LLM 429: rate limit exceeded');
+
+  for (const model of modelOrder()) {
+    const body = JSON.stringify({
+      model,
+      messages: [
+        ...(opts.system ? [{ role: 'system', content: opts.system }] : []),
+        { role: 'user', content: prompt },
+      ],
+      max_tokens: opts.maxTokens ?? 800,
+      temperature: opts.temperature ?? 0.2,
+      // Reasoning-capable routers otherwise spend the budget
+      // thinking and return an empty content field.
+      reasoning: { enabled: false },
+    });
+
+    for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
+      try {
+        const res = await fetch(base, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body,
+          signal: opts.signal,
+        });
+        if (res.status === 429) {
+          // Rate limited. Surface a rate-limit event so the UI can react.
+          document.dispatchEvent(new CustomEvent('lattice:rate-limited', { detail: { status: 429 } }));
+          throw new Error('LLM 429: rate limit exceeded');
+        }
+        if (res.ok) {
+          const data = (await res.json()) as {
+            choices: Array<{ message: { content: string | null; reasoning?: string } }>;
+          };
+          const msg = data.choices?.[0]?.message;
+          return msg?.content ?? msg?.reasoning ?? '';
+        }
+        if (res.status >= 400 && res.status < 500) {
+          const text = await res.text();
+          throw new Error(`LLM ${res.status}: ${text.slice(0, 200)}`);
+        }
+        lastErr = new Error(`LLM ${res.status}`);
+      } catch (err) {
+        if ((err as Error).name === 'AbortError') throw err;
+        lastErr = err as Error;
       }
-      if (res.ok) {
-        const data = (await res.json()) as {
-          choices: Array<{ message: { content: string | null; reasoning?: string } }>;
-        };
-        const msg = data.choices?.[0]?.message;
-        return msg?.content ?? msg?.reasoning ?? '';
-      }
-      if (res.status >= 400 && res.status < 500) {
-        const text = await res.text();
-        throw new Error(`LLM ${res.status}: ${text.slice(0, 200)}`);
-      }
-      lastErr = new Error(`LLM ${res.status}`);
-    } catch (err) {
-      if ((err as Error).name === 'AbortError') throw err;
-      lastErr = err as Error;
+      const backoffMs = 250 * 2 ** attempt;
+      await sleep(backoffMs, opts.signal);
     }
-    const backoffMs = 250 * 2 ** attempt;
-    await sleep(backoffMs, opts.signal);
+    // This model is out of retries — the pool continues with the
+    // next candidate.
   }
-  throw lastErr ?? new Error('LLM request failed');
+  throw lastErr ?? new Error('every model in the pool failed');
 }

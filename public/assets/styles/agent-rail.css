@@ -164,3 +164,15 @@
   color: var(--accent);
   border-color: var(--accent);
 }
+
+/* Tool-call announcements in the conversation: the agent
+   narrating its own work. Mono, machine voice, one per call. */
+.agent-message-tool {
+  font-family: var(--font-mono);
+  font-size: var(--text-2xs);
+  color: var(--machine);
+  padding: var(--sp-1) 0;
+  letter-spacing: var(--tracking-wide);
+  border-left: 2px solid var(--agent-soft);
+  padding-left: var(--sp-2);
+}

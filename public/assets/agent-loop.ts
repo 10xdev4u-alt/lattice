@@ -45,6 +45,8 @@ export interface AgentLoopOptions {
   system?: string;
   model?: string;
   maxTurns?: number;
+  /** Called as each tool begins executing — the UI announces it. */
+  onToolCall?: (name: string) => void;
 }
 
 export interface AgentLoopResult {
@@ -61,9 +63,11 @@ export async function runAgentLoop(
   opts: AgentLoopOptions,
 ): Promise<AgentLoopResult> {
   // Route through our /api/llm proxy — the browser can't call the
-  // LLM gateway directly (CORS).
-  const base = (globalThis as { LATTICE_LLM_BASE?: string }).LATTICE_LLM_BASE ?? '/api/llm';
-  const model = opts.model ?? (globalThis as { LATTICE_LLM_MODEL?: string }).LATTICE_LLM_MODEL ?? 'tencent/hy3:free';
+  // LLM gateway directly (CORS). Free-tier models rotate out
+  // without notice, so the loop tries the pool in order and uses
+  // the first model that answers.
+  const { modelOrder } = await import('./model-pool');
+  const models = opts.model ? [opts.model] : modelOrder();
 
   const tools = await listTools();
   const messages: ChatMessage[] = [
@@ -73,11 +77,48 @@ export async function runAgentLoop(
   ];
 
   const toolCalls: AgentLoopResult['toolCalls'] = [];
-  let turns = 0;
   const maxTurns = opts.maxTurns ?? 5;
+
+  // Pool loop: a dead model surfaces as an upstream 5xx on the
+  // first call, so try the next before giving up on the turn.
+  for (const candidate of models) {
+    try {
+      return await attemptLoop(candidate, messages, tools, {
+        signal: opts.signal,
+        onToolCall: opts.onToolCall,
+        maxTurns,
+      });
+    } catch (err) {
+      const msg = (err as Error).message;
+      const isUpstreamFailure = /LLM 5\d\d|LLM 4\d\d|no response/.test(msg);
+      if (models.indexOf(candidate) === models.length - 1 || !isUpstreamFailure) {
+        throw err;
+      }
+      console.warn(`model ${candidate} failed (${msg.slice(0, 60)}); trying the next`);
+    }
+  }
+  return { finalMessage: '(every model in the pool failed)', turns: 0, toolCalls };
+}
+
+interface AttemptOpts {
+  signal: AbortSignal;
+  onToolCall?: (name: string) => void;
+  maxTurns: number;
+}
+
+async function attemptLoop(
+  model: string,
+  initialMessages: ChatMessage[],
+  tools: ToolDescriptor[],
+  opts: AttemptOpts,
+): Promise<AgentLoopResult> {
+  const base = (globalThis as { LATTICE_LLM_BASE?: string }).LATTICE_LLM_BASE ?? '/api/llm';
+  const messages = [...initialMessages];
+  const toolCalls: AgentLoopResult['toolCalls'] = [];
+  let turns = 0;
   let finalMessage = '';
 
-  while (turns++ < maxTurns) {
+  while (turns++ < opts.maxTurns) {
     const res = await fetch(base, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -103,11 +144,18 @@ export async function runAgentLoop(
     };
     const msg = data.choices[0]?.message;
     if (!msg) {
-      finalMessage = '(no response from LLM)';
-      break;
+      throw new Error('no response from LLM');
     }
     if (msg.tool_calls && msg.tool_calls.length > 0) {
-      messages.push({ role: 'assistant', tool_calls: msg.tool_calls, content: msg.content ?? '' });
+      // Upstreams reject assistant messages whose content is
+      // null-or-empty (400 "user message must have content"),
+      // and several free models return null content alongside
+      // their tool calls — fill it with a short placeholder.
+      const assistantContent =
+        msg.content && msg.content.trim() !== ''
+          ? msg.content
+          : `(calling ${msg.tool_calls.map((c) => c.function.name).join(', ')})`;
+      messages.push({ role: 'assistant', tool_calls: msg.tool_calls, content: assistantContent });
       for (const call of msg.tool_calls) {
         let parsedArgs: unknown = {};
         try {
@@ -115,6 +163,7 @@ export async function runAgentLoop(
         } catch {
           // ignore parse errors
         }
+        opts.onToolCall?.(call.function.name);
         const result = await executeToolCall(call.function.name, parsedArgs, opts.signal);
         messages.push({
           role: 'tool',
@@ -189,12 +238,17 @@ async function executeToolCall(name: string, args: unknown, signal: AbortSignal)
 }
 
 export function buildHistoryFromChat(chat: HTMLElement): ChatMessage[] {
+  // Skip empty messages: the streaming reply mounts an empty
+  // <p> placeholder before tokens arrive, and upstreams reject
+  // history entries with empty content (400 "message must have
+  // content"). Only real turns belong in the conversation.
   return Array.from(chat.querySelectorAll<HTMLDivElement>('.agent-message'))
     .map((el) => {
       const role = el.classList.contains('agent-message-user') ? 'user' : 'assistant';
       const text = el.querySelector('p')?.textContent ?? '';
       return { role, content: text } as ChatMessage;
-    });
+    })
+    .filter((m) => m.content && m.content.trim() !== '');
 }
 
 export function settingsAllowAgent(): boolean {
