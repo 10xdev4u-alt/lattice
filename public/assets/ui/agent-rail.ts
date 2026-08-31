@@ -344,8 +344,6 @@ async function render(root: HTMLElement): Promise<void> {
  * surfaces that join the app later.
  */
 export function runTool(name: string, args: Record<string, unknown>): Promise<unknown> {
-  void name;
-  void args;
   const ctx = getModelContext();
   const rail = document.querySelector<HTMLElement>('[data-agent-rail]');
   if (rail) appendMessage(rail, 'user', `(${name} on this paper)`);

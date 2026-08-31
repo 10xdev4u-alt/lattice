@@ -16,7 +16,6 @@
 import { getLibrary, getPaper, type Paper } from '../library';
 import { mountPdfViewer } from '../pdf-viewer';
 import { mountResponseCards } from '../response-cards';
-import { runTool } from './agent-rail';
 
 let currentPaperId: string | null = null;
 
