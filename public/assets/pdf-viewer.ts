@@ -126,8 +126,18 @@ function installSelectionHandler(layer: HTMLElement, paperId: string, page: numb
         layer.parentElement?.appendChild(button);
         button.addEventListener('click', (e) => {
           e.stopPropagation();
-          const note = window.prompt('Optional note for this highlight:', '');
-          addHighlight({ paperId, page, text, note: note ?? '', color: 'yellow' });
+          void (async () => {
+            const { askText } = await import('./ui/overlays');
+            const choice = await askText('Highlight saved', 'Add an optional note for this highlight.', {
+              placeholder: 'why this passage matters',
+            });
+            addHighlight({
+              paperId,
+              page,
+              text,
+              note: choice.ok ? (choice.value ?? '') : '',
+              color: 'yellow',
+            });
           // Re-render the page text with the new highlight
           layer.innerHTML = '';
           layer.appendChild(document.createTextNode(pageText));
@@ -151,6 +161,7 @@ function installSelectionHandler(layer: HTMLElement, paperId: string, page: numb
           button?.remove();
           button = null;
           selection?.removeAllRanges();
+          })();
         });
       }
       const range = selection?.getRangeAt(0);

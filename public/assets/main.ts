@@ -120,11 +120,12 @@ async function main(): Promise<void> {
   // Report-a-problem button: copy a diagnostic bundle to the clipboard.
   document.querySelector<HTMLButtonElement>('[data-action="report-problem"]')?.addEventListener('click', async () => {
     const { copyDiagnosticBundleToClipboard } = await import('./diagnostics');
+    const { notice } = await import('./ui/overlays');
     const ok = await copyDiagnosticBundleToClipboard();
     if (ok) {
-      window.alert('Diagnostic bundle copied to clipboard. Paste it into the GitHub issue.');
+      await notice('Diagnostic bundle copied', 'Paste it into the GitHub issue.');
     } else {
-      window.alert('Could not copy. Press F12, run: await import("/assets/diagnostics.ts").then(m => m.buildDiagnosticBundle())');
+      await notice('Could not copy', 'Use Export instead: the diagnostics module builds the same bundle.');
     }
   });
 

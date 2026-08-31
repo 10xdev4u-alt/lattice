@@ -79,13 +79,17 @@ async function promptForInputs(routine: Routine, paperId: string): Promise<Recor
   for (const step of routine.steps) {
     const args = (step.args ?? {}) as Record<string, unknown>;
     if (step.tool === 'search_library' && typeof args.query === 'string') {
-      const def = args.query;
-      const ans = window.prompt(`Routine "${routine.name}" — search query?`, def);
-      if (ans !== null) overrides['query'] = ans;
+      const { askText } = await import('./ui/overlays');
+      const choice = await askText(`Routine "${routine.name}"`, 'Which query should this run search for?', {
+        initial: args.query,
+      });
+      if (choice.ok && choice.value) overrides['query'] = choice.value;
     } else if (step.tool === 'compare_claims' && typeof args.topic === 'string') {
-      const def = args.topic;
-      const ans = window.prompt(`Routine "${routine.name}" — topic?`, def);
-      if (ans !== null) overrides['topic'] = ans;
+      const { askText } = await import('./ui/overlays');
+      const choice = await askText(`Routine "${routine.name}"`, 'Which topic should this run compare on?', {
+        initial: args.topic,
+      });
+      if (choice.ok && choice.value) overrides['topic'] = choice.value;
     }
   }
   return overrides;

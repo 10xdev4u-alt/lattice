@@ -15,7 +15,9 @@ export function mountWhatsWrongOverlay(): void {
   const session = getSession();
   const errored = session.steps.filter((s) => s.status === 'err');
   if (errored.length === 0) {
-    window.alert('No errors in the audit log. Everything is fine.');
+    void import('./overlays').then(({ notice }) =>
+      notice('No errors in the audit log', 'Every tool call so far completed cleanly.'),
+    );
     return;
   }
   const overlay = document.createElement('div');

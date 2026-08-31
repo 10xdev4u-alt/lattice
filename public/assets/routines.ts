@@ -192,10 +192,17 @@ function render(root: HTMLElement): void {
     </section>
   `;
   root.querySelector('[data-action="save"]')?.addEventListener('click', () => {
-    const name = window.prompt('Name the routine:', `Routine ${routines.length + 1}`);
-    if (!name) return;
-    const description = window.prompt('Short description:', '') ?? '';
-    saveRoutineFromTrail(name, description);
+    void (async () => {
+      const { askText } = await import('./ui/overlays');
+      const nameChoice = await askText('Save as routine', 'Routines replay the recorded tool calls against any paper.', {
+        initial: `Routine ${routines.length + 1}`,
+      });
+      if (!nameChoice.ok || !nameChoice.value) return;
+      const desc = await askText('Short description', 'What this routine does, in one line.', {
+        placeholder: 'e.g. summarize + extract quotes',
+      });
+      saveRoutineFromTrail(nameChoice.value, desc.ok ? (desc.value ?? '') : '');
+    })();
   });
   root.querySelectorAll<HTMLButtonElement>('[data-routine-action="export"]').forEach((btn) => {
     btn.addEventListener('click', () => {
@@ -211,12 +218,15 @@ function render(root: HTMLElement): void {
   });
   root.querySelectorAll<HTMLButtonElement>('[data-routine-action="edit"]').forEach((btn) => {
     btn.addEventListener('click', () => {
-      const r = routines.find((x) => x.id === btn.dataset.routineId);
-      if (!r) return;
-      const newName = window.prompt('Rename routine (or cancel):', r.name);
-      if (newName === null) return;
-      updateRoutine(r.id, { name: newName || r.name });
-      render(root);
+      void (async () => {
+        const r = routines.find((x) => x.id === btn.dataset.routineId);
+        if (!r) return;
+        const { askText } = await import('./ui/overlays');
+        const choice = await askText('Rename routine', 'Leave empty to keep the current name.', { initial: r.name });
+        if (!choice.ok) return;
+        updateRoutine(r.id, { name: choice.value || r.name });
+        render(root);
+      })();
     });
   });
   root.querySelectorAll<HTMLButtonElement>('[data-routine-action="run"]').forEach((btn) => {
@@ -231,7 +241,8 @@ async function runFromButton(btn: HTMLButtonElement): Promise<void> {
   const input = document.querySelector<HTMLInputElement>(`[data-routine-paper-id="${id}"]`);
   const paperId = input?.value.trim() ?? '';
   if (!paperId) {
-    window.alert('Enter a paper_id to run the routine on (e.g. arxiv-170603762).');
+    const { notice } = await import('./ui/overlays');
+    await notice('Enter a paper id', 'The routine needs to know which paper to run against (e.g. arxiv-170603762).');
     return;
   }
   btn.disabled = true;

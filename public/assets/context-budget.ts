@@ -59,8 +59,16 @@ export function mountContextBudgetBar(root: HTMLElement): void {
   const text = bar.querySelector<HTMLElement>('[data-context-text]');
   const configure = bar.querySelector<HTMLButtonElement>('[data-action="configure"]');
   configure?.addEventListener('click', () => {
-    const w = window.prompt('Context window (tokens):', String(getWindow()));
-    if (w && Number(w) > 0) setWindow(Number(w));
+    void (async () => {
+      const { askText } = await import('./ui/overlays');
+      const choice = await askText(
+        'Context window',
+        'Estimated token budget for the chat history before trimming.',
+        { initial: String(getWindow()), placeholder: 'e.g. 128000' },
+      );
+      const n = Number(choice.value);
+      if (choice.ok && Number.isFinite(n) && n > 0) setWindow(n);
+    })();
   });
   document.addEventListener('lattice:chat-changed', () => update());
   update();

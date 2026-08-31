@@ -98,7 +98,8 @@ export function mountEmptyState(root: HTMLElement): void {
     const { getLibrary } = await import('../library');
     const library = getLibrary();
     if (library.length === 0) {
-      window.alert('Add some papers first.');
+      const { notice } = await import('./overlays');
+      await notice('No papers yet', 'Add papers first — annotations live on a paper.');
       return;
     }
     const overlay = document.createElement('div');
@@ -118,11 +119,15 @@ export function mountEmptyState(root: HTMLElement): void {
 
   const arxivBtn = root.querySelector<HTMLButtonElement>('[data-action="paste-arxiv"]');
   arxivBtn?.addEventListener('click', async () => {
-    const id = window.prompt('Paste an arXiv ID (e.g. 1706.03762):');
-    if (!id) return;
+    const { askText, notice } = await import('./overlays');
+    const choice = await askText('Add by arXiv ID', 'The paper is fetched, its LaTeX source extracted and indexed.', {
+      placeholder: 'e.g. 1706.03762',
+    });
+    if (!choice.ok || !choice.value) return;
+    const id = choice.value;
     const meta = await fetchArxivMetadata(id);
     if (!meta) {
-      window.alert(`Could not fetch ${id}. Check the ID and try again.`);
+      await notice('Could not fetch that ID', `Nothing found for ${id}. Check the ID and try again.`);
       return;
     }
     addPaper({

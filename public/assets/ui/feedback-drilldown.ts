@@ -14,7 +14,9 @@ export function mountFeedbackDrilldownOverlay(): void {
   const feedback = getAllFeedback();
   const _session = getSession();
   if (feedback.length === 0) {
-    window.alert('No feedback yet. Click up or down on any agent message first.');
+    void import('./overlays').then(({ notice }) =>
+      notice('No feedback yet', 'Click up or down on any agent message to record a signal.'),
+    );
     return;
   }
   // _session is available for future per-step correlation.

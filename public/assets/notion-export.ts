@@ -16,10 +16,11 @@ export function buildNotionImport(session: WorkflowSession): string {
 }
 
 export async function copyNotionImport(md: string): Promise<void> {
+  const { notice } = await import('./ui/overlays');
   try {
     await navigator.clipboard.writeText(md);
-    window.alert('Methods appendix copied. In Notion, click "Import" → "Markdown" and paste.');
+    await notice('Methods appendix copied', 'In Notion, click "Import" → "Markdown" and paste.');
   } catch {
-    window.alert('Copy failed. Use the regular Export button to download the .md file.');
+    await notice('Copy failed', 'Use the regular Export button to download the .md file.');
   }
 }
