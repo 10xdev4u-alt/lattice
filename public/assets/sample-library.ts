@@ -106,5 +106,11 @@ async function ingestAll(): Promise<void> {
       // network hiccup — metadata-only is fine for this paper
     }
   }
+  // The server store may hold papers beyond the local metadata
+  // set (from past sessions); hydrate so the rail matches what
+  // actually exists server-side.
+  void import('./library-hydration').then(({ hydrateLibrary }) => {
+    void hydrateLibrary();
+  });
   document.dispatchEvent(new CustomEvent('lattice:library-changed'));
 }

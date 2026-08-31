@@ -48,7 +48,12 @@ export function getLibrary(): Paper[] {
 
 export function addPaper(paper: Paper): void {
   const lib = read();
-  if (lib.some((p) => p.id === paper.id)) return;
+  // Dedupe across the two id schemes: an entry may exist as
+  // "arxiv:1706.03762" (sample load) and arrive again as
+  // "arxiv-170603762v7" (server hydration). Same digit core =
+  // same paper.
+  const core = idCore(paper.id);
+  if (lib.some((p) => p.id === paper.id || (paper.arxivId && idCore(p.id) === core))) return;
   lib.push(paper);
   write(lib);
 }
@@ -57,8 +62,29 @@ export function removePaper(id: string): void {
   write(read().filter((p) => p.id !== id));
 }
 
+/**
+ * Resolve a paper by any id form. Two schemes coexist after
+ * server hydration: the sample style (arxiv:1706.03762) and the
+ * ingest style (arxiv-170603762v7). Both reduce to the same
+ * digit core, so tools and UI can pass either — open_paper,
+ * summarize_paper, cite_paper all resolve through here.
+ */
 export function getPaper(id: string): Paper | undefined {
-  return read().find((p) => p.id === id);
+  const lib = read();
+  const exact = lib.find((p) => p.id === id);
+  if (exact) return exact;
+  const core = idCore(id);
+  if (!core) return undefined;
+  return lib.find((p) => idCore(p.id) === core || idCore(p.arxivId ?? '') === core);
+}
+
+/** The arXiv digit core: strip version, then all non-digits. */
+function idCore(id: string): string {
+  // v7-style suffixes must go first or their digit joins the
+  // core: 170603762v7 → 170603762, not 1706037627.
+  const withoutVersion = id.replace(/v\d+$/i, '');
+  const digits = withoutVersion.replace(/[^0-9]/g, '');
+  return digits.length >= 4 ? digits : '';
 }
 
 export function setLibrary(papers: Paper[]): void {

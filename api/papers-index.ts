@@ -28,13 +28,34 @@ export default async (_req: Request, _ctx: Context): Promise<Response> => {
       if (!id || seen.has(id)) continue;
       seen.add(id);
       const meta = await store.getWithMetadata(`papers/${id}/meta.json`, { type: 'json' });
-      const entry: { id: string; title?: string; year?: number; doi?: string; arxiv_id?: string } = { id };
+      const entry: {
+        id: string;
+        title?: string;
+        year?: number;
+        doi?: string;
+        arxiv_id?: string;
+        abstract?: string;
+        authors?: Array<{ family: string; given?: string }>;
+      } = { id };
       if (meta && meta.data) {
         const parsed = meta.data as Record<string, unknown>;
         entry.title = typeof parsed.title === 'string' ? parsed.title : undefined;
         entry.year = typeof parsed.year === 'number' ? parsed.year : undefined;
         entry.doi = typeof parsed.doi === 'string' ? parsed.doi : undefined;
         entry.arxiv_id = typeof parsed.arxiv_id === 'string' ? parsed.arxiv_id : undefined;
+        entry.abstract = typeof parsed.abstract === 'string' ? parsed.abstract : undefined;
+        if (Array.isArray(parsed.authors)) {
+          // The store holds raw name strings from arXiv; the client
+          // library wants { family, given } — split on the last
+          // whitespace, the usual citation convention.
+          entry.authors = (parsed.authors as unknown[])
+            .filter((a): a is string => typeof a === 'string')
+            .map((name) => {
+              const parts = name.split(/\s+/);
+              const family = parts.pop() ?? name;
+              return { family, given: parts.join(' ') };
+            });
+        }
       }
       papers.push(entry);
     }
