@@ -29,5 +29,5 @@
     "scripts/**/*.mjs",
     "tests/**/*.ts"
   ],
-  "exclude": ["node_modules", "dist", ".netlify"]
+  "exclude": ["node_modules", "dist", ".netlify", "tests/e2e"]
 }
