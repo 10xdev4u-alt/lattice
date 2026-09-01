@@ -1,20 +1,29 @@
-/* Workspace layout — the three-rail shell. */
+/* Workspace layout — three rails with drag dividers.
+   FIVE grid children: left rail, left divider, canvas, right
+   divider, right rail. The template names every track — an
+   unstated track sends later children into implicit columns and
+   inverts the layout (canvas 400px, right rail 692px, title
+   width 0). */
 .workspace {
   display: grid;
-  grid-template-columns: var(--rail-left-w) 1fr var(--rail-right-w);
+  grid-template-columns:
+    var(--rail-left-w)
+    5px
+    minmax(0, 1fr)
+    5px
+    var(--rail-right-w);
   height: 100%;
   min-height: 0;
   background: var(--bg);
-  transition: grid-template-columns var(--dur) var(--ease);
 }
 
 .workspace.rail-left-collapsed {
-  grid-template-columns: 0 1fr var(--rail-right-w);
+  grid-template-columns: 0 5px minmax(0, 1fr) 5px var(--rail-right-w);
 }
 .workspace.rail-left-collapsed .rail-left { display: none; }
 
 .workspace.rail-right-collapsed {
-  grid-template-columns: var(--rail-left-w) 1fr 0;
+  grid-template-columns: var(--rail-left-w) 5px minmax(0, 1fr) 5px 0;
 }
 .workspace.rail-right-collapsed .rail-right { display: none; }
 
@@ -57,6 +66,10 @@
   .rail {
     display: none;
     border: none;
+  }
+  .rail-divider {
+    display: none;
+    grid-column: auto;
   }
   .rail.rail-mobile-active {
     display: block;

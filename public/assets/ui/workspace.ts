@@ -21,27 +21,27 @@ import { announce } from '../focus';
 export function mountWorkspace(root: HTMLElement | null): void {
   if (!root) return;
   root.innerHTML = `
-    <div class="workspace" data-empty="${getLibrary().length === 0}">
-      <aside class="rail rail-left" role="complementary" aria-label="Paper library">
-        <div data-paper-list></div>
-      </aside>
-      <button class="rail-divider" data-divider="left" type="button" aria-label="Resize library rail" aria-hidden="true" tabindex="-1"></button>
-      <main class="canvas" role="main">
-        <div data-open-papers></div>
-        <div data-canvas></div>
-        <div data-settings hidden></div>
-      </main>
-      <button class="rail-divider" data-divider="right" type="button" aria-label="Resize agent rail" aria-hidden="true" tabindex="-1"></button>
-      <aside class="rail rail-right" role="complementary" aria-label="Agent">
-        <div data-peer-banner></div>
-        <div data-agent-rail></div>
-      </aside>
-    </div>
     <nav class="rail-mobile-tabs" role="tablist" aria-label="Workspace sections">
       <button data-mobile-tab="library" role="tab" aria-selected="false">Library</button>
       <button data-mobile-tab="canvas" role="tab" aria-selected="true">Paper</button>
       <button data-mobile-tab="agent" role="tab" aria-selected="false">Agent</button>
     </nav>
+    <div class="workspace" data-empty="${getLibrary().length === 0}">
+      <aside class="rail rail-left" role="complementary" aria-label="Paper library">
+        <div data-paper-list></div>
+      </aside>
+      <button class="rail-divider rail-divider-left" data-divider="left" type="button" aria-label="Resize library rail" aria-hidden="true" tabindex="-1"></button>
+      <main class="canvas" role="main">
+        <div data-open-papers></div>
+        <div data-canvas></div>
+        <div data-settings hidden></div>
+      </main>
+      <button class="rail-divider rail-divider-right" data-divider="right" type="button" aria-label="Resize agent rail" aria-hidden="true" tabindex="-1"></button>
+      <aside class="rail rail-right" role="complementary" aria-label="Agent">
+        <div data-peer-banner></div>
+        <div data-agent-rail></div>
+      </aside>
+    </div>
   `;
 
   installRailResizers(root);
