@@ -16,7 +16,7 @@
 import type { Config, Context } from './_lib/types';
 import { storeFor } from './_lib/session';
 
-export default async (_req: Request, _ctx: Context): Promise<Response> => {
+export default async (req: Request, _ctx: Context): Promise<Response> => {
   const { store } = storeFor(req);
   const papers: Array<{ id: string; title?: string; year?: number; doi?: string; arxiv_id?: string }> = [];
   try {
@@ -27,7 +27,27 @@ export default async (_req: Request, _ctx: Context): Promise<Response> => {
       const id = blob.key.split('/')[1];
       if (!id || seen.has(id)) continue;
       seen.add(id);
-      const meta = await store.getWithMetadata(`papers/${id}/meta.json`, { type: 'json' });
+      let meta = await store.getWithMetadata(`papers/${id}/meta.json`, { type: 'json' });
+      // Legacy fallback: papers ingested before meta.json was
+      // persisted on ingest carry only the store sidecar
+      // (<file>.meta.json). Derive the title from the sidecar's
+      // originalFilename so hydration doesn't skip them.
+      if (!meta || !meta.data) {
+        const sidecar = await store.getWithMetadata(`papers/${id}/source.pdf.meta.json`, {
+          type: 'json',
+        });
+        if (sidecar && sidecar.data) {
+          const parsed = sidecar.data as Record<string, unknown>;
+          const original = typeof parsed.originalFilename === 'string' ? parsed.originalFilename : '';
+          meta = {
+            data: {
+              id,
+              title: original.replace(/\.pdf$/i, '').replace(/[-_]+/g, ' ') || id,
+            },
+            metadata: sidecar.metadata,
+          };
+        }
+      }
       const entry: {
         id: string;
         title?: string;

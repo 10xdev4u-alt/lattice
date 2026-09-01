@@ -26,6 +26,7 @@
   "include": [
     "public/**/*.ts",
     "netlify/functions/**/*.ts",
+    "api/**/*.ts",
     "scripts/**/*.mjs",
     "tests/**/*.ts"
   ],

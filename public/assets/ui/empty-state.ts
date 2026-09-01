@@ -171,6 +171,11 @@ async function ingestDroppedPdf(root: HTMLElement, file: File): Promise<void> {
   say(`Reading ${file.name}…`);
   try {
     const result = await ingestPdfFile(file);
+    // The server now holds the paper; pull the server index into
+    // the client library (hydrateLibrary merges by id/arXiv id)
+    // so the rail shows it without a reload.
+    const { hydrateLibrary } = await import('../library-hydration');
+    await hydrateLibrary();
     const warnings = result.warnings.length > 0 ? ` (${result.warnings.join('; ')})` : '';
     say(`Indexed ${result.paper.title.slice(0, 60)} — ${result.paper.page_count} pages${warnings}`);
     document.dispatchEvent(new CustomEvent('lattice:library-changed'));
@@ -178,10 +183,17 @@ async function ingestDroppedPdf(root: HTMLElement, file: File): Promise<void> {
       new CustomEvent('lattice:paper-opened', { detail: { paper_id: result.paper.id } }),
     );
   } catch (err) {
-    const code = (err as { code?: string }).code ?? 'INGEST_FAILED';
-    const message = (err as { message?: string }).message ?? 'The PDF could not be ingested.';
+    // ingestPdfFile throws structured errors: { structured: { code,
+    // message, retry_hint } }. Read THAT shape — err.code is
+    // always undefined on a plain Error and every failure used to
+    // collapse into a generic INGEST_FAILED.
+    const structured = (err as { structured?: { code: string; message: string; retry_hint?: string } })
+      .structured;
+    const code = structured?.code ?? 'INGEST_FAILED';
+    const message = structured?.message ?? (err as Error).message ?? 'The PDF could not be ingested.';
+    const retry = structured?.retry_hint ? `\n${structured.retry_hint}` : '';
     say('');
-    await notice(`Could not ingest ${file.name} (${code})`, message);
+    await notice(`Could not ingest ${file.name} (${code})`, `${message}${retry}`);
   }
 }
 

@@ -31,8 +31,9 @@ export default async (req: Request, _ctx: Context): Promise<Response> => {
   // The blob data is a string (the default type). Reconstruct as an
   // ArrayBuffer to return as a binary response. pdfjs-dist on the
   // client side fetches it directly; the binary content is preserved.
-  const bytes = new Uint8Array(meta.data.length);
-  for (let i = 0; i < meta.data.length; i++) bytes[i] = meta.data.charCodeAt(i);
+  const data = meta.data as string;
+  const bytes = new Uint8Array(data.length);
+  for (let i = 0; i < data.length; i++) bytes[i] = data.charCodeAt(i);
   return new Response(bytes, {
     status: 200,
     headers: {
