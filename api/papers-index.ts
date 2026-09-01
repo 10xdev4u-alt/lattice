@@ -14,13 +14,10 @@
  */
 
 import type { Config, Context } from './_lib/types';
-import { getStore } from './_lib/store';
 import { storeFor } from './_lib/session';
-import { tenantSetCookieHeader } from './_lib/session';
 
 export default async (_req: Request, _ctx: Context): Promise<Response> => {
-  const { tenantId, store } = storeFor(req);
-  const needsCookie = !req.headers.get('x-session-id') && !(req.headers.get('cookie') ?? '').includes('lattice_sid=');
+  const { store } = storeFor(req);
   const papers: Array<{ id: string; title?: string; year?: number; doi?: string; arxiv_id?: string }> = [];
   try {
     const list = await store.list({ prefix: 'papers/' });

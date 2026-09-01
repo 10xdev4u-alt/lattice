@@ -12,17 +12,15 @@
  */
 
 import type { Config, Context } from './_lib/types';
-import { getStore, resolvePaperId } from './_lib/store';
+import { resolvePaperId } from './_lib/store';
 import { storeFor } from './_lib/session';
-import { tenantSetCookieHeader } from './_lib/session';
 
 export default async (req: Request, _ctx: Context): Promise<Response> => {
   const id = new URL(req.url).pathname.match(/\/api\/papers\/([^/]+)\/text/)?.[1];
   if (!id) {
     return json({ error: { code: 'BAD_PATH', message: 'Missing paper id.' } }, 400);
   }
-  const { tenantId, store } = storeFor(req);
-  const needsCookie = !req.headers.get('x-session-id') && !(req.headers.get('cookie') ?? '').includes('lattice_sid=');
+  const { store } = storeFor(req);
   const resolved = await resolvePaperId(store, id);
   if (!resolved) {
     return json({ error: { code: 'NOT_FOUND', message: 'No extracted text for that paper.' } }, 404);

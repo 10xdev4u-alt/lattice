@@ -13,9 +13,7 @@
  */
 
 import type { Config, Context } from './_lib/types';
-import { getStore } from './_lib/store';
 import { storeFor } from './_lib/session';
-import { tenantSetCookieHeader } from './_lib/session';
 import { createHash } from 'node:crypto';
 import { extractPdfText } from './_lib/pdf-text';
 import { buildIndex, type PageText } from './_lib/search-index';
@@ -100,8 +98,7 @@ export default async (req: Request, _ctx: Context): Promise<Response> => {
 
   const sha256 = createHash('sha256').update(bytes).digest('hex');
   const paperId = `pdf-${sha256.slice(0, 16)}`;
-  const { tenantId, store } = storeFor(req);
-  const needsCookie = !req.headers.get('x-session-id') && !(req.headers.get('cookie') ?? '').includes('lattice_sid=');
+  const { store } = storeFor(req);
   const storageKey = `papers/${paperId}/source.pdf`;
 
   const existing = await store.get(storageKey);

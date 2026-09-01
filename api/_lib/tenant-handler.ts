@@ -4,7 +4,7 @@
  * lattice_sid cookie. Keeps the audit C1 fix uniform.
  */
 import { COOKIE_NAME, getTenantId, generateTenantId, tenantSetCookieHeader, storeFor } from './session';
-import { getStore } from './store';
+import type { getStore } from './store';
 
 export interface HandlerCtx {
   tenantId: string | null;

@@ -9,9 +9,7 @@
  */
 
 import type { Config, Context } from './_lib/types';
-import { getStore } from './_lib/store';
 import { storeFor } from './_lib/session';
-import { tenantSetCookieHeader } from './_lib/session';
 
 export default async (req: Request, _ctx: Context): Promise<Response> => {
   const id = new URL(req.url).pathname.match(/\/api\/papers\/([^/]+)\/file/)?.[1];
@@ -22,8 +20,7 @@ export default async (req: Request, _ctx: Context): Promise<Response> => {
     });
   }
 
-  const { tenantId, store } = storeFor(req);
-  const needsCookie = !req.headers.get('x-session-id') && !(req.headers.get('cookie') ?? '').includes('lattice_sid=');
+  const { store } = storeFor(req);
   const meta = await store.getWithMetadata(`papers/${id}/source.pdf`);
   if (!meta) {
     return new Response(JSON.stringify({ error: { code: 'NOT_FOUND', message: 'No PDF for that paper.' } }), {
