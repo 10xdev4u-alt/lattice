@@ -273,3 +273,29 @@
 @media (prefers-reduced-motion: reduce) {
   .rcard, .page-flash { animation: none; }
 }
+
+/* The text reader: the extracted paper text in the reading
+   voice. This is the default reading surface — arXiv ingests
+   have no PDF, but they always have text. */
+.reader-page {
+  margin: 0 0 var(--sp-8);
+  position: relative;
+}
+.reader-page::before {
+  content: attr(data-page-number);
+  position: absolute;
+  top: calc(var(--sp-1) * -1);
+  left: calc(var(--sp-5) * -1);
+  font-family: var(--font-mono);
+  font-size: var(--text-2xs);
+  color: var(--fg-faint);
+}
+.reader-text {
+  font-family: var(--font-read);
+  font-size: var(--text-read);
+  line-height: var(--leading-read);
+  color: var(--fg);
+  margin: 0;
+  white-space: pre-wrap;
+  overflow-wrap: break-word;
+}

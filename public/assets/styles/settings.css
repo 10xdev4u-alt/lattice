@@ -1,6 +1,12 @@
-/* Settings panel */
-.settings { padding: var(--sp-3); }
-.settings h2 { font-size: var(--text-md); margin: 0 0 var(--sp-3); }
+/* Settings panel — renders inside the canvas flow; keep it on
+   screen with its own scroll rather than spilling past the
+   viewport (it used to land 302px below the fold). */
+.settings {
+  padding: var(--sp-3);
+  max-height: calc(100vh - var(--header-h) - var(--sp-10));
+  overflow-y: auto;
+}
+.settings h2 { font-family: var(--font-display); font-size: var(--text-lg); margin: 0 0 var(--sp-3); }
 .settings-row { display: flex; gap: var(--sp-2); align-items: center; padding: var(--sp-2) 0; font-size: var(--text-sm); }
 .settings-row span { flex: 1; color: var(--fg-muted); }
 .settings-row code { font-family: var(--font-mono); font-size: var(--text-xs); }
