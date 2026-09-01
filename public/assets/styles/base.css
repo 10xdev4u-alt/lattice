@@ -94,6 +94,47 @@ html, body {
   box-shadow: 0 0 6px var(--warn);
 }
 
+/* ── WebLLM badge (header, offline engine state) ── */
+
+.webllm-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-2);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  padding: var(--sp-1) var(--sp-3);
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--fg-muted);
+  cursor: pointer;
+}
+
+.webllm-badge:hover { border-color: var(--border-strong); color: var(--fg); }
+
+.webllm-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--fg-muted);
+  flex-shrink: 0;
+}
+
+.webllm-badge[data-state="ok"] .webllm-dot {
+  background: var(--ok);
+  box-shadow: 0 0 6px var(--ok);
+}
+
+.webllm-badge[data-state="warn"] .webllm-dot {
+  background: var(--warn);
+  box-shadow: 0 0 6px var(--warn);
+}
+
+.webllm-badge[data-state="err"] .webllm-dot {
+  background: var(--err);
+  box-shadow: 0 0 6px var(--err);
+}
+
 /* ── Main ──────────────────────────────────────── */
 
 .app-main {
