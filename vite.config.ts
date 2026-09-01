@@ -16,6 +16,16 @@ export default defineConfig({
     sourcemap: true,
     rollupOptions: {
       input: resolve(__dirname, 'public/index.html'),
+      output: {
+        // web-llm is ~6MB and rarely needed (offline fallback
+        // only). Its own chunk lets the browser cache it forever
+        // independently of app-code changes.
+        manualChunks: (id) => {
+          if (id.includes('@mlc-ai/web-llm')) return 'webllm-vendor';
+          if (id.includes('pdfjs-dist')) return 'pdfjs-vendor';
+          return undefined;
+        },
+      },
     },
   },
   server: {
