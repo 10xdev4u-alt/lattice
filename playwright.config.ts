@@ -9,17 +9,17 @@ export default defineConfig({
   retries: process.env.CI ? 2 : 0,
   reporter: [['html', { open: 'never' }], ['junit', { outputFile: 'e2e-junit.xml' }]],
   use: {
-    baseURL: 'http://localhost:8888',
+    baseURL: 'http://localhost:8890',
     trace: 'on-first-retry',
     screenshot: 'only-on-failure',
     video: 'retain-on-failure',
   },
   webServer: {
-    command: 'node server.mjs',
-    port: 8888,
-    reuseExistingServer: true,
+    command: 'npm run build --silent && PORT=8890 node server.mjs',
+    url: 'http://localhost:8890',
+    reuseExistingServer: false,
     env: { LATTICE_STORE_DIR: '/tmp/lattice-e2e' },
-    timeout: 20_000,
+    timeout: 120_000,
   },
   projects: [
     {
