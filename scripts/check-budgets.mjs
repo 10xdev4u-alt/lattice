@@ -24,8 +24,20 @@ function find(prefix, suffix) {
   }
 }
 
+/** The initial CSS: whatever stylesheet dist/index.html links.
+ *  (Was index-*.css; the share-entry build renamed it — the
+ *  budget is about the stylesheet the app actually ships.) */
+function findInitialCss() {
+  const candidates = readdirSync(DIST).filter((f) => f.endsWith('.css'));
+  const html = readFileSync('dist/index.html', 'utf8');
+  const linked = candidates.filter((f) => html.includes(f));
+  if (linked.length === 0) return null;
+  linked.sort((a, b) => statSync(join(DIST, a)).size - statSync(join(DIST, b)).size);
+  return linked[0];
+}
+
 const jsFile = find('index-', '.js');
-const cssFile = find('index-', '.css');
+const cssFile = findInitialCss();
 if (!jsFile) {
   console.error('[budgets] no index-*.js in dist/assets — run npm run build first');
   process.exit(1);
