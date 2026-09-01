@@ -33,7 +33,7 @@
   }
 }
 
-/* ── Response cards ───────────────────────────── */
+/* ── Response cards ─────────────────────────────
    Every agent answer on a paper docks here as a persistent
    card: verb, title, answer, page chips, duration. The verb
    carries the machine voice (violet); the answer is the

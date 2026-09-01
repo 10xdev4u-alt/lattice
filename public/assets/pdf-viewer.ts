@@ -22,7 +22,10 @@
  */
 
 import { getPaper } from './library';
-import { reconstructPage, type TextItem } from './column-detector';
+// The shared two-column detector: pure logic, no node builtins,
+// one copy for client and server (the browser-safe duplicate
+// this used to import was deleted — drift risk).
+import { reconstructPage, type TextItem } from '../../api/_lib/column-detector';
 import { listHighlights, addHighlight, type Highlight } from './highlights';
 
 interface PageRender {
