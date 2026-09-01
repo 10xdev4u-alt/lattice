@@ -11,6 +11,8 @@
 
 import type { Config, Context } from './_lib/types';
 import { getStore } from './_lib/store';
+import { storeFor } from './_lib/session';
+import { tenantSetCookieHeader } from './_lib/session';
 import { completePrompt } from './_lib/llm';
 import { extractJson } from './_lib/extract-json';
 import { excerptWindows } from './_lib/excerpt';
@@ -56,7 +58,8 @@ export default async (req: Request, _ctx: Context): Promise<Response> => {
   }
 
   const maxClaims = body.max_claims ?? 5;
-  const store = getStore('lattice');
+  const { tenantId, store } = storeFor(req);
+  const needsCookie = !req.headers.get('x-session-id') && !(req.headers.get('cookie') ?? '').includes('lattice_sid=');
   const [aMeta, bMeta] = await Promise.all([
     store.getWithMetadata(`papers/${body.paper_id_a}/text.json`, { type: 'json' }),
     store.getWithMetadata(`papers/${body.paper_id_b}/text.json`, { type: 'json' }),

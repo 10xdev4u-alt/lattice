@@ -13,6 +13,8 @@
 
 import type { Config, Context } from './_lib/types';
 import { getStore } from './_lib/store';
+import { storeFor } from './_lib/session';
+import { tenantSetCookieHeader } from './_lib/session';
 import { buildIndex, searchIndex, snippetAroundTermInText, type SearchIndex } from './_lib/search-index';
 
 interface SearchRequest {
@@ -42,7 +44,8 @@ export default async (req: Request, _ctx: Context): Promise<Response> => {
   }
 
   const maxPerPaper = body.max_results_per_paper ?? 3;
-  const store = getStore('lattice');
+  const { tenantId, store } = storeFor(req);
+  const needsCookie = !req.headers.get('x-session-id') && !(req.headers.get('cookie') ?? '').includes('lattice_sid=');
   const library = await listKeys(store, 'papers/');
 
   const perPaper: Array<{ paper_id: string; hits: Array<{ page: number; score: number; snippet: string }> }> = [];

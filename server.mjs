@@ -24,6 +24,22 @@ const DIST = join(__dirname, 'dist');
 const API_DIR = join(__dirname, 'dist-api');
 const PORT = Number(process.env.PORT ?? 8888);
 
+// Generate a fresh lattice_sid when the request doesn't already
+// have one (cookie or x-session-id). The handler then prefixes its
+// own keys; this header mints the cookie so subsequent calls land
+// in the same namespace.
+function ensureTenantCookie(req) {
+  if (req.headers.get('x-session-id')) return null;
+  const cookie = req.headers.get('cookie') ?? '';
+  if (/(?:^|;\s*)lattice_sid=/.test(cookie)) return null;
+  const rand = Math.random().toString(36).slice(2, 10);
+  const tid = `t_${Date.now().toString(36)}_${rand}`;
+  const secure = new URL(req.url).protocol === 'https:';
+  const flags = ['HttpOnly', 'SameSite=Lax', 'Path=/', 'Max-Age=2592000'];
+  if (secure) flags.push('Secure');
+  return `${tid}; ${flags.join('; ')}`;
+}
+
 const MIME = {
   '.html': 'text/html; charset=utf-8',
   '.js': 'text/javascript; charset=utf-8',
@@ -176,6 +192,17 @@ const httpServer = createServer(async (incoming, res) => {
     let response;
     if (url.includes('/api/')) {
       response = await handleApi(request, routes);
+      // Mint a fresh lattice_sid for first-time callers so the
+      // tenant prefix is stable across reloads. Skip for /api/healthz
+      // so probes don't get cookies.
+      if (response && !url.includes('/api/healthz')) {
+        const cookieVal = ensureTenantCookie(request);
+        if (cookieVal) {
+          const headers = new Headers(response.headers);
+          headers.append('Set-Cookie', `lattice_sid=${cookieVal}`);
+          response = new Response(response.body, { status: response.status, statusText: response.statusText, headers });
+        }
+      }
     }
     if (!response) response = await serveStatic(new URL(url).pathname);
     if (!response) {

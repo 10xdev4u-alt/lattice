@@ -14,6 +14,8 @@
 
 import type { Config, Context } from './_lib/types';
 import { getStore } from './_lib/store';
+import { storeFor } from './_lib/session';
+import { tenantSetCookieHeader } from './_lib/session';
 import { createHash } from 'node:crypto';
 import { extractPdfText } from './_lib/pdf-text';
 import { buildIndex, type PageText } from './_lib/search-index';
@@ -98,9 +100,10 @@ export default async (req: Request, _ctx: Context): Promise<Response> => {
 
   const sha256 = createHash('sha256').update(bytes).digest('hex');
   const paperId = `pdf-${sha256.slice(0, 16)}`;
+  const { tenantId, store } = storeFor(req);
+  const needsCookie = !req.headers.get('x-session-id') && !(req.headers.get('cookie') ?? '').includes('lattice_sid=');
   const storageKey = `papers/${paperId}/source.pdf`;
 
-  const store = getStore('lattice');
   const existing = await store.get(storageKey);
   if (existing) {
     return jsonResponse(
@@ -131,6 +134,7 @@ export default async (req: Request, _ctx: Context): Promise<Response> => {
       await store.setJSON(`papers/${paperId}/text.json`, {
         extractedAt: new Date().toISOString(),
         pages: extraction.pages,
+        tenant: tenantId ?? 'global',
       });
       for (const w of extraction.warnings) warnings.push(w);
     } catch (_err) {
@@ -163,7 +167,10 @@ export default async (req: Request, _ctx: Context): Promise<Response> => {
   return jsonResponse(response, 201);
 };
 
-function jsonResponse(body: unknown, status = 200): Response {
+function jsonResponse(body: unknown, status = 200, extraHeaders: Record<string, string> = {}): Response {
+  const headers = new Headers({ 'Content-Type': 'application/json', ...extraHeaders });
+  return new Response(JSON.stringify(body), { status, headers });
+}
   return new Response(JSON.stringify(body), {
     status,
     headers: { 'Content-Type': 'application/json' },
