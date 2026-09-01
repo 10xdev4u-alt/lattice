@@ -59,7 +59,9 @@ function render(root: HTMLElement): void {
           const isIncluded = STATE.include.includes(t);
           const isExcluded = STATE.exclude.includes(t);
           const cls = isIncluded ? 'tag-pill tag-included' : isExcluded ? 'tag-pill tag-excluded' : 'tag-pill';
-          return `<button class="${cls}" data-tag-filter="${escapeHtml(t)}">${escapeHtml(t)}</button>`;
+          const ariaPressed = isIncluded ? 'true' : isExcluded ? 'mixed' : 'false';
+          const ariaLabel = `Filter ${t} ${isIncluded ? 'included' : isExcluded ? 'excluded' : 'off'}`;
+          return `<button class="${cls}" data-tag-filter="${escapeHtml(t)}" aria-pressed="${ariaPressed}" aria-label="${escapeHtml(ariaLabel)}">${escapeHtml(t)}</button>`;
         })
         .join('')}
     </div>
