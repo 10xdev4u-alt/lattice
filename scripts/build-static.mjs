@@ -14,10 +14,12 @@ const ROOT = resolve('public');
 const DIST = resolve('dist');
 
 // Static files and folders that must exist in dist/ verbatim.
+// share.html is EXCLUDED: it is a vite entry (vite.config.ts
+// input) — copying the source over vite's output would strip
+// the hashed script tags and break the page.
 const EXTRAS = [
   'landing.html',
   'landing/',
-  'share.html',
   'assets/fonts/',
   'favicon.svg',
   'og.svg',

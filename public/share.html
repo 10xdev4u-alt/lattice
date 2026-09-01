@@ -4,11 +4,20 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <title>Shared Lattice session</title>
+    <meta name="description" content="A shared Lattice research session — read-only, encrypted in the URL fragment." />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <link rel="stylesheet" href="/assets/styles/tokens.css" />
-    <link rel="stylesheet" href="/assets/styles/base.css" />
-    <link rel="stylesheet" href="/assets/styles/trail.css" />
-    <link rel="stylesheet" href="/assets/styles/share.css" />
+    <link rel="stylesheet" href="/assets/styles/lattice.css" />
+    <script>
+      // Match the app's theme before first paint.
+      (function () {
+        try {
+          var t = localStorage.getItem('lattice.theme.v1');
+          document.documentElement.setAttribute('data-theme', t === 'light' ? 'light' : 'dark');
+        } catch (e) {
+          document.documentElement.setAttribute('data-theme', 'dark');
+        }
+      })();
+    </script>
   </head>
   <body>
     <div id="app" data-state="loading">
@@ -20,26 +29,6 @@
         <p class="empty-state">Loading shared session…</p>
       </main>
     </div>
-    <script type="module">
-      import { mountShareView, decodeSessionFromFragmentAsync } from '/assets/share.ts';
-      const params = new URLSearchParams(window.location.hash.slice(1));
-      const fragment = params.get('share') ?? '';
-      const wantsPass = params.get('p') === '1';
-      const passphrase = wantsPass ? window.prompt('This link is encrypted. Enter the passphrase:') ?? '' : '';
-      const root = document.getElementById('app-main');
-      if (!root) return;
-      if (!fragment) {
-        root.innerHTML = '<p class="empty-state">Invalid or missing share link.</p>';
-        document.getElementById('app')?.setAttribute('data-state', 'ready');
-        return;
-      }
-      const payload = await decodeSessionFromFragmentAsync(fragment, wantsPass ? passphrase : undefined);
-      if (!payload) {
-        root.innerHTML = '<p class="empty-state">Invalid share link or wrong passphrase.</p>';
-      } else {
-        mountShareView(root, payload);
-      }
-      document.getElementById('app')?.setAttribute('data-state', 'ready');
-    </script>
+    <script type="module" src="./assets/share-entry.ts"></script>
   </body>
 </html>
