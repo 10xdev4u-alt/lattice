@@ -30,7 +30,7 @@ Build Lattice in 6 PR-driven sprints, each shipping 1-3 issues per the issue que
 | Sprint | Days | What ships |
 |---|---|---|
 | **0** | Aug 28 (today) | Foundation: research, hygiene, issue queue. ✅ Done. |
-| **1** | Aug 28–29 | Foundation code: Vite + TS + Netlify + CI, all 14 tools scaffolded with schema + confirmation wiring, tool registration harness, polyfill, dev deploy. |
+| **1** | Aug 28–29 | Foundation code: Vite + TS + CI, all 14 tools scaffolded with schema + confirmation wiring, tool registration harness, polyfill. (Shipped on Netlify originally; migrated to self-hosted Docker on Aug 30 — see "The stack today".) |
 | **2** | Aug 30 | PDF pipeline: ingestion, two-column read order, search index, arXiv source fallback. Sample library of 5 papers. |
 | **3** | Aug 31 | Workspace UI: layout, paper list, PDF viewer, agent rail, status bar, tool call log. Live Tool Array. |
 | **4** | Sept 1 | Workflow trail: persistence, methods-appendix export, scrubber, branching. Bibliography exports (BibTeX, CSL-JSON, RIS). |
@@ -39,8 +39,8 @@ Build Lattice in 6 PR-driven sprints, each shipping 1-3 issues per the issue que
 
 ## Critical-path issues (in order)
 
-1. **#1** Bootstrap Vite + TS + Netlify Functions project layout
-2. **#4** Add netlify.toml headers required by the WebMCP spec
+1. **#1** Bootstrap Vite + TS + project layout (Netlify then; the stack has since moved — see below)
+2. **#4** Serve the WebMCP-required security headers (origin isolation + tools permissions policy)
 3. **#9** Implement list_papers (read) tool
 4. **#10** Implement open_paper (action) tool
 5. **#11** Implement search_library (search) tool
@@ -48,7 +48,7 @@ Build Lattice in 6 PR-driven sprints, each shipping 1-3 issues per the issue que
 7. **#14** Implement compare_claims (read) tool
 8. **#20** Implement show_workflow_trail (read) tool
 9. **#21** Implement peer_review_invite (write) tool
-10. **#75** Implement PDF ingestion via Netlify Function
+10. **#75** Implement PDF ingestion (server endpoint; was a Netlify Function pre-migration)
 11. **#76** Implement two-column read-order reconstruction
 12. **#34** Design the main workspace layout
 13. **#35** Build the paper list component
@@ -67,11 +67,23 @@ Build Lattice in 6 PR-driven sprints, each shipping 1-3 issues per the issue que
 - **Auth:** Magic link. The user enters their email, gets a link, the library persists. Local dev uses a mock email sender; prod wires to a real provider.
 - **Team:** 10xdev4u-alt + 1-2 humans + AI agents. CODEOWNERS will list all humans; AI agents co-author in commit trailers.
 
+## The stack today (updated Aug 31)
+
+Netlify is gone: the URL held a different project and netlify-cli 17
+crashes on Node 26. The whole app — client, 13 API endpoints,
+filesystem store — is one self-hosted `node server.mjs` process,
+shipped as a multi-stage Docker image (~3MB app layer, 57MB
+gzipped artifact). `npm run typecheck && npm run lint && npm run
+test && docker compose up prod` is the smoke test. The WebMCP
+headers the spec requires (origin isolation, tools permissions
+policy) are set per-response by `server.mjs` — see
+`api/_lib/types.ts` and the `/healthz` probe in the CI smoke.
+
 ## What changed in the plan
 
 - Added a new epic: `epic: docker` for the image-size work.
 - The model layer is abstracted behind a thin interface so the test model can be swapped for prod without touching call sites.
-- Local dev is the primary verification surface; CI runs typecheck + lint + test on every PR; deploys to a Netlify preview on PRs come later.
+- Local dev is the primary verification surface; CI runs typecheck + lint + test plus a Docker build/test/smoke on every PR; the compressed image uploads as a workflow artifact.
 
 ## The PR loop in 7 steps
 
@@ -80,7 +92,7 @@ For each issue, the loop is:
 1. `git checkout -b feat/<scope>-<short-desc> main`
 2. Make the change. One logical change per commit.
 3. Strict 6-word conventional commit title with co-author trailer.
-4. `npm run typecheck && npm run lint && npm run test && netlify dev` smoke test.
+4. `npm run typecheck && npm run lint && npm run test && docker compose up prod` smoke test.
 5. `git push -u origin feat/<branch>`
 6. `gh pr create --title "<conventional>" --body "Closes #N\n..."` 
 7. Reviewer approves, squash-merge, delete branch, close issue.

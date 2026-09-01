@@ -35,7 +35,11 @@ export function instrument(toolName: string, execute: ToolExecute): ToolExecute 
         status: 'ok',
       });
       dispatchToolcall();
-      return result;
+      // Spec §1.7: above 1.5K characters the agent may not see the
+      // tail. What the agent RECEIVES is the budgeted payload, with
+      // a pointer to the full result when it was cut. The audit
+      // trail keeps result_full untruncated.
+      return clampResult(result, summary);
     } catch (err) {
       const durationMs = Math.round(performance.now() - startedAt);
       recordStep({
@@ -50,6 +54,34 @@ export function instrument(toolName: string, execute: ToolExecute): ToolExecute 
       throw err;
     }
   };
+}
+
+/**
+ * Clamp a tool result to the spec's per-output character budget.
+ * Within budget: pass through untouched. Over budget: emit the
+ * first 1.5K of the rendered text plus a truncation note telling
+ * the agent how to get the rest (show_workflow_trail holds the
+ * full record). Text-bearing shapes keep their structure with
+ * the note appended; anything else falls back to the summary.
+ */
+function clampResult(result: unknown, summary: string): unknown {
+  const full = stringifyResult(result);
+  if (full.length <= TOOL_CHAR_LIMITS.outputSize) return result;
+  const note = `\n…[truncated: ${full.length} chars total; call show_workflow_trail for the full record]`;
+  const budget = TOOL_CHAR_LIMITS.outputSize - note.length;
+  if (result && typeof result === 'object' && Array.isArray((result as { content?: unknown[] }).content)) {
+    const shaped = result as {
+      content: Array<{ type: string; text?: string }>;
+    };
+    const first = shaped.content[0];
+    if (first && first.type === 'text' && typeof first.text === 'string') {
+      return {
+        ...shaped,
+        content: [{ type: 'text', text: first.text.slice(0, budget) + note }],
+      };
+    }
+  }
+  return summary.slice(0, budget) + note;
 }
 
 export function denyStep(toolName: string, args: unknown): void {
