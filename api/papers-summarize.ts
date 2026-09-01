@@ -12,6 +12,8 @@
 
 import type { Config, Context } from './_lib/types';
 import { getStore, resolvePaperId } from './_lib/store';
+import { storeFor } from './_lib/session';
+import { tenantSetCookieHeader } from './_lib/session';
 import { completePrompt } from './_lib/llm';
 import { extractJson } from './_lib/extract-json';
 import { excerptWindows } from './_lib/excerpt';
@@ -50,7 +52,8 @@ export default async (req: Request, _ctx: Context): Promise<Response> => {
   }
 
   const maxWords = body.max_words ?? 200;
-  const store = getStore('lattice');
+  const { tenantId, store } = storeFor(req);
+  const needsCookie = !req.headers.get('x-session-id') && !(req.headers.get('cookie') ?? '').includes('lattice_sid=');
   // Library ids and ingest ids differ in version suffixes; match
   // on the digit core either way.
   const paperId = await resolvePaperId(store, body.paper_id);
@@ -114,11 +117,9 @@ Rules:
   }
 };
 
-function json(body: unknown, status = 200): Response {
-  return new Response(JSON.stringify(body), {
-    status,
-    headers: { 'Content-Type': 'application/json' },
-  });
+function json(body: unknown, status = 200, extraHeaders: Record<string, string> = {}): Response {
+  const headers = new Headers({ 'Content-Type': 'application/json', ...extraHeaders });
+  return new Response(JSON.stringify(body), { status, headers });
 }
 
 export const config: Config = {

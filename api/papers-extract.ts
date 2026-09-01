@@ -14,6 +14,8 @@
 
 import type { Config, Context } from './_lib/types';
 import { getStore, resolvePaperId } from './_lib/store';
+import { storeFor } from './_lib/session';
+import { tenantSetCookieHeader } from './_lib/session';
 import { completePrompt } from './_lib/llm';
 import { extractJson } from './_lib/extract-json';
 import { excerptWindows } from './_lib/excerpt';
@@ -47,7 +49,8 @@ export default async (req: Request, _ctx: Context): Promise<Response> => {
 
   const maxQuotes = body.max_quotes ?? 2;
   const stance = body.stance ?? 'any';
-  const store = getStore('lattice');
+  const { tenantId, store } = storeFor(req);
+  const needsCookie = !req.headers.get('x-session-id') && !(req.headers.get('cookie') ?? '').includes('lattice_sid=');
   const paperId = await resolvePaperId(store, body.paper_id);
   if (!paperId) {
     return json({ error: { code: 'NOT_FOUND', message: 'No text.json for that paper.' } }, 404);
@@ -91,11 +94,9 @@ Rules:
   }
 };
 
-function json(body: unknown, status = 200): Response {
-  return new Response(JSON.stringify(body), {
-    status,
-    headers: { 'Content-Type': 'application/json' },
-  });
+function json(body: unknown, status = 200, extraHeaders: Record<string, string> = {}): Response {
+  const headers = new Headers({ 'Content-Type': 'application/json', ...extraHeaders });
+  return new Response(JSON.stringify(body), { status, headers });
 }
 
 export const config: Config = {

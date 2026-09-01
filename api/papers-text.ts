@@ -13,13 +13,16 @@
 
 import type { Config, Context } from './_lib/types';
 import { getStore, resolvePaperId } from './_lib/store';
+import { storeFor } from './_lib/session';
+import { tenantSetCookieHeader } from './_lib/session';
 
 export default async (req: Request, _ctx: Context): Promise<Response> => {
   const id = new URL(req.url).pathname.match(/\/api\/papers\/([^/]+)\/text/)?.[1];
   if (!id) {
     return json({ error: { code: 'BAD_PATH', message: 'Missing paper id.' } }, 400);
   }
-  const store = getStore('lattice');
+  const { tenantId, store } = storeFor(req);
+  const needsCookie = !req.headers.get('x-session-id') && !(req.headers.get('cookie') ?? '').includes('lattice_sid=');
   const resolved = await resolvePaperId(store, id);
   if (!resolved) {
     return json({ error: { code: 'NOT_FOUND', message: 'No extracted text for that paper.' } }, 404);
@@ -31,11 +34,9 @@ export default async (req: Request, _ctx: Context): Promise<Response> => {
   return json(meta.data);
 };
 
-function json(body: unknown, status = 200): Response {
-  return new Response(JSON.stringify(body), {
-    status,
-    headers: { 'Content-Type': 'application/json' },
-  });
+function json(body: unknown, status = 200, extraHeaders: Record<string, string> = {}): Response {
+  const headers = new Headers({ 'Content-Type': 'application/json', ...extraHeaders });
+  return new Response(JSON.stringify(body), { status, headers });
 }
 
 export const config: Config = {

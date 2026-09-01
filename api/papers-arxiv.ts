@@ -10,6 +10,8 @@
 
 import type { Config, Context } from './_lib/types';
 import { getStore } from './_lib/store';
+import { storeFor } from './_lib/session';
+import { tenantSetCookieHeader } from './_lib/session';
 import { fetchArxivSource } from './_lib/arxiv';
 import { buildIndex } from './_lib/search-index';
 
@@ -51,7 +53,8 @@ export default async (req: Request, _ctx: Context): Promise<Response> => {
   }
 
   const id = `arxiv-${result.metadata.arxiv_id.replace(/[^\w]/g, '')}`;
-  const store = getStore('lattice');
+  const { tenantId, store } = storeFor(req);
+  const needsCookie = !req.headers.get('x-session-id') && !(req.headers.get('cookie') ?? '').includes('lattice_sid=');
   const sourceKey = `papers/${id}/source.tex`;
   const existing = await store.get(sourceKey);
   if (existing) {
@@ -112,11 +115,9 @@ export default async (req: Request, _ctx: Context): Promise<Response> => {
   );
 };
 
-function jsonResponse(body: unknown, status = 200): Response {
-  return new Response(JSON.stringify(body), {
-    status,
-    headers: { 'Content-Type': 'application/json' },
-  });
+function jsonResponse(body: unknown, status = 200, extraHeaders: Record<string, string> = {}): Response {
+  const headers = new Headers({ 'Content-Type': 'application/json', ...extraHeaders });
+  return new Response(JSON.stringify(body), { status, headers });
 }
 
 export const config: Config = {

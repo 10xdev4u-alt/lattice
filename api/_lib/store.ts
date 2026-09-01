@@ -76,7 +76,14 @@ export function getTenantStore(name: string, tenantId: string | null): BlobStore
     getWithMetadata: (key: string, opts) => base.getWithMetadata(prefix + key, opts),
     set: (key: string, value: string, opts) => base.set(prefix + key, value, opts),
     setJSON: (key: string, value: unknown, opts) => base.setJSON(prefix + key, value, opts),
-    list: (opts) => base.list({ prefix: opts?.prefix ? prefix + opts.prefix : prefix }),
+    // Strip the tenant prefix from results so callers see the
+    // same key shape as the global store, AND walk only the
+    // tenant's subdirectory so they never see another tenant's data.
+    list: async (opts) => {
+      const sub = opts?.prefix ? prefix + opts.prefix : prefix;
+      const { blobs } = await base.list({ prefix: sub });
+      return { blobs: blobs.map((b) => ({ key: b.key.startsWith(prefix) ? b.key.slice(prefix.length) : b.key })) };
+    },
   };
 }
 
