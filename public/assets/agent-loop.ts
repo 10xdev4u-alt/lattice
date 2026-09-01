@@ -37,7 +37,20 @@ interface ChatMessage {
   content?: string;
   tool_call_id?: string;
   name?: string;
+  reasoning?: string;
+  reasoning_details?: Array<{ type: string; text?: string; content?: string }>;
   tool_calls?: Array<{ id: string; type: 'function'; function: { name: string; arguments: string } }>;
+}
+
+/** Extract the visible answer from a model message. Reasoning
+ *  models (inclusionai ling, others) put the answer in
+ *  `reasoning` with content:null — read both. */
+function messageText(msg: ChatMessage): string {
+  if (msg.content && msg.content.trim() !== '') return msg.content;
+  if (msg.reasoning && msg.reasoning.trim() !== '') return msg.reasoning;
+  const detail = msg.reasoning_details?.map((d) => d.text ?? d.content ?? '').join('\n').trim();
+  if (detail && detail !== '') return detail;
+  return '';
 }
 
 export interface AgentLoopOptions {
@@ -132,9 +145,11 @@ async function attemptLoop(
         tool_choice: tools.length > 0 ? 'auto' : undefined,
         max_tokens: 800,
         temperature: 0.2,
-        // Keep the agent loop direct: reasoning models would
-        // spend the budget thinking before calling tools.
-        reasoning: { enabled: false },
+        // No `reasoning` override: liquid/lfm rejects
+        // {enabled:false} ("Reasoning is mandatory") and
+        // inclusionai/ling puts its whole answer in the reasoning
+        // channel. Let each model behave natively; messageText
+        // reads whichever channel carries the text.
       }),
       signal: opts.signal,
     });
@@ -158,7 +173,13 @@ async function attemptLoop(
         msg.content && msg.content.trim() !== ''
           ? msg.content
           : `(calling ${msg.tool_calls.map((c) => c.function.name).join(', ')})`;
-      messages.push({ role: 'assistant', tool_calls: msg.tool_calls, content: assistantContent });
+      // Strip reasoning fields from history: some upstreams 400
+      // on unknown/assistant reasoning fields in requests.
+      messages.push({
+        role: 'assistant',
+        tool_calls: msg.tool_calls,
+        content: assistantContent,
+      });
       for (const call of msg.tool_calls) {
         let parsedArgs: unknown = {};
         try {
@@ -181,11 +202,62 @@ async function attemptLoop(
       }
       continue;
     }
-    finalMessage = msg.content ?? '';
-    break;
+    finalMessage = messageText(msg);
+    if (finalMessage.trim() !== '') break;
+    // Empty content AND no reasoning channel: one recovery call
+    // that forbids tool use and demands the final answer.
+    const recovered = await fetchFinalAnswer(base, model, messages, opts.signal);
+    if (recovered && recovered.trim() !== '') {
+      finalMessage = recovered;
+      break;
+    }
+    // Recovery also empty → one more loop turn, but the loop is
+    // bounded by maxTurns.
   }
 
   return { finalMessage, turns, toolCalls };
+}
+
+/**
+ * One completion with tools forbidden and a final-answer
+ * instruction. Used when the loop ends with empty content (a
+ * free-model flake) so the user never sees "(no text)" after
+ * successful tool calls.
+ */
+async function fetchFinalAnswer(
+  base: string,
+  model: string,
+  messages: ChatMessage[],
+  signal: AbortSignal,
+): Promise<string | null> {
+  try {
+    const res = await fetch(base, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model,
+        messages: [
+          ...messages,
+          {
+            role: 'user',
+            content:
+              'Produce your final answer to the conversation above now, in plain text. Do not call any tools.',
+          },
+        ],
+        tool_choice: 'none',
+        max_tokens: 800,
+        temperature: 0.2,
+      }),
+      signal,
+    });
+    if (!res.ok) return null;
+    const data = (await res.json()) as {
+      choices: Array<{ message: { content?: string } }>;
+    };
+    return data.choices[0]?.message?.content ?? null;
+  } catch {
+    return null;
+  }
 }
 
 async function listTools(): Promise<ToolDescriptor[]> {

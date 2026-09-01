@@ -55,7 +55,10 @@ export default async (req: Request, _ctx: Context): Promise<Response> => {
   }
 
   const key = process.env.LATTICE_LLM_KEY ?? 'latticex';
-  const model = body.model ?? process.env.LATTICE_LLM_MODEL ?? 'tencent/hy3:free';
+  // Default to the head of the live pool — tencent/hy3:free (the
+  // old default) is dead: the upstream returns 404
+  // unavailable_model for every request (verified 2026-09-01).
+  const model = body.model ?? process.env.LATTICE_LLM_MODEL ?? 'liquid/lfm-2.5-2.6b:free';
   if (!MODEL_RE.test(model)) {
     return json({ error: { code: 'BAD_MODEL', message: 'Invalid model id.' } }, 400);
   }

@@ -1,10 +1,12 @@
 /**
  * The model pool — free-tier models rotate in and out without
- * notice. Probed 2026-09-01 via tool_choice tool-call (real
- * search_library schema): liquid 925ms TOOL fastest, inclusionai
- * 1422ms, dots-studio 1630ms, stepfun 1924ms. tencent/hy3 dead,
- * minimax 429 rate-limited, nvidia lightning 18s — all removed.
- * kilo-auto is a redundant router (2412ms) — removed.
+ * notice. Re-probed 2026-09-02: ALL live models answer natively
+ * WITH reasoning enabled — liquid 400s on reasoning:{enabled:false}
+ * ("Reasoning is mandatory for this endpoint"), and inclusionai
+ * puts the whole answer in message.reasoning with content:null.
+ * The agent loop therefore sends no reasoning override and reads
+ * content ?? reasoning (see messageText in agent-loop.ts).
+ * tencent/hy3 dead, minimax 429, nvidia 18s — removed.
  *
  * Order = live latency rank. Consumers try in order; first
  * model that answers wins. LATTICE_LLM_MODEL override still
