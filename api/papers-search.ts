@@ -99,11 +99,9 @@ async function listKeys(store: ReturnType<typeof getStore>, prefix: string): Pro
   }
 }
 
-function json(body: unknown, status = 200): Response {
-  return new Response(JSON.stringify(body), {
-    status,
-    headers: { 'Content-Type': 'application/json' },
-  });
+function json(body: unknown, status = 200, extraHeaders: Record<string, string> = {}): Response {
+  const headers = new Headers({ 'Content-Type': 'application/json', ...extraHeaders });
+  return new Response(JSON.stringify(body), { status, headers });
 }
 
 export const config: Config = {
