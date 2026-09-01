@@ -100,6 +100,18 @@ async function main(): Promise<void> {
     if (rail) mountContextBudgetBar(rail);
   });
 
+  // WebLLM badge: private/offline indicator in the header
+  void import('./ui/webllm-badge').then(({ mountWebLLMBadge }) => {
+    const header = document.querySelector<HTMLElement>('.app-header');
+    if (header) {
+      const badgeHost = document.createElement('div');
+      badgeHost.id = 'webllm-badge-host';
+      badgeHost.style.marginLeft = '12px';
+      header.appendChild(badgeHost);
+      mountWebLLMBadge(badgeHost);
+    }
+  });
+
   // "What's in the prompt" debug view (g d).
   document.addEventListener('keydown', async (e) => {
     if ((e.metaKey || e.ctrlKey) && e.shiftKey && e.key === 'P') {
