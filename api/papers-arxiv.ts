@@ -119,11 +119,6 @@ function jsonResponse(body: unknown, status = 200, extraHeaders: Record<string, 
   const headers = new Headers({ 'Content-Type': 'application/json', ...extraHeaders });
   return new Response(JSON.stringify(body), { status, headers });
 }
-  return new Response(JSON.stringify(body), {
-    status,
-    headers: { 'Content-Type': 'application/json' },
-  });
-}
 
 export const config: Config = {
   path: '/api/papers/from-arxiv',
