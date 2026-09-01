@@ -267,6 +267,14 @@ async function render(root: HTMLElement): Promise<void> {
   const session = getSession();
   const peerActive = isPeerReviewerActive();
   const chat = root.querySelector<HTMLDivElement>('[data-agent-chat]');
+  // Preserve focus + input value across the wipe so typing
+  // isn't interrupted when webmcp:toolcall fires mid-loop.
+  const active = document.activeElement as HTMLElement | null;
+  const wasInputFocused = active?.matches?.('[data-agent-input]') ?? false;
+  const inputValue = wasInputFocused ? (active as HTMLInputElement).value : '';
+  const inputSelection: [number, number] | null = wasInputFocused
+    ? [(active as HTMLInputElement).selectionStart ?? 0, (active as HTMLInputElement).selectionEnd ?? 0]
+    : null;
   // Capture the LIVE conversation before the wipe: re-renders
   // fire mid-loop (a tool call records a step -> webmcp:toolcall
   // -> render) and used to destroy in-flight messages, replacing
@@ -347,6 +355,22 @@ async function render(root: HTMLElement): Promise<void> {
     if (chatRoot) {
       chatRoot.innerHTML = '';
       for (const m of toRestore) chatRoot.appendChild(m);
+    }
+  }
+
+  // Restore focus + caret if the user was typing when the wipe happened.
+  if (wasInputFocused) {
+    const input = root.querySelector<HTMLInputElement>('[data-agent-input]');
+    if (input) {
+      input.focus();
+      input.value = inputValue;
+      if (inputSelection) {
+        try {
+          input.setSelectionRange(inputSelection[0], inputSelection[1]);
+        } catch {
+          /* ignore */
+        }
+      }
     }
   }
 
