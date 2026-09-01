@@ -1,115 +1,27 @@
-# Lattice demo video — 3-minute script
+# Lattice Demo — 3 Killer Demos (2:50 total)
 
-> Total runtime: 2:50. Audio required. Record with OBS or ScreenFlow.
-> Use a USB mic, not the laptop mic. Captions auto-generated, then
-> hand-corrected.
->
-> Before recording: load the sample library once so the ingests are
-> warm, then reload the page so the video starts from the empty
-> state. The container should be running at localhost:8888.
+> Record at 1440p, USB mic, captions hand-corrected. Start from empty state after `Load 5 classic papers` warmed once.
 
-## Scene 1 — The claim (0:00–0:15)
+## 0. Title (0:00–0:12)
+**Visual:** Fraunces headline "Research papers, in conversation." + WebLLM badge `Private • Phi-3-mini` in header + 14-tool Live Array.
+**VO:** "Every AI demo asks you to trust the agent. Lattice proves it — the page IS the audit log. 14 typed tools, private offline, tenant-isolated."
 
-**Visual:** The workspace on the empty state. Fraunces headline:
-"Bring a paper. Watch every claim become traceable."
+## 1. Airplane Mode Thesis — WebLLM offline (0:12–0:55)
+**Action:** Load 3 papers, open Transformer, toggle Network offline in DevTools, click `Send → Cancel` is visible, ask "Summarize for a grad audience".
+**VO:** "Gateway 502. Every other demo dies. Lattice answers — Phi-3-mini runs in your GPU via WebLLM, 2.1GB cached once. Same prompt shape, `[answered offline]` badge. No server, no key, private."
+**Show:** Response card ` [answered offline: Phi-3-mini]` + header badge flipping `Downloading → Private • Phi-3-mini`.
 
-**Voice-over:**
-"Every AI demo asks you to trust the agent. Lattice asks the
-opposite: prove it. This is a research workspace where the page
-itself is the audit log — and it can prove its own compliance."
+## 2. Disagreement Detector — compare_claims + deterministic graph (0:55–1:40)
+**Action:** Open 2 papers, `compare_claims` scopes via `AbortSignal` to those two (close tab → tool unregisters), 3 conflicts with `text_a/page_a + text_b/page_b`, click page chip jumps to PDF highlight, graph edge `hashTwo` deterministic.
+**VO:** "Two papers, one `compare_claims` scoped to them. Close a paper, the tool dies — AbortSignal. Click a claim, the PDF flashes. The graph is hash-deterministic, not Math.random. OpenAlex backs cites when online."
+**Show:** Graph solid=cites dashed=shares_claim legend, `prefers-reduced-motion` static.
 
-**Action:** Press Cmd+K, type "self-audit", Enter. Click
-"Run the checks."
+## 3. Peer Cage Match — exposedTo + untrustedContentHint (1:40–2:25)
+**Action:** `compose_review` drafts 4-section peer review, `peer_review_invite skeptic` via `exposedTo:[origin]` — second agent `getTools({fromOrigins})` only sees that tool, challenges via `explain_evidence` with `untrustedContentHint:true` shield.
+**VO:** "One draft, one skeptic. The peer reviewer is a second agent invited via `exposedTo` — it only sees the invite tool. It demands citations, never writes. You watch them negotiate. Every paper-text return is `untrustedContentHint` — injected `Ignore previous instructions` PDFs are quoted, not obeyed."
+**Show:** Two agent bubbles negotiating, `UNTRUSTED` delim in system prompt visible in `What's in the prompt` (g d).
 
-## Scene 2 — The self-audit (0:15–0:45)
-
-**Visual:** The audit panel streams nine checks, each flipping to
-verdigris as it resolves: modelContext present, the three API
-methods, toolchange firing, tool budgets, a live executeTool
-round-trip, the isolation headers read off this origin,
-untrustedContentHint on every content tool, abort scoping,
-exposedTo filtering.
-
-**Voice-over:**
-"Nine live probes against this page's actual WebMCP surface. Not a
-checklist we wrote — checks that run right now. Register a probe
-tool: toolchange fires. Abort its signal: it unregisters. Ask
-where the tools permissions policy is: the page reads its own
-headers. Nine passing. This is what compliance looks like when
-it's code, not a slide."
-
-**Action:** Let all nine resolve. Hover one row so its probe note
-is visible for a beat.
-
-## Scene 3 — The workspace (0:45–1:10)
-
-**Visual:** Close the audit. The empty state. Click "Load 5 classic
-papers." The three rails fill: library left, the Transformer paper
-center in the reading voice, agent right.
-
-**Voice-over:**
-"Five papers load — their full text fetched, extracted, and
-indexed server-side. The reading surface follows the agent: when
-it opens a paper, yours opens too."
-
-**Action:** In the chat type: "Compare Attention Is All You Need
-with BERT on attention."
-
-## Scene 4 — The red thread (1:10–1:45)
-
-**Visual:** The agent streams a reply in violet. Tool chips appear
-inline. The Log tab count climbs.
-
-**Voice-over:**
-"Every tool call lands in the trail as a numbered entry on a red
-spine — the thread of the argument. Expand a step: the exact
-arguments, the exact result, the duration. Press Re-run and the
-same call executes again, appended — same input, fresh result.
-The log grows honestly. It never rewrites."
-
-**Action:** Open the Log tab. Expand one step. Click Re-run.
-Watch the new entry appear.
-
-## Scene 5 — Challenge (1:45–2:15)
-
-**Visual:** The peer-reviewer banner. Click "Invite
-peer-reviewer." The skeptic's challenge arrives.
-
-**Voice-over:**
-"Invite a second agent and it challenges the first — a skeptic
-with its own persona, exposed to exactly this tool surface. Two
-agents, one page, and the human holds the pen. Every write tool
-still asks permission first."
-
-**Action:** Ask the chat to add the paper to the bibliography. The
-confirmation modal appears. Click Allow.
-
-## Scene 6 — Export (2:15–2:50)
-
-**Visual:** The trail exports as a methods appendix — markdown,
-structured, citable.
-
-**Voice-over:**
-"Finally: export the trail. Every claim, traced to a paper, a
-page, a sentence — the methods appendix for your thesis, written
-by the work itself. Lattice: research papers, in conversation —
-and in evidence. Nine checks passing."
-
-**Action:** Open the Log tab, click "Export as methods appendix."
-Show the downloaded document for the last beat.
-
----
-
-## Cut-list (if you need to trim to 2:00)
-
-- Cut Scene 3's typing beat (keep the narration).
-- Trim Scene 5 to the invite + one challenge line.
-
-## Recording notes
-
-- 1440x900, dark theme (default) — the warm ink reads better on
-  video than the light paper.
-- Slow your cursor. Hover before clicking; the hover states are
-  part of the story.
-- The LLM is a free tier — if a call stalls, wait; the retry
-  banner is honest and quick.
+## 4. Audit → PRISMA → Share (2:25–2:50)
+**Action:** Open Log tab, `PRISMA` flow live from `search_library`/`compare_claims`/`cite_paper` counts, `Export as methods appendix` → Markdown + Mermaid, `Share` → `v1.` encrypted URL, `BM25` recall: `transformer` matches `transformers`.
+**VO:** "The trail is the product. PRISMA from live steps, export to Overleaf, share `v1.` encrypted. BM25 + Porter so `running` finds `run`. Tenant-isolated — your library never leaks."
+**End card:** `lattice.app` + GitHub + 3-bullet SaaS spine (14 tools, private, isolated).
