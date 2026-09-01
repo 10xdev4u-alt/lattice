@@ -444,7 +444,9 @@ async function askbarHandler(e: Event): Promise<void> {
     const chatInput = root.querySelector<HTMLInputElement>('[data-agent-input]');
     if (chatInput) {
       chatInput.value = `About "${paperTitle}": ${phrase}`;
-      chatInput.closest('form')?.dispatchEvent(new Event('submit', { cancelable: true }));
+      // bubbles: true — the submit handler is delegated on the
+      // rail root; a non-bubbling Event never reaches it.
+      chatInput.closest('form')?.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
     }
     return;
   }
@@ -589,7 +591,8 @@ function appendMessage(root: HTMLElement, role: 'user' | 'agent', text: string, 
       if (!input) return;
       input.value = `I want to challenge this claim you made: "${claim.slice(0, 200)}". Defend it with citations, or retract it.`;
       const formEl = input.closest('form');
-      formEl?.dispatchEvent(new Event('submit', { cancelable: true }));
+      // bubbles: true — delegated submit handler lives on the rail root.
+      formEl?.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
     });
   }
 }
@@ -626,7 +629,8 @@ async function regenerateLast(root: HTMLElement, previousText: string, withFeedb
     input.value = withFeedback
       ? `${lastUserText}\n\nYour previous answer was: "${previousText.slice(0, 400)}". The user marked it as unhelpful. Try a different approach: be more specific, cite a paper id, or ask a clarifying question.`
       : lastUserText;
-    form.dispatchEvent(new Event('submit', { cancelable: true }));
+    // bubbles: true — delegated submit handler lives on the rail root.
+    form.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
   }
 }
 

@@ -89,7 +89,10 @@ export function installModelContextPolyfill(): void {
 
   const fireToolChange = (): void => {
     for (const l of listeners) {
-      l(new Event('toolchange'));
+      // bubbles: true so delegated listeners (document-level) can
+      // observe registration changes, matching native event
+      // semantics for addEventListener-based observers.
+      l(new Event('toolchange', { bubbles: true }));
     }
   };
 
