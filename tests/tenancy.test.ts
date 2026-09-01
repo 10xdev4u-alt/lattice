@@ -15,27 +15,31 @@ afterAll(() => {
 });
 
 describe('tenant store isolation', () => {
-  it('prefixes keys for tenant A', async () => {
-    const { _resetRoot, getTenantStore } = await import('../api/_lib/store');
+  it('stores under tenant prefix and reads back', async () => {
+    const { _resetRoot, getStore, getTenantStore } = await import('../api/_lib/store');
     _resetRoot();
-    const a = getTenantStore('lattice', 'tenant_A_abc');
+    const a = getTenantStore('lattice', 'tenant_aaaaaaaa');
     await a.setJSON('papers/pdf-aa11/text.json', { pages: [] });
-    const { blobs } = await a.list({ prefix: 'papers/' });
-    expect(blobs[0]?.key).toMatch(/^tenant_A_abc\/papers\//);
+    const v = await a.getWithMetadata('papers/pdf-aa11/text.json', { type: 'json' });
+    expect((v?.data as { pages: unknown[] }).pages).toEqual([]);
+    const g = getStore('lattice');
+    const list = await g.list({ prefix: 'tenant_aaaaaaaa/papers/' });
+    expect(list.blobs[0]?.key).toMatch(/^tenant_aaaaaaaa\/papers\//);
   });
 
   it('keeps two tenants separate', async () => {
     const { _resetRoot, getTenantStore } = await import('../api/_lib/store');
     _resetRoot();
-    const a = getTenantStore('lattice', 't_a_xx');
-    const b = getTenantStore('lattice', 't_b_yy');
+    const a = getTenantStore('lattice', 'tenant_aaaaaaaa');
+    const b = getTenantStore('lattice', 'tenant_bbbbbbbb');
     await a.setJSON('papers/arxiv-1/text.json', { tenant: 'a' });
     await b.setJSON('papers/arxiv-2/text.json', { tenant: 'b' });
     const aList = await a.list({ prefix: 'papers/' });
     const bList = await b.list({ prefix: 'papers/' });
     expect(aList.blobs.some((x) => x.key.includes('arxiv-1'))).toBe(true);
-    expect(bList.blobs.some((x) => x.key.includes('arxiv-2'))).toBe(true);
     expect(aList.blobs.some((x) => x.key.includes('arxiv-2'))).toBe(false);
+    expect(bList.blobs.some((x) => x.key.includes('arxiv-2'))).toBe(true);
+    expect(bList.blobs.some((x) => x.key.includes('arxiv-1'))).toBe(false);
   });
 
   it('legacy global store still works when no tenant', async () => {
@@ -47,10 +51,9 @@ describe('tenant store isolation', () => {
     expect((v?.data as { ok: boolean }).ok).toBe(true);
   });
 
-  it('rejects unsafe tenant ids', async () => {
+  it('rejects unsafe tenant ids via sanitizer', async () => {
     const { getTenantStore } = await import('../api/_lib/store');
     const t = getTenantStore('lattice', '../../../etc/passwd');
-    // Sanitized tenant; should still write under safe segment
     await t.set('papers/x/text.json', 'ok');
     const v = await t.get('papers/x/text.json');
     expect(v).toBe('ok');

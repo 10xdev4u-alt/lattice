@@ -60,7 +60,7 @@ export const summarizePaper: ToolDefinition = {
     // Prefer the server endpoint: it summarizes the full extracted
     // text (not just the abstract) and returns the model's answer
     // with page citations and a confidence rating. Fall back to
-    // the abstract when the paper was never ingested server-side.
+    // offline WebLLM when the gateway 502s, then to abstract.
     try {
       const res = await fetch('/api/papers/summarize', {
         method: 'POST',
@@ -90,7 +90,24 @@ export const summarizePaper: ToolDefinition = {
         }
       }
     } catch {
-      // fall through to the abstract-only path
+      // fall through to offline fallback
+    }
+
+    // Offline fallback (WebLLM Phi-3-mini) — answers using the
+    // abstract when the network is gone. The user can re-load the
+    // paper text from a server endpoint when online.
+    try {
+      const { offlineCompleteAsTool } = await import('../webllm/fallback');
+      const result = await offlineCompleteAsTool({
+        context: paper.abstract ?? '(no abstract available)',
+        instruction: `Summarize this paper for a ${audience} audience in at most ${max_words} words.`,
+        system: 'You are a research assistant. Use plain prose; cite concepts not sources.',
+        maxTokens: Math.min(800, Math.ceil(max_words * 2)),
+        signal: opts.signal,
+      });
+      if (!result.isError) return result;
+    } catch {
+      // webllm unsupported — fall through to abstract
     }
 
     const abstract = paper.abstract ?? '(no abstract available)';
