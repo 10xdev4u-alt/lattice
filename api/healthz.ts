@@ -18,7 +18,12 @@ async function probeStore(): Promise<string> {
     // Lightweight probe: can we read the store root without throwing?
     await s.list({ prefix: '' });
     return 'ok';
-  } catch {
+  } catch (err) {
+    // A probe that fails must be visible in server logs — a
+    // silent catch here once shipped a 503 "degraded" healthz
+    // on every deployment for days (the dynamic-import
+    // extension bug nobody could see).
+    console.error('[healthz] store probe failed:', err);
     return 'error';
   }
 }

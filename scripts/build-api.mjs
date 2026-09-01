@@ -29,35 +29,45 @@ const files = await collect(ROOT);
 await rm(OUT, { recursive: true, force: true });
 await mkdir(OUT, { recursive: true });
 
-for (const file of files) {
-  const result = await build({
-    entryPoints: [file.abs],
-    bundle: false,
-    format: 'esm',
-    platform: 'node',
-    target: 'node20',
-    sourcemap: false,
-    splitting: false,
-    write: false,
-    logLevel: 'silent',
-  });
-  // Rewrite relative import specifiers: .ts → .mjs, and add
-  // .mjs to extensionless ones (Node ESM needs explicit
-  // extensions, esbuild's bundle:false keeps them bare).
-  let text = result.outputFiles[0].text;
-  text = text.replace(
-    /(from\s+|import\s+)("(?:[^"]*)"|'(?:[^']*)')/g,
-    (m, head, qspec) => {
-      const spec = qspec.slice(1, -1);
-      if (!spec.startsWith('.')) return m;
-      if (spec.endsWith('.mjs')) return m;
-      const base = spec.replace(/\.ts$/, '');
-      return `${head}"${base}.mjs"`;
-    },
-  );
-  const dest = join(OUT, file.rel.replace(/\.ts$/, '.mjs'));
-  await mkdir(dirname(dest), { recursive: true });
-  await writeFile(dest, text);
+// Transpile api/*.ts → dist-api/*.mjs with fixed specifiers.
+// Exported for the regression test (tests/build-api.test.ts).
+export async function buildApiModules() {
+  for (const file of files) {
+    const result = await build({
+      entryPoints: [file.abs],
+      bundle: false,
+      format: 'esm',
+      platform: 'node',
+      target: 'node20',
+      sourcemap: false,
+      splitting: false,
+      write: false,
+      logLevel: 'silent',
+    });
+    // Rewrite relative import specifiers: .ts → .mjs, and add
+    // .mjs to extensionless ones (Node ESM needs explicit
+    // extensions, esbuild's bundle:false keeps them bare).
+    // Matches `from "..."`, `import "..."`, and — critically —
+    // `import("...")` / `import ("...")` dynamic imports. The old
+    // regex required whitespace after `import`, so every dynamic
+    // import shipped extensionless and threw ERR_MODULE_NOT_FOUND
+    // at runtime (silently caught by healthz's probe).
+    let text = result.outputFiles[0].text;
+    text = text.replace(
+      /(from\s+|import\s*\(?\s*)("(?:[^"]*)"|'(?:[^']*)')/g,
+      (m, head, qspec) => {
+        const spec = qspec.slice(1, -1);
+        if (!spec.startsWith('.')) return m;
+        if (spec.endsWith('.mjs')) return m;
+        const base = spec.replace(/\.ts$/, '');
+        return `${head}"${base}.mjs"`;
+      },
+    );
+    const dest = join(OUT, file.rel.replace(/\.ts$/, '.mjs'));
+    await mkdir(dirname(dest), { recursive: true });
+    await writeFile(dest, text);
+  }
 }
 
+await buildApiModules();
 console.log(`[build:api] ${files.length} modules → ${OUT}/ (${relative('.', OUT)})`);
