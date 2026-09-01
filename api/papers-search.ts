@@ -12,9 +12,8 @@
  */
 
 import type { Config, Context } from './_lib/types';
-import { getStore } from './_lib/store';
 import { storeFor } from './_lib/session';
-import { tenantSetCookieHeader } from './_lib/session';
+import type { BlobStore } from './_lib/store';
 import { buildIndex, searchIndex, snippetAroundTermInText, type SearchIndex } from './_lib/search-index';
 
 interface SearchRequest {
@@ -44,8 +43,7 @@ export default async (req: Request, _ctx: Context): Promise<Response> => {
   }
 
   const maxPerPaper = body.max_results_per_paper ?? 3;
-  const { tenantId, store } = storeFor(req);
-  const needsCookie = !req.headers.get('x-session-id') && !(req.headers.get('cookie') ?? '').includes('lattice_sid=');
+  const { store } = storeFor(req);
   const library = await listKeys(store, 'papers/');
 
   const perPaper: Array<{ paper_id: string; hits: Array<{ page: number; score: number; snippet: string }> }> = [];
@@ -90,10 +88,10 @@ export default async (req: Request, _ctx: Context): Promise<Response> => {
   return json({ query: body.query, total_hits: totalHits, per_paper: perPaper });
 };
 
-async function listKeys(store: ReturnType<typeof getStore>, prefix: string): Promise<string[]> {
+async function listKeys(store: BlobStore, prefix: string): Promise<string[]> {
   try {
     const { blobs } = await store.list({ prefix });
-    return blobs.map((b) => b.key);
+    return blobs.map((b: { key: string }) => b.key);
   } catch {
     return [];
   }

@@ -9,9 +9,7 @@
  */
 
 import type { Config, Context } from './_lib/types';
-import { getStore } from './_lib/store';
 import { storeFor } from './_lib/session';
-import { tenantSetCookieHeader } from './_lib/session';
 import { fetchArxivSource } from './_lib/arxiv';
 import { buildIndex } from './_lib/search-index';
 
@@ -53,8 +51,7 @@ export default async (req: Request, _ctx: Context): Promise<Response> => {
   }
 
   const id = `arxiv-${result.metadata.arxiv_id.replace(/[^\w]/g, '')}`;
-  const { tenantId, store } = storeFor(req);
-  const needsCookie = !req.headers.get('x-session-id') && !(req.headers.get('cookie') ?? '').includes('lattice_sid=');
+  const { store } = storeFor(req);
   const sourceKey = `papers/${id}/source.tex`;
   const existing = await store.get(sourceKey);
   if (existing) {

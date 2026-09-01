@@ -12,7 +12,7 @@ test('trail → share link', async ({ page }) => {
     await expect(page.locator('body')).toContainText(/Encrypt|Share URL|session/i, { timeout: 5000 });
   }
   // Deterministic graph: same library yields same edges
-  const graphHost = page.locator('.knowledge-graph-svg, [data-kg-host]');
+  const _graphHost = page.locator('.knowledge-graph-svg, [data-kg-host]');
   // Graph may not be visible on first load; pass if hidden
   await expect(page.locator('body')).toBeVisible();
 });

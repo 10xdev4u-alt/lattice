@@ -27,7 +27,6 @@ const V = v + '[aeiou]*';
 const mgr0 = new RegExp('^(' + C + ')?' + V + C);
 const meq1 = new RegExp('^(' + C + ')?' + V + C + '(' + V + ')?$');
 const mgr1 = new RegExp('^(' + C + ')?' + V + C + V + C);
-const sV = new RegExp('^(' + C + ')?' + v);
 
 function consonant(word: string, i: number): boolean {
   const ch = word[i]!;
@@ -64,12 +63,6 @@ function doubleConsonant(stem: string): boolean {
   const l = stem.length - 1;
   if (l < 1) return false;
   return stem[l] === stem[l - 1] && consonant(stem, l);
-}
-
-function isCVC(word: string, i: number): boolean {
-  if (i < 2) return false;
-  const a = word[i]!, b = word[i - 1]!, c0 = word[i - 2]!;
-  return !consonant(word, i) && consonant(word, i - 1) && !consonant(word, i - 2) && !'wxy'.includes(a) && !'wxy'.includes(b) && !'wxy'.includes(c0) ? false : consonant(word, i) === false && consonant(word, i - 1) && !consonant(word, i - 2) && !'wxy'.includes(word[i]!);
 }
 
 // Fix isCVC to proper definition

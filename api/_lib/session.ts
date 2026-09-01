@@ -6,7 +6,8 @@
  * KV portable before Postgres/Oracle migration.
  */
 
-import { getStore, getTenantStore } from './store';
+import type { getStore} from './store';
+import { getTenantStore } from './store';
 
 export const COOKIE_NAME = 'lattice_sid';
 
