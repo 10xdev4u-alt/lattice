@@ -26,7 +26,7 @@ RUN apk add --no-cache git
 COPY package.json package-lock.json* ./
 RUN npm ci --no-audit --no-fund
 
-COPY tsconfig.json eslint.config.js vite.config.json* vite.config.ts ./
+COPY tsconfig.json eslint.config.js vite.config.json* vite.config.ts vitest.config.ts ./
 COPY public ./public
 COPY api ./api
 COPY server.mjs ./
