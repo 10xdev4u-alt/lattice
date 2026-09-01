@@ -73,6 +73,12 @@ export function mountAgentRail(root: HTMLElement): void {
     const form = (e.target as HTMLElement).closest('[data-agent-form]');
     if (!form) return;
     e.preventDefault();
+    // Busy + submit => treat as cancel
+    const btn = form.querySelector<HTMLButtonElement>('button');
+    if (btn?.dataset.busy === '1') {
+      cancelCurrentAgentLoop();
+      return;
+    }
     void handleSubmit(root);
   });
 
@@ -138,6 +144,8 @@ function cssEscape(s: string): string {
   return (window as unknown as { CSS?: { escape?: (v: string) => string } }).CSS?.escape?.(s) ?? s;
 }
 
+let currentAbort: AbortController | null = null;
+
 async function handleSubmit(root: HTMLElement): Promise<void> {
   const input = root.querySelector<HTMLInputElement>('[data-agent-input]');
   if (!input) return;
@@ -146,6 +154,7 @@ async function handleSubmit(root: HTMLElement): Promise<void> {
   appendMessage(root, 'user', text);
   input.value = '';
   setBusy(root, true);
+  currentAbort = new AbortController();
 
   // Re-renders fire during the loop (each tool call records a
   // step -> webmcp:toolcall -> render), and render replaces the
@@ -198,7 +207,7 @@ async function handleSubmit(root: HTMLElement): Promise<void> {
     scrollToChatEnd();
     try {
       const result = await runAgentLoop(text, history, {
-        signal: new AbortController().signal,
+        signal: currentAbort!.signal,
         onToolCall: (name: string) => {
           announce(`${name} — working`);
         },
@@ -213,7 +222,7 @@ async function handleSubmit(root: HTMLElement): Promise<void> {
       console.warn('agent loop fell back to plain completion:', loopErr);
       const { streamCompletePrompt } = await import('../llm-stream');
       const system = `You are Lattice, a research-paper assistant. Keep answers short and direct. Use markdown for structure. Cite paper ids when referencing specific papers.`;
-      await streamCompletePrompt(text, { signal: new AbortController().signal, maxTokens: 800, system }, (delta) => {
+      await streamCompletePrompt(text, { signal: currentAbort!.signal, maxTokens: 800, system }, (delta) => {
         streamed += delta;
         const t = liveStreamTarget();
         if (t) t.textContent = streamed;
@@ -226,12 +235,20 @@ async function handleSubmit(root: HTMLElement): Promise<void> {
     const t = liveStreamTarget();
     if (t) t.innerHTML = escapeHtml(streamed) + renderConfidenceDot(inferConfidence(streamed));
     setBusy(root, false);
+    currentAbort = null;
     persistExchange(root, text, streamed);
     void import('../prompt-diff').then(({ recordPrompt }) => {
       recordPrompt(text, streamed, undefined);
     });
   } catch (err) {
+    if ((err as Error).name === 'AbortError') {
+      setBusy(root, false);
+      currentAbort = null;
+      appendMessage(root, 'agent', 'Cancelled.');
+      return;
+    }
     setBusy(root, false);
+    currentAbort = null;
     appendMessage(root, 'agent', `Error: ${(err as Error).message}`);
   }
 }
@@ -253,13 +270,26 @@ function setBusy(root: HTMLElement, busy: boolean): void {
   const input = form.querySelector<HTMLInputElement>('input');
   const btn = form.querySelector<HTMLButtonElement>('button');
   if (input) input.disabled = busy;
-  if (btn) btn.disabled = busy;
+  if (btn) {
+    btn.disabled = false; // keep Send clickable as Cancel when busy
+    btn.textContent = busy ? 'Cancel' : 'Send';
+    btn.dataset.busy = busy ? '1' : '0';
+  }
   if (busy) {
     appendMessage(root, 'agent', '(thinking…)', true);
   } else {
     const thinking = root.querySelector('.agent-message-thinking');
     thinking?.remove();
   }
+}
+
+export function cancelCurrentAgentLoop(): boolean {
+  if (currentAbort) {
+    currentAbort.abort();
+    currentAbort = null;
+    return true;
+  }
+  return false;
 }
 
 async function render(root: HTMLElement): Promise<void> {
