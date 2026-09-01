@@ -11,7 +11,7 @@
   "scripts": {
     "start": "node server.mjs",
     "dev": "node scripts/dev.mjs",
-    "build": "tsc --noEmit && vite build && node scripts/build-static.mjs && node scripts/build-api.mjs",
+    "build": "tsc --noEmit && vite build && node scripts/build-css.mjs && node scripts/build-static.mjs && node scripts/build-api.mjs",
     "preview": "node server.mjs",
     "typecheck": "tsc --noEmit",
     "lint": "eslint . --ext .ts,.tsx,.js,.mjs",
