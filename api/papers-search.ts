@@ -71,10 +71,11 @@ export default async (req: Request, _ctx: Context): Promise<Response> => {
 
     const hits = searchIndex(index, body.query, maxPerPaper);
 
+    // Use best-term from searchIndex (h.snippet holds term with highest TF), not split[0]
     const hitsWithSnippets = hits.map((h) => ({
       page: h.page,
       score: h.score,
-      snippet: snippetAroundTermInText(pageTextByNumber.get(h.page) ?? '', body.query.split(/\s+/)[0] ?? body.query, 80),
+      snippet: snippetAroundTermInText(pageTextByNumber.get(h.page) ?? '', h.snippet, 80),
     }));
 
     if (hitsWithSnippets.length > 0) {

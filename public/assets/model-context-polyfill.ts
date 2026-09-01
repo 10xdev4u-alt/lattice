@@ -63,9 +63,20 @@ export function installModelContextPolyfill(): void {
   if (polyfillInstalled) return;
   polyfillInstalled = true;
 
-  const hasNative = 'modelContext' in document && 'registerTool' in (document as any).modelContext;
+  const nativeCtx =
+    (document as unknown as { modelContext?: unknown }).modelContext ??
+    (navigator as unknown as { modelContext?: unknown }).modelContext;
+  const hasNative = !!nativeCtx && typeof (nativeCtx as Record<string, unknown>).registerTool === 'function';
   if (hasNative) {
     runtimeKind = 'native';
+    // Ensure both namespaces point to the native ctx for consistent access
+    if (!(document as unknown as { modelContext?: unknown }).modelContext) {
+      Object.defineProperty(document, 'modelContext', {
+        value: nativeCtx,
+        writable: false,
+        configurable: true,
+      });
+    }
     return;
   }
   runtimeKind = 'polyfill';
