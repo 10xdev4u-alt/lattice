@@ -19,7 +19,7 @@ export class UrlNotAllowedError extends Error {
   }
 }
 
-function isBlockedIp(ip: string): boolean {
+export function isBlockedIp(ip: string): boolean {
   const parts = ip.split('.').map(Number);
   if (parts.length === 4 && parts.every((p) => Number.isInteger(p) && p >= 0 && p <= 255)) {
     const a = parts[0]!;
@@ -33,22 +33,66 @@ function isBlockedIp(ip: string): boolean {
     return false;
   }
   // IPv6
-  const v6 = ip.toLowerCase();
-  if (v6 === '::' || v6 === '::1') return true;
+  const v6 = normalizeIPv6(ip.toLowerCase());
+  // After normalize, ::1 expands to '0000:0000:0000:0000:0000:0000:0000:0001'.
+  if (v6 === '0000:0000:0000:0000:0000:0000:0000:0001') return true;
+  if (v6 === '0000:0000:0000:0000:0000:0000:0000:0000') return true; // ::
   if (v6.startsWith('fe80:') || v6.startsWith('fc') || v6.startsWith('fd')) return true;
-  // IPv4-mapped, in either textual form: ::ffff:127.0.0.1 or the
-  // hex-halves form Node canonicalizes to (::ffff:7f00:1).
-  const mapped = v6.match(/^::ffff:(.+)$/);
-  if (mapped) {
-    const tail = mapped[1]!;
-    if (tail.includes('.')) return isBlockedIp(tail);
-    const words = tail.split(':').map((w) => parseInt(w || '0', 16));
-    if (words.length === 2 && words.every((w) => Number.isInteger(w) && w >= 0 && w <= 0xffff)) {
-      const ipv4 = [words[0]! >> 8, words[0]! & 0xff, words[1]! >> 8, words[1]! & 0xff].join('.');
-      return isBlockedIp(ipv4);
+  // IPv4-mapped: any of the canonical short (::ffff:127.0.0.1),
+  // the hex-halves form Node uses (::ffff:7f00:1), or the fully
+  // expanded 0:0:0:0:0:ffff:7f00:0001 form (audit H2).
+  // After normalizeIPv6, the last 4 groups are hi, lo, hi, lo when
+  // it's the hex form, or 0:0:0:0:0:ffff:<hi>:<lo> for the dotted form.
+  // Simplest robust check: if the address contains "ffff:" in the
+  // last 4 groups, extract the two words and treat as IPv4.
+  if (v6.includes('ffff:')) {
+    const groups = v6.split(':');
+    // Find the 'ffff' marker, then take the two words after it.
+    const idx = groups.indexOf('ffff');
+    if (idx !== -1 && groups.length >= idx + 3) {
+      const hi = parseInt(groups[idx + 1] ?? '0', 16);
+      const lo = parseInt(groups[idx + 2] ?? '0', 16);
+      if (Number.isFinite(hi) && Number.isFinite(lo)) {
+        const ipv4 = [(hi >> 8) & 0xff, hi & 0xff, (lo >> 8) & 0xff, lo & 0xff].join('.');
+        return isBlockedIp(ipv4);
+      }
     }
   }
   return false;
+}
+
+/** Expand shortened IPv6 to 8 colon-separated 16-bit words. Catches
+ *  bypasses like 0:0:0:0:0:ffff:127.0.0.1 (audit H2). */
+export function normalizeIPv6(ip: string): string {
+  // Strip zone id (e.g., fe80::1%eth0)
+  const zone = ip.indexOf('%');
+  if (zone !== -1) ip = ip.slice(0, zone);
+  // IPv4 in any form? Expand last two words to hex halves.
+  const v4 = ip.match(/(.*:)(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})$/);
+  if (v4) {
+    const head = v4[1]!;
+    const dotted = v4[2]!;
+    const oct = dotted.split('.').map(Number);
+    if (oct.length === 4 && oct.every((n) => n >= 0 && n <= 255)) {
+      const hi = ((oct[0]! << 8) | oct[1]!).toString(16);
+      const lo = ((oct[2]! << 8) | oct[3]!).toString(16);
+      ip = `${head}${hi}:${lo}`;
+    }
+  }
+  // Find :: and expand to required zeros
+  const dbl = ip.indexOf('::');
+  if (dbl === -1) {
+    // Already full form — pad each segment to 4 hex chars.
+    return ip.split(':').map((s) => s.padStart(4, '0')).join(':');
+  }
+  const [head, tail] = ip.split('::');
+  const headParts = head ? head.split(':') : [];
+  const tailParts = tail ? tail.split(':') : [];
+  const missing = 8 - (headParts.length + tailParts.length);
+  if (missing < 1) return ip; // malformed, leave as-is
+  const zeros = Array(missing).fill('0000').join(':');
+  const full = [headParts, zeros.split(':'), tailParts].flat();
+  return full.map((s) => s.padStart(4, '0')).join(':');
 }
 
 /**
@@ -94,8 +138,13 @@ export async function assertUrlAllowed(raw: string): Promise<URL> {
   return url;
 }
 
-/** fetch that refuses blocked destinations. */
+/** fetch that refuses blocked destinations + blocks redirects
+ *  (audit C3) so a 302 cannot pivot to 169.254.169.254. */
 export async function safeFetch(raw: string, init?: RequestInit): Promise<Response> {
   const url = await assertUrlAllowed(raw);
-  return fetch(url, init);
+  const res = await fetch(url, { ...init, redirect: 'manual' });
+  if (res.status >= 300 && res.status < 400) {
+    throw new UrlNotAllowedError(`redirect blocked: ${res.headers.get('location')}`);
+  }
+  return res;
 }

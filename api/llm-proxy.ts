@@ -19,6 +19,7 @@
 import type { Config, Context } from './_lib/types';
 import { resolveGatewayBase } from './_lib/gateway';
 import { UrlNotAllowedError, assertUrlAllowed } from './_lib/url-guard';
+import { checkRateLimit, sessionIdFromRequest } from './_lib/rate-limit';
 
 // Model ids are vendor strings: letters, digits, dashes, dots,
 // colons, slashes, underscores. Anything else (newlines, header
@@ -72,6 +73,16 @@ export default async (req: Request, _ctx: Context): Promise<Response> => {
     );
   }
 
+  // Rate limit: 60/min, 1000/hr per trusted cookie session.
+  const rl = checkRateLimit(sessionIdFromRequest(req));
+  if (!rl.ok) {
+    return json(
+      { error: { code: 'RATE_LIMITED', message: `Slow down. Retry in ${rl.retryAfterSeconds}s.` } },
+      429,
+      { 'Retry-After': String(rl.retryAfterSeconds) },
+    );
+  }
+
   let upstream: Response;
   try {
     const target = await assertUrlAllowed(`${base}/chat/completions`);
@@ -114,11 +125,9 @@ export default async (req: Request, _ctx: Context): Promise<Response> => {
   return new Response(upstream.body, { status: 200, headers });
 };
 
-function json(body: unknown, status = 200): Response {
-  return new Response(JSON.stringify(body), {
-    status,
-    headers: { 'Content-Type': 'application/json' },
-  });
+function json(body: unknown, status = 200, extraHeaders: Record<string, string> = {}): Response {
+  const headers = new Headers({ 'Content-Type': 'application/json', ...extraHeaders });
+  return new Response(JSON.stringify(body), { status, headers });
 }
 
 export const config: Config = {
