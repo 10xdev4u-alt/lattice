@@ -59,3 +59,5 @@ public/uploads/
 *.tmp
 *.bak
 .mimosa/
+test-results/
+playwright-report/
