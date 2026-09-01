@@ -144,6 +144,19 @@ function streamFile(filePath) {
 }
 
 async function serveStatic(pathname) {
+  // The marketing story first: / serves the landing page, the
+  // workspace lives at /app/. Both exist in dist/.
+  if (pathname === '/' || pathname === '/app' || pathname === '/app/') {
+    const file = pathname === '/' ? 'landing.html' : 'index.html';
+    try {
+      const html = await readFile(join(DIST, file));
+      return webmcpHeaders(
+        new Response(html, { headers: { 'Content-Type': 'text/html; charset=utf-8' } }),
+      );
+    } catch {
+      // fall through to normal resolution
+    }
+  }
   // Normalize and keep the path under dist/.
   let rel = normalize(decodeURIComponent(pathname)).replace(/^([.][.][/\\])+/, '');
   let filePath = join(DIST, rel);

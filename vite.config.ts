@@ -15,7 +15,13 @@ export default defineConfig({
     target: 'es2022',
     sourcemap: true,
     rollupOptions: {
-      input: resolve(__dirname, 'public/index.html'),
+      input: [
+        // The app shell and the share page are both vite entries;
+        // share.html previously shipped raw /assets/share.ts
+        // imports that 404'd in production.
+        resolve(__dirname, 'public/index.html'),
+        resolve(__dirname, 'public/share.html'),
+      ],
     },
   },
   server: {

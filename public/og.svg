@@ -1,32 +1,36 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" width="1200" height="630">
   <defs>
-    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="#1a1a3a"/>
-      <stop offset="1" stop-color="#0a0a0c"/>
-    </linearGradient>
-    <linearGradient id="accent" x1="0" y1="0" x2="1" y2="0">
-      <stop offset="0" stop-color="#7c6cff"/>
-      <stop offset="1" stop-color="#b69bff"/>
-    </linearGradient>
+    <radialGradient id="glow" cx="0.5" cy="0" r="0.9">
+      <stop offset="0" stop-color="#e8503a" stop-opacity="0.10"/>
+      <stop offset="0.5" stop-color="#e8503a" stop-opacity="0.03"/>
+      <stop offset="1" stop-color="#e8503a" stop-opacity="0"/>
+    </radialGradient>
   </defs>
-  <rect width="1200" height="630" fill="url(#bg)"/>
-  <g transform="translate(80,180)">
-    <text font-family="Inter, system-ui" font-weight="600" font-size="32" fill="#9aa0aa">WebMCP Challenge · 2026</text>
-    <text font-family="Inter, system-ui" font-weight="700" font-size="120" fill="#ececf1" y="120">Research papers,</text>
-    <text font-family="Inter, system-ui" font-weight="700" font-size="120" fill="url(#accent)" y="260"><tspan font-style="italic">in conversation.</tspan></text>
-    <text font-family="Inter, system-ui" font-weight="400" font-size="28" fill="#9aa0aa" y="340">The page is the audit log. 14 typed WebMCP tools.</text>
-    <g transform="translate(0,400)">
-      <rect width="180" height="60" rx="8" fill="#7c6cff"/>
-      <text font-family="Inter, system-ui" font-weight="500" font-size="20" fill="white" x="40" y="38">Open the demo →</text>
+  <rect width="1200" height="630" fill="#16130f"/>
+  <rect width="1200" height="630" fill="url(#glow)"/>
+  <g transform="translate(80,150)">
+    <text font-family="Inter, system-ui" font-weight="600" font-size="30" letter-spacing="2" fill="#a29483">WEBMCP CHALLENGE · 2026</text>
+    <text font-family="Georgia, serif" font-weight="600" font-size="118" fill="#efe7d8" y="130">Research papers,</text>
+    <text font-family="Georgia, serif" font-weight="600" font-size="118" fill="#e8503a" font-style="italic" y="268">in conversation.</text>
+    <text font-family="Inter, system-ui" font-weight="400" font-size="28" fill="#a29483" y="350">The page is the audit log. 14 typed WebMCP tools. Private offline (WebLLM).</text>
+    <g transform="translate(0,410)">
+      <rect width="210" height="58" rx="9" fill="#e8503a"/>
+      <text font-family="Inter, system-ui" font-weight="500" font-size="20" fill="#16130f" x="34" y="36">Open the demo →</text>
     </g>
   </g>
-  <g transform="translate(900,140)" stroke="#7c6cff" stroke-width="2" fill="none" opacity="0.5">
-    <rect x="0" y="0" width="200" height="200" rx="8"/>
-    <line x1="0" y1="50" x2="200" y2="50"/>
-    <line x1="0" y1="100" x2="200" y2="100"/>
-    <line x1="0" y1="150" x2="200" y2="150"/>
-    <line x1="50" y1="0" x2="50" y2="200"/>
-    <line x1="100" y1="0" x2="100" y2="200"/>
-    <line x1="150" y1="0" x2="150" y2="200"/>
+  <g transform="translate(880,150)" stroke="#8f7ff0" stroke-width="2" fill="none" opacity="0.55">
+    <rect x="0" y="0" width="220" height="220" rx="10"/>
+    <line x1="0" y1="55" x2="220" y2="55"/>
+    <line x1="0" y1="110" x2="220" y2="110"/>
+    <line x1="0" y1="165" x2="220" y2="165"/>
+    <line x1="55" y1="0" x2="55" y2="220"/>
+    <line x1="110" y1="0" x2="110" y2="220"/>
+    <line x1="165" y1="0" x2="165" y2="220"/>
+    <circle cx="55" cy="55" r="5" fill="#e8503a" stroke="none"/>
+    <circle cx="165" cy="110" r="5" fill="#e8503a" stroke="none"/>
+    <circle cx="55" cy="165" r="5" fill="#e8503a" stroke="none"/>
+    <circle cx="110" cy="55" r="5" fill="#2f9f7b" stroke="none"/>
   </g>
+  <text font-family="Inter, system-ui" font-weight="600" font-size="26" fill="#efe7d8" x="900" y="420">Lattice</text>
+  <text font-family="Inter, system-ui" font-weight="400" font-size="18" fill="#6b6154" x="900" y="448">github.com/10xdev4u-alt/lattice</text>
 </svg>
