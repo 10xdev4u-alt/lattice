@@ -112,6 +112,13 @@ async function main(): Promise<void> {
     }
   });
 
+  // WebLLM prewarm: the airplane-mode demo only works if the
+  // 2.1GB Phi-3 weights are cached BEFORE the network drops. The
+  // engine initializes on first idle — after first paint, off the
+  // critical path — so the offline fallback is ready when a
+  // gateway failure (or DevTools offline) hits.
+  void import('./webllm/engine').then(({ prewarmIfIdle }) => prewarmIfIdle());
+
   // "What's in the prompt" debug view (g d).
   document.addEventListener('keydown', async (e) => {
     if ((e.metaKey || e.ctrlKey) && e.shiftKey && e.key === 'P') {
