@@ -71,7 +71,8 @@ jobs:
           ASSET=$(docker exec lattice-smoke sh -c "grep -o 'assets/index-[^\"]*\.js' /app/dist/index.html | head -1")
           echo "checking /$ASSET"
           curl -sf -o /dev/null -w '%{content_type}\n' "http://localhost:8888/$ASSET" | grep -qi 'javascript'
-          CSS=$(docker exec lattice-smoke sh -c "grep -o 'assets/index-[^\"]*\.css' /app/dist/index.html | head -1")
+          CSS=$(docker exec lattice-smoke sh -c "grep -o 'assets/[a-zA-Z0-9._-]*\.css' /app/dist/index.html | head -1")
+          echo "checking /$CSS"
           curl -sf -o /dev/null -w '%{content_type}\n' "http://localhost:8888/$CSS" | grep -qi 'text/css'
           SHARE_JS=$(docker exec lattice-smoke sh -c "grep -o 'assets/share-[^\"]*\.js' /app/dist/share.html | head -1")
           echo "checking /$SHARE_JS"
