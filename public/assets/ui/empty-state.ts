@@ -11,10 +11,11 @@
 import { loadSampleLibrary } from '../sample-library';
 import { addPaper } from '../library';
 import { fetchArxivMetadata } from '../arxiv-client';
+import { ingestPdfFile } from '../ingest';
 
 export function mountEmptyState(root: HTMLElement): void {
   root.innerHTML = `
-    <section class="empty-state">
+    <section class="empty-state" data-empty-drop>
       <p class="empty-eyebrow">Research papers, in conversation</p>
       <h2 class="empty-headline">Bring a paper.<br>Watch every claim become traceable.</h2>
       <p class="empty-lede">
@@ -25,7 +26,9 @@ export function mountEmptyState(root: HTMLElement): void {
         <button data-action="load-sample" class="btn-primary">Load 5 classic papers</button>
         <button data-action="paste-arxiv">Add by arXiv ID</button>
         <button data-action="drop-pdf">Drop a PDF</button>
+        <input type="file" accept="application/pdf,.pdf" data-pdf-input hidden />
       </div>
+      <p class="empty-ingest-status" data-ingest-status aria-live="polite"></p>
       <ol class="empty-state-steps" aria-label="3-step getting started">
         <li>
           <span class="empty-step-num">1</span>
@@ -55,6 +58,8 @@ export function mountEmptyState(root: HTMLElement): void {
     loadSampleLibrary();
     document.dispatchEvent(new CustomEvent('lattice:library-changed'));
   });
+
+  wirePdfIngest(root);
 
   const tourBtn = root.querySelector<HTMLButtonElement>('[data-action="start-tour"]');
   tourBtn?.addEventListener('click', async () => {
@@ -146,5 +151,84 @@ export function mountEmptyState(root: HTMLElement): void {
       addedAt: new Date().toISOString(),
     });
     document.dispatchEvent(new CustomEvent('lattice:library-changed'));
+  });
+}
+
+/**
+ * PDF ingest wiring — the "Drop a PDF" CTA.
+ *
+ * Click opens a file picker; dragging PDFs over the empty state
+ * highlights it as a drop target. Files run through ingestPdfFile
+ * (magic-byte sniff, size cap, structured errors), and the result
+ * paper joins the library with a toast for warnings.
+ */
+async function ingestDroppedPdf(root: HTMLElement, file: File): Promise<void> {
+  const { notice } = await import('./overlays');
+  const status = root.querySelector<HTMLElement>('[data-ingest-status]');
+  const say = (line: string): void => {
+    if (status) status.textContent = line;
+  };
+  say(`Reading ${file.name}…`);
+  try {
+    const result = await ingestPdfFile(file);
+    // The server now holds the paper; pull the server index into
+    // the client library (hydrateLibrary merges by id/arXiv id)
+    // so the rail shows it without a reload.
+    const { hydrateLibrary } = await import('../library-hydration');
+    await hydrateLibrary();
+    const warnings = result.warnings.length > 0 ? ` (${result.warnings.join('; ')})` : '';
+    say(`Indexed ${result.paper.title.slice(0, 60)} — ${result.paper.page_count} pages${warnings}`);
+    document.dispatchEvent(new CustomEvent('lattice:library-changed'));
+    document.dispatchEvent(
+      new CustomEvent('lattice:paper-opened', { detail: { paper_id: result.paper.id } }),
+    );
+  } catch (err) {
+    // ingestPdfFile throws structured errors: { structured: { code,
+    // message, retry_hint } }. Read THAT shape — err.code is
+    // always undefined on a plain Error and every failure used to
+    // collapse into a generic INGEST_FAILED.
+    const structured = (err as { structured?: { code: string; message: string; retry_hint?: string } })
+      .structured;
+    const code = structured?.code ?? 'INGEST_FAILED';
+    const message = structured?.message ?? (err as Error).message ?? 'The PDF could not be ingested.';
+    const retry = structured?.retry_hint ? `\n${structured.retry_hint}` : '';
+    say('');
+    await notice(`Could not ingest ${file.name} (${code})`, `${message}${retry}`);
+  }
+}
+
+function wirePdfIngest(root: HTMLElement): void {
+  const dropBtn = root.querySelector<HTMLButtonElement>('[data-action="drop-pdf"]');
+  const fileInput = root.querySelector<HTMLInputElement>('[data-pdf-input]');
+  const section = root.querySelector<HTMLElement>('[data-empty-drop]');
+
+  dropBtn?.addEventListener('click', () => {
+    fileInput?.click();
+  });
+
+  fileInput?.addEventListener('change', () => {
+    const file = fileInput.files?.[0];
+    if (file) void ingestDroppedPdf(root, file);
+    fileInput.value = ''; // allow re-picking the same file
+  });
+
+  if (!section) return;
+  // Drag-and-drop: highlight the empty state while a PDF hovers.
+  const hasPdf = (e: DragEvent): boolean =>
+    Array.from(e.dataTransfer?.types ?? []).includes('Files');
+  section.addEventListener('dragover', (e) => {
+    if (!hasPdf(e)) return;
+    e.preventDefault();
+    section.classList.add('empty-state-drag');
+  });
+  section.addEventListener('dragleave', () => {
+    section.classList.remove('empty-state-drag');
+  });
+  section.addEventListener('drop', (e) => {
+    if (!hasPdf(e)) return;
+    e.preventDefault();
+    section.classList.remove('empty-state-drag');
+    const file = e.dataTransfer?.files?.[0];
+    if (file) void ingestDroppedPdf(root, file);
   });
 }

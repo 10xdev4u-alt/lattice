@@ -13,7 +13,7 @@
  */
 
 import type { Config, Context } from './_lib/types';
-import { storeFor } from './_lib/session';
+import { storeFor, getTenantId } from './_lib/session';
 import { createHash } from 'node:crypto';
 import { extractPdfText } from './_lib/pdf-text';
 import { buildIndex, type PageText } from './_lib/search-index';
@@ -131,7 +131,7 @@ export default async (req: Request, _ctx: Context): Promise<Response> => {
       await store.setJSON(`papers/${paperId}/text.json`, {
         extractedAt: new Date().toISOString(),
         pages: extraction.pages,
-        tenant: tenantId ?? 'global',
+        tenant: getTenantId(req) ?? 'global',
       });
       for (const w of extraction.warnings) warnings.push(w);
     } catch (_err) {
@@ -148,6 +148,19 @@ export default async (req: Request, _ctx: Context): Promise<Response> => {
       void _err;
       warnings.push(`index_build_failed`);
     }
+
+    // Persist the paper record the index reads: papers/<id>/meta.json.
+    // The title lives here — without it /api/papers returns bare ids
+    // and the client hydration skips the paper (no title → skipped).
+    await store.setJSON(`papers/${paperId}/meta.json`, {
+      id: paperId,
+      title,
+      page_count: pageCount,
+      sha256,
+      original_filename: body.filename,
+      tenant: getTenantId(req) ?? 'global',
+      ingested_at: new Date().toISOString(),
+    });
 
   const response: IngestResponse = {
     paper: {
