@@ -59,8 +59,47 @@ export async function mountPdfViewer(root: HTMLElement, paperId: string): Promis
   const pagesRoot = root.querySelector<HTMLElement>('[data-pdf-pages]');
   if (!pagesRoot) return;
 
+  // The reader's source of truth is the server's extracted text
+  // (text.json) — arXiv ingest stores LaTeX, so /file's PDF
+  // exists only for PDF-upload papers. Render the text first
+  // (fast, always readable), then layer the PDF on top when a
+  // source PDF actually exists.
+  try {
+    const textRes = await fetch(`/api/papers/${encodeURIComponent(paperId)}/text`);
+    if (textRes.ok) {
+      const data = (await textRes.json()) as {
+        pages?: Array<{ page_number: number; text: string }>;
+      };
+      const pages = data.pages ?? [];
+      if (pages.length > 0) {
+        pagesRoot.innerHTML = '';
+        const highlights = listHighlights(paperId);
+        const pageTexts: PageRender[] = [];
+        pages.forEach((p, idx) => {
+          const section = document.createElement('section');
+          section.className = 'reader-page';
+          section.dataset.pageNumber = String(p.page_number);
+          const prose = document.createElement('p');
+          prose.className = 'reader-text';
+          prose.textContent = p.text;
+          section.appendChild(prose);
+          pagesRoot.appendChild(section);
+          pageTexts.push({ pageNumber: p.page_number ?? idx + 1, text: p.text });
+          renderHighlightsForPage(section, highlights.filter((h) => h.page === (p.page_number ?? idx + 1)), p.text);
+          installSelectionHandler(section, paperId, p.page_number ?? idx + 1, p.text);
+        });
+        return;
+      }
+    }
+  } catch {
+    // fall through to the PDF path
+  }
+
   try {
     const pdfjs = await import('pdfjs-dist/legacy/build/pdf.mjs');
+    // pdf.js needs its worker; point it at the copy vite emits
+    // from the pdfjs-dist package.
+    pdfjs.GlobalWorkerOptions.workerSrc = new URL('pdfjs-dist/legacy/build/pdf.worker.min.mjs', import.meta.url).toString();
     const loadingTask = pdfjs.getDocument({ url: `/api/papers/${paperId}/file` });
     const doc = await loadingTask.promise;
     pagesRoot.innerHTML = '';

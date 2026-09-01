@@ -34,7 +34,6 @@ export function mountWorkspace(root: HTMLElement | null): void {
       <main class="canvas" role="main">
         <div data-open-papers></div>
         <div data-canvas></div>
-        <div data-settings hidden></div>
       </main>
       <button class="rail-divider rail-divider-right" data-divider="right" type="button" aria-label="Resize agent rail" aria-hidden="true" tabindex="-1"></button>
       <aside class="rail rail-right" role="complementary" aria-label="Agent">
@@ -324,16 +323,30 @@ function installKeyboardShortcuts(root: HTMLElement): void {
   });
 }
 
-function toggleSettings(root: HTMLElement): void {
-  const settings = root.querySelector<HTMLElement>('[data-settings]');
-  if (!settings) return;
-  const isOpen = !settings.hasAttribute('hidden');
-  if (isOpen) {
-    settings.setAttribute('hidden', '');
-  } else {
-    settings.removeAttribute('hidden');
-    void import('../settings').then(({ mountSettingsPanel }) => mountSettingsPanel(settings));
+export function toggleSettings(root: HTMLElement | null): void {
+  // Settings renders as an overlay, not in the canvas flow — the
+  // canvas can be 17k px tall with a paper's full text, and an
+  // in-flow panel lands far below the fold where nobody finds it.
+  const existing = document.querySelector<HTMLElement>('[data-settings-overlay]');
+  if (existing) {
+    existing.remove();
+    return;
   }
+  void root;
+  const overlay = document.createElement('div');
+  overlay.className = 'kg-overlay';
+  overlay.dataset.settingsOverlay = '1';
+  overlay.innerHTML = `<div class="kg-modal" role="dialog" aria-modal="true"><button data-action="close" type="button">Close</button><div data-settings></div></div>`;
+  overlay.addEventListener('click', (e) => {
+    const t = e.target as HTMLElement;
+    if (t.dataset.action === 'close' || t === overlay) overlay.remove();
+  });
+  overlay.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') overlay.remove();
+  });
+  document.body.appendChild(overlay);
+  const host = overlay.querySelector<HTMLElement>('[data-settings]');
+  if (host) void import('../settings').then(({ mountSettingsPanel }) => mountSettingsPanel(host));
 }
 
 async function openKnowledgeGraphOverlay(): Promise<void> {
@@ -392,7 +405,8 @@ async function openBranchDiffOverlay(): Promise<void> {
   if (inner) mountBranchDiffOverlay(inner);
 }
 
-function showHelp(_root: HTMLElement): void {
+export function showHelp(_root: HTMLElement | null = null): void {
+  void _root;
   const overlay = document.createElement('div');
   overlay.className = 'help-overlay';
   overlay.innerHTML = `

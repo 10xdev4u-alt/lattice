@@ -58,9 +58,9 @@ export function mountResponseCards(host: HTMLElement, paperId: string): void {
   renderCards(paperId);
 }
 
-export function addResponseCard(spec: ResponseCardSpec): void {
+export function addResponseCard(spec: ResponseCardSpec): string {
   const paperId = spec.paperId ?? hostEl?.dataset.cardsFor;
-  if (!paperId) return;
+  if (!paperId) return '';
   const card: StoredCard = {
     ...spec,
     id: `c${Date.now()}${Math.floor(Math.random() * 1000)}`,
@@ -69,6 +69,7 @@ export function addResponseCard(spec: ResponseCardSpec): void {
   const cards = [card, ...read(paperId)].slice(0, 40);
   write(paperId, cards);
   if (hostEl && hostEl.dataset.cardsFor === paperId) renderCards(paperId);
+  return card.id;
 }
 
 /**
@@ -88,13 +89,16 @@ export async function runWithCard<T>(opts: {
   const { verb, title, paperId, run, textOf, pagesOf } = opts;
   const t0 = performance.now();
   // Instantaneous: dock the pending card before awaiting anything.
-  addResponseCard({ verb, title, body: 'working…', paperId });
-  const pending: HTMLElement | null = hostEl?.querySelector<HTMLElement>('.rcard') ?? null;
-  if (pending) pending.classList.add('rcard-pending');
+  // The id is captured so the pending RECORD can be removed when
+  // the work lands — addResponseCard re-renders all card DOM, so
+  // holding a DOM node here is useless (the old removeCard() was
+  // removing an already-detached node, leaving pending records
+  // in storage forever: the "eternal working" cards).
+  const pendingId = addResponseCard({ verb, title, body: 'working…', paperId });
   try {
     const result = await run();
     const durationMs = Math.round(performance.now() - t0);
-    // Replace the pending card by re-docking with the real body.
+    discardCard(pendingId, paperId);
     addResponseCard({
       verb,
       title,
@@ -103,11 +107,11 @@ export async function runWithCard<T>(opts: {
       durationMs,
       paperId,
     });
-    removeCard(pending ?? null);
     return result;
   } catch (err) {
-    // Errors are cards too: content, not a toast.
     const durationMs = Math.round(performance.now() - t0);
+    discardCard(pendingId, paperId);
+    // Errors are cards too: content, not a toast.
     addResponseCard({
       verb: `${verb} failed`,
       title,
@@ -115,13 +119,16 @@ export async function runWithCard<T>(opts: {
       durationMs,
       paperId,
     });
-    removeCard(pending ?? null);
     return null;
   }
 }
 
-function removeCard(el: HTMLElement | null): void {
-  el?.remove();
+/** Remove a card record by id (the only honest way: addResponseCard
+ * rebuilds all DOM, so DOM-node removal never worked). */
+function discardCard(id: string, paperId: string): void {
+  const cards = read(paperId).filter((c) => c.id !== id);
+  write(paperId, cards);
+  if (hostEl && hostEl.dataset.cardsFor === paperId) renderCards(paperId);
 }
 
 function renderCards(paperId: string): void {
@@ -158,8 +165,12 @@ function cardHtml(c: StoredCard): string {
   const pages = (c.pages ?? [])
     .map((p) => `<button type="button" class="rcard-page" data-page-jump="${p}">p.${p}</button>`)
     .join('');
+  // A card with a duration has settled — never render it as
+  // still-working (the shimmer class lives only on cards in
+  // flight, applied at dock time).
+  const settled = c.durationMs != null;
   return `
-    <li class="rcard" data-card-id="${c.id}">
+    <li class="rcard${settled ? '' : ' rcard-pending'}" data-card-id="${c.id}">
       <div class="rcard-head">
         <span class="rcard-verb">${escapeHtml(c.verb)}</span>
         <span class="rcard-title">${escapeHtml(c.title)}</span>

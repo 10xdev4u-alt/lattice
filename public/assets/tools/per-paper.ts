@@ -20,6 +20,7 @@ import { summarizePaper } from './summarize-paper';
 import { extractQuote } from './extract-quote';
 import { compareClaims } from './compare-claims';
 import { explainEvidence } from './explain-evidence';
+import { citePaper } from './cite-paper';
 import { peerReviewInvite } from './peer-review-invite';
 
 let currentController: AbortController | null = null;
@@ -54,6 +55,7 @@ export async function registerPerPaperTools(
     bindToPaper(extractQuote, paperId),
     bindToPaper(compareClaims, paperId),
     bindToPaper(explainEvidence, paperId),
+    bindToPaper(citePaper, paperId),
     bindToPaper(peerReviewInvite, paperId),
   ];
 

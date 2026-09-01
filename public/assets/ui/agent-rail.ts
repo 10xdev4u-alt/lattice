@@ -58,6 +58,13 @@ function saveChat(messages: ChatMessage[]): void {
 
 export function mountAgentRail(root: HTMLElement): void {
   render(root);
+  // The ask-bar verb handler is a module-level singleton: it is
+  // attached exactly ONCE per page. Registering it inside the
+  // async render() stacked handlers — interleaved re-renders
+  // could add a second listener before the previous one was
+  // removed, and every ask-bar action fired twice.
+  askbarRootRef = root;
+  document.addEventListener('lattice:askbar-verb', askbarHandler);
 
   // Event delegation on root: render() replaces root.innerHTML, which
   // would orphan any listener bound directly to the form node. The
@@ -331,82 +338,6 @@ async function render(root: HTMLElement): Promise<void> {
     });
   });
 
-  // The paper's ask bar emits lattice:askbar-verb with the verb
-  // id; this is the same approved call path the Try it buttons
-  // use. The bar itself never touches a tool call.
-  const ASK_VERBS: Array<{ needles: string[]; toolName: string; argsFor: (paperId: string, phrase: string) => Record<string, unknown> }> = [
-    { needles: ['explain'], toolName: 'summarize_paper', argsFor: (p) => ({ paper_id: p, audience: 'grad', max_words: 90 }) },
-    {
-      needles: ['quote', 'quotation'],
-      toolName: 'extract_quote',
-      argsFor: (p, phrase) => ({ paper_id: p, concept: tailOf(phrase) ?? 'the core method' }),
-    },
-    { needles: ['cite', 'bibtex', 'citation'], toolName: 'cite_paper', argsFor: (p) => ({ paper_id: p, format: 'bibtex' }) },
-    {
-      needles: ['summar', 'tldr'],
-      toolName: 'summarize_paper',
-      argsFor: (p, phrase) => ({ paper_id: p, audience: audienceOf(phrase) }),
-    },
-    {
-      needles: ['related', 'similar'],
-      toolName: 'search_library',
-      argsFor: (p, phrase) => ({ query: tailOf(phrase) ?? phrase }),
-    },
-  ];
-
-  document.removeEventListener('lattice:askbar-verb', askbarHandler);
-  document.addEventListener('lattice:askbar-verb', askbarHandler);
-
-  async function askbarHandler(e: Event): Promise<void> {
-    const detail = (e as CustomEvent<{ phrase: string; paperId: string; paperTitle: string }>).detail;
-    if (!detail) return;
-    const { phrase, paperId, paperTitle } = detail;
-    const match = ASK_VERBS.find(({ needles }) => needles.some((n) => phrase.toLowerCase().includes(n)));
-    if (!match) {
-      const chatInput = root.querySelector<HTMLInputElement>('[data-agent-input]');
-      if (chatInput) {
-        chatInput.value = `About "${paperTitle}": ${phrase}`;
-        chatInput.closest('form')?.dispatchEvent(new Event('submit', { cancelable: true }));
-      }
-      return;
-    }
-    const sample = match.argsFor(paperId, phrase);
-    appendMessage(root, 'user', `(${match.toolName} on this paper)`);
-    void runWithCard({
-      verb: match.toolName,
-      title: askCardTitle(match.toolName, phrase),
-      paperId,
-      run: () =>
-        getModelContext()
-          .executeTool({ name: match.toolName } as any, JSON.stringify(sample))
-          .catch((err: Error) => {
-            console.error(`${match.toolName} failed`, err);
-            throw err;
-          }),
-      textOf: (result: unknown) => textFromResult(result),
-      pagesOf: (result: unknown) => pagesFromResult(result),
-    });
-  }
-
-  function askCardTitle(toolName: string, phrase: string): string {
-    switch (toolName) {
-      case 'summarize_paper':
-        return phrase.indexOf('explain') !== -1
-          ? 'Explained briefly'
-          : 'Summary';
-      case 'extract_quote':
-        return `Quotes about ${tailOf(phrase) ?? 'the core method'}`;
-      case 'cite_paper':
-        return 'Citation (BibTeX)';
-      case 'summarize_paper':
-        return 'Summary';
-      case 'search_library':
-        return 'Related in your library';
-      default:
-        return phrase.slice(0, 60);
-    }
-  }
-
   const trailRoot = root.querySelector<HTMLDivElement>('[data-workflow-trail]');
   if (trailRoot) mountWorkflowTrail(trailRoot);
   // Restore the conversation: live-captured messages first (they
@@ -418,7 +349,86 @@ async function render(root: HTMLElement): Promise<void> {
       for (const m of toRestore) chatRoot.appendChild(m);
     }
   }
+
+  // The ask-bar handler is a MODULE-level singleton (see
+  // askbarHandler below); nothing re-registers per render.
+  askbarRootRef = root;
 }
+
+/** The one live rail root, for the singleton ask-bar handler. */
+let askbarRootRef: HTMLElement | null = null;
+
+/** The ask-bar verb table: a fixed allowlist of tool + argument shapes. */
+const ASK_VERBS: Array<{ needles: string[]; toolName: string; argsFor: (paperId: string, phrase: string) => Record<string, unknown> }> = [
+  { needles: ['explain'], toolName: 'summarize_paper', argsFor: (p) => ({ paper_id: p, audience: 'grad', max_words: 90 }) },
+  {
+    needles: ['quote', 'quotation'],
+    toolName: 'extract_quote',
+    argsFor: (p, phrase) => ({ paper_id: p, concept: tailOf(phrase) ?? 'the core method' }),
+  },
+  { needles: ['cite', 'bibtex', 'citation'], toolName: 'cite_paper', argsFor: (p) => ({ paper_id: p, format: 'bibtex' }) },
+  {
+    needles: ['summar', 'tldr'],
+    toolName: 'summarize_paper',
+    argsFor: (p, phrase) => ({ paper_id: p, audience: audienceOf(phrase) }),
+  },
+  {
+    needles: ['related', 'similar'],
+    toolName: 'search_library',
+    argsFor: (p, phrase) => ({ query: tailOf(phrase) ?? phrase }),
+  },
+];
+
+async function askbarHandler(e: Event): Promise<void> {
+  const detail = (e as CustomEvent<{ phrase: string; paperId: string; paperTitle: string }>).detail;
+  if (!detail) return;
+  const root = askbarRootRef;
+  if (!root) return;
+  const { phrase, paperId, paperTitle } = detail;
+  const match = ASK_VERBS.find(({ needles }) => needles.some((n) => phrase.toLowerCase().includes(n)));
+  if (!match) {
+    const chatInput = root.querySelector<HTMLInputElement>('[data-agent-input]');
+    if (chatInput) {
+      chatInput.value = `About "${paperTitle}": ${phrase}`;
+      chatInput.closest('form')?.dispatchEvent(new Event('submit', { cancelable: true }));
+    }
+    return;
+  }
+  const sample = match.argsFor(paperId, phrase);
+  appendMessage(root, 'user', `(${match.toolName} on this paper)`);
+  void runWithCard({
+    verb: match.toolName,
+    title: askCardTitle(match.toolName, phrase),
+    paperId,
+    run: () =>
+      getModelContext()
+        .executeTool({ name: match.toolName } as any, JSON.stringify(sample))
+          .catch((err: Error) => {
+            console.error(`${match.toolName} failed`, err);
+            throw err;
+          }),
+      textOf: (result: unknown) => textFromResult(result),
+      pagesOf: (result: unknown) => pagesFromResult(result),
+    });
+}
+
+function askCardTitle(toolName: string, phrase: string): string {
+  switch (toolName) {
+    case 'summarize_paper':
+      return phrase.indexOf('explain') !== -1 ? 'Explained briefly' : 'Summary';
+    case 'extract_quote':
+      return `Quotes about ${tailOf(phrase) ?? 'the core method'}`;
+    case 'cite_paper':
+      return 'Citation (BibTeX)';
+    case 'search_library':
+      return 'Related in your library';
+    default:
+      return phrase.slice(0, 60);
+  }
+}
+
+// askAudience/askTail were consolidated into phrase-helpers.ts
+// (audienceOf / tailOf) — imported above.
 
 /** Build a message node from persisted storage. */
 function messageNode(m: ChatMessage): HTMLDivElement {
