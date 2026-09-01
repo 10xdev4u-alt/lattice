@@ -66,31 +66,39 @@ function deriveEdges(library: Paper[]): Edge[] {
   const edges: Edge[] = [];
   for (const step of session.steps) {
     if (step.tool_name !== 'compare_claims') continue;
-    const args = (step.args ?? {}) as { paper_id_a?: string; paper_id_b?: string };
-    if (args.paper_id_a && args.paper_id_b) {
+    const args = (step.args ?? {}) as { paper_id_a?: string; paper_id_b?: string; other_paper_id?: string; paper_id?: string };
+    const a = args.paper_id_a ?? args.paper_id;
+    const b = args.paper_id_b ?? args.other_paper_id;
+    if (a && b) {
       edges.push({
-        source: args.paper_id_a,
-        target: args.paper_id_b,
+        source: a,
+        target: b,
         kind: 'shares_claim',
         label: 'shared claim',
       });
     }
   }
-  // Synthetic citation edges: papers in the same year cluster.
-  // (A real implementation would call OpenAlex; for the demo we
-  //  use the year proximity as a stand-in for "likely cites".)
+  // Deterministic co-year edges (no Math.random). The same
+  // library + same session yields the same graph every mount.
   for (let i = 0; i < library.length; i++) {
     for (let j = i + 1; j < library.length; j++) {
       const a = library[i]!;
       const b = library[j]!;
       if (a.year && b.year && Math.abs(a.year - b.year) <= 1) {
-        if (Math.random() < 0.3) {
+        if (hashTwo(a.id, b.id) < 30) {
           edges.push({ source: a.id, target: b.id, kind: 'cites' });
         }
       }
     }
   }
   return edges;
+}
+
+function hashTwo(a: string, b: string): number {
+  const s = a < b ? a + b : b + a;
+  let h = 0;
+  for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) >>> 0;
+  return h % 100;
 }
 
 function renderSvg(nodes: Node[], edges: Edge[]): SVGSVGElement {
@@ -160,6 +168,11 @@ function renderSvg(nodes: Node[], edges: Edge[]): SVGSVGElement {
 }
 
 function startSimulation(svg: SVGSVGElement, nodes: Node[], edges: Edge[]): void {
+  // Skip animation for users who prefer reduced motion
+  if (typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    update(svg, nodes, edges);
+    return;
+  }
   // Minimal force simulation: repulsion + spring edges + center gravity.
   const center = { x: W / 2, y: H / 2 };
   let tick = 0;
