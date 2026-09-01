@@ -67,6 +67,19 @@ function metaPath(dataPath: string): string {
   return dataPath + '.meta.json';
 }
 
+export function getTenantStore(name: string, tenantId: string | null): BlobStore {
+  const base = getStore(name);
+  if (!tenantId || !/^[a-zA-Z0-9_-]{8,64}$/.test(tenantId)) return base;
+  const prefix = `${tenantId.replace(/[^a-zA-Z0-9_-]/g, '_').slice(0, 64)}/`;
+  return {
+    get: (key: string) => base.get(prefix + key),
+    getWithMetadata: (key: string, opts) => base.getWithMetadata(prefix + key, opts),
+    set: (key: string, value: string, opts) => base.set(prefix + key, value, opts),
+    setJSON: (key: string, value: unknown, opts) => base.setJSON(prefix + key, value, opts),
+    list: (opts) => base.list({ prefix: opts?.prefix ? prefix + opts.prefix : prefix }),
+  };
+}
+
 export function getStore(name: string): BlobStore {
   return {
     async get(key: string): Promise<string | null> {

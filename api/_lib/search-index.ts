@@ -75,29 +75,37 @@ export function searchIndex(index: SearchIndex, query: string, maxPerPaper = 3):
     .filter((t) => t.length >= 2 && !STOPWORDS.has(t));
   if (queryTerms.length === 0) return [];
 
-  const seen = new Set<number>();
   const hits: SearchHit[] = [];
   for (const page of index.pages) {
     let score = 0;
+    let bestTerm: string | null = null;
+    let bestCount = 0;
     for (const qt of queryTerms) {
-      if (qt in page.terms) score += page.terms[qt]!;
+      const c = page.terms[qt] ?? 0;
+      if (c > 0) {
+        score += c;
+        if (c > bestCount) {
+          bestCount = c;
+          bestTerm = qt;
+        }
+      }
     }
     if (score === 0) continue;
-    seen.add(page.page_number);
     hits.push({
       page: page.page_number,
       score,
-      snippet: snippetAroundTerm(page.terms, queryTerms[0]!),
+      // Caller replaces snippet via snippetAroundTermInText with real page text;
+      // keep best-term hint for snippet selection.
+      snippet: bestTerm ?? queryTerms[0]!,
     });
-    if (hits.length >= maxPerPaper) break;
   }
-  return hits.sort((a, b) => b.score - a.score);
+  // Sort before slice — top-k by score, not first-k encountered.
+  hits.sort((a, b) => b.score - a.score);
+  return hits.slice(0, maxPerPaper);
 }
 
-function snippetAroundTerm(_terms: Record<string, number>, _term: string): string {
-  // The snippet needs the full text, which is not stored in the index. The
-  // call site is expected to fetch the page text and call this with both.
-  return '';
+function _snippetAroundTerm(_terms: Record<string, number>, _term: string): string {
+  return _term;
 }
 
 export function snippetAroundTermInText(text: string, term: string, width = 80): string {

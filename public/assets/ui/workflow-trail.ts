@@ -84,7 +84,7 @@ function render(root: HTMLElement): void {
   const shareBtn = root.querySelector<HTMLButtonElement>('[data-action="share"]');
   shareBtn?.addEventListener('click', () => {
     void (async () => {
-      const { buildShareUrl } = await import('../share');
+      const { buildShareUrlAsync } = await import('../share');
       const { askConfirm, askText, notice } = await import('./overlays');
       const wantPass = await askConfirm(
         'Encrypt the share URL?',
@@ -97,9 +97,9 @@ function render(root: HTMLElement): void {
           placeholder: 'passphrase',
         });
         if (!choice.ok || !choice.value) return;
-        url = buildShareUrl(choice.value);
+        url = await buildShareUrlAsync(choice.value);
       } else {
-        url = buildShareUrl();
+        url = await buildShareUrlAsync();
       }
       void navigator.clipboard?.writeText(url).catch(() => undefined);
       await notice('Share URL copied', url);

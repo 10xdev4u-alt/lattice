@@ -30,18 +30,22 @@ import { removeFromBibliography } from './remove-from-bibliography';
 import { exportBibliography } from './export-bibliography';
 import { showWorkflowTrail } from './show-workflow-trail';
 import { composeReview } from './compose-review';
+import { citePaper } from './cite-paper';
+import { explainEvidence } from './explain-evidence';
 
 // Session-scoped set: tools the user has allowed for the rest of the session
 // (per the secure-tools guide, "always allow for this session" toggle).
 const sessionAllowed = new Set<string>();
 
-// explain_evidence is registered per-paper (in per-paper.ts), not
-// always-on: it needs an open paper's full text to work from,
-// and a duplicate registration would make open_paper fail.
+// cite_paper + explain_evidence are now always-on so judges can call
+// them before any paper is opened (paper_id via args). Per-paper binding
+// was convenient but hid them until open_paper, costing the demo.
 const ALWAYS_ON_TOOLS: ToolDefinition[] = [
   listPapers,
   openPaper,
   searchLibrary,
+  citePaper,
+  explainEvidence,
   addToBibliography,
   removeFromBibliography,
   exportBibliography,

@@ -14,6 +14,7 @@
     <link rel="stylesheet" href="/assets/styles/lattice.css" />
   </head>
   <body>
+    <a class="skip-link" href="#app-main">Skip to main content</a>
     <div id="app" data-state="loading">
       <header class="app-header" role="banner">
         <div class="app-logo">
@@ -31,10 +32,12 @@
           <span class="live-dot" aria-hidden="true"></span>
           <span class="live-tool" data-live-text>idle</span>
         </div>
+        <div class="header-meta">
+          <span id="session-timer-host" aria-live="polite"></span>
+          <time id="session-timestamp-host" aria-label="Session started"></time>
+        </div>
       </header>
-      <div id="session-timer-host" style="position: absolute; top: 16px; right: 16px;"></div>
-    <div id="session-timestamp-host" style="position: absolute; bottom: 6px; right: 16px; font-size: 10px; color: var(--fg-muted); font-family: var(--font-mono);"></div>
-    <div data-toast-host aria-live="polite"></div>
+      <div data-toast-host aria-live="polite"></div>
     <main class="app-main" id="app-main" role="main">
       <p class="empty-state">Loading the workspace…</p>
     </main>

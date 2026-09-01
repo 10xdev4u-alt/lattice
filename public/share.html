@@ -21,21 +21,21 @@
       </main>
     </div>
     <script type="module">
-      import { mountShareView, decodeSessionFromFragment, decryptAsync } from '/assets/share.ts';
+      import { mountShareView, decodeSessionFromFragmentAsync } from '/assets/share.ts';
       const params = new URLSearchParams(window.location.hash.slice(1));
       const fragment = params.get('share') ?? '';
-      const passphrase = params.get('p') ? window.prompt('This link is encrypted. Enter the passphrase:') ?? '' : '';
-      let payload = null;
-      if (fragment && passphrase) {
-        const json = await decryptAsync(fragment, passphrase);
-        if (json) payload = JSON.parse(json);
-      } else {
-        payload = decodeSessionFromFragment(fragment);
-      }
+      const wantsPass = params.get('p') === '1';
+      const passphrase = wantsPass ? window.prompt('This link is encrypted. Enter the passphrase:') ?? '' : '';
       const root = document.getElementById('app-main');
       if (!root) return;
+      if (!fragment) {
+        root.innerHTML = '<p class="empty-state">Invalid or missing share link.</p>';
+        document.getElementById('app')?.setAttribute('data-state', 'ready');
+        return;
+      }
+      const payload = await decodeSessionFromFragmentAsync(fragment, wantsPass ? passphrase : undefined);
       if (!payload) {
-        root.innerHTML = '<p class="empty-state">Invalid or missing share link. Wrong passphrase?</p>';
+        root.innerHTML = '<p class="empty-state">Invalid share link or wrong passphrase.</p>';
       } else {
         mountShareView(root, payload);
       }
