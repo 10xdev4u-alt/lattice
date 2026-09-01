@@ -560,6 +560,22 @@
 }
 .empty-actions button:hover { filter: brightness(1.08); }
 .empty-actions-quiet { margin-top: 0; }
+
+/* PDF drop target: the empty state lights up while a file hovers. */
+.empty-state-drag {
+  outline: 2px dashed var(--accent);
+  outline-offset: 8px;
+  border-radius: var(--r-lg);
+  background: var(--accent-soft);
+}
+.empty-ingest-status {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--fg-muted);
+  min-height: 1em;
+  margin: 0 0 var(--sp-4);
+}
+.empty-ingest-status:empty { display: none; }
 .empty-actions-quiet button {
   background: transparent;
   color: var(--fg-muted);
