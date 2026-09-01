@@ -27,7 +27,8 @@ Docker-first — one image runs the client, the API, and the store:
 # Option A — Docker (recommended)
 docker build --target runtime -t lattice:runtime .
 docker run --rm -p 8888:8888 lattice:runtime
-# → http://localhost:8888
+# → http://localhost:8888        (the story: landing page)
+# → http://localhost:8888/app/  (the workspace)
 
 # Compressed shippable artifact (~57MB gz)
 scripts/docker-artifact.sh lattice-image.tar.gz
@@ -49,7 +50,13 @@ npm run dev          # vite on :5173, API on :8888
 
 For the full WebMCP experience, open in **Chrome 149+ with the flag enabled at `chrome://flags/#enable-webmcp-testing`**, or in the **ChatGPT desktop in-app browser**. The polyfill keeps the page fully usable in Safari and Firefox.
 
-The empty state has a "Load sample library" button that pulls in 5 well-known arXiv papers. You can also paste an arXiv ID (e.g. `1706.03762`) and the LaTeX-source path is used.
+The empty state has a "Load sample library" button that pulls in 5 well-known arXiv papers. You can also paste an arXiv ID (e.g. `1706.03762`), or **drop a PDF straight onto the empty state** — the file is ingested, its text extracted, a BM25 index built, and the paper joins your library without a reload.
+
+---
+
+## Validation
+
+Every merge to main runs: typecheck (strict, `api/` included) · eslint · 142 unit tests · 7 Playwright e2e tests (landing route, workspace boot + wired PDF picker, sample library, search, healthz truth, share page render, agent rail) · bundle budgets (≤36K js gzip initial, ≤12K css gzip; pdf.js and web-llm lazily vendor-chunked) · a Docker build whose smoke test verifies the runtime serves the app shell, the share page, and the WebMCP headers.
 
 ---
 
