@@ -38,6 +38,9 @@ export const exportBibliography: ToolDefinition = {
     additionalProperties: false,
   },
   annotations: {
+    // Write tool: triggers a file download — the user should see
+    // and approve the action.
+    readOnlyHint: false,
     destructiveHint: false,
   },
   async execute(args): Promise<ToolResult> {

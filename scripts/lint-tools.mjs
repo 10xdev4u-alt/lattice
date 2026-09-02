@@ -33,6 +33,18 @@ async function checkFile(path) {
   const nameMatches = [...src.matchAll(/name:\s*['"]([^'"]+)['"]/g)].map((m) => m[1]);
   const descMatches = [...src.matchAll(/description:\s*['"]([^'"]+)['"]/g)].map((m) => m[1]);
 
+  // Annotation gate: every tool file must declare readOnlyHint
+  // explicitly (true or false). An absent readOnlyHint is falsy,
+  // so the register harness would treat the tool as read-only —
+  // a write tool that skips its confirmation gate (audit H4).
+  if (nameMatches.length > 0) {
+    if (!/readOnlyHint:\s*(true|false)/.test(src)) {
+      errors.push(
+        `${path}: declares ${nameMatches.length} tool(s) but no explicit readOnlyHint — every tool must set readOnlyHint: true|false`,
+      );
+    }
+  }
+
   // We can't reliably map description -> name without an AST, so we just
   // check each one independently.
   for (const n of nameMatches) {
