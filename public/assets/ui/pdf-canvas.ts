@@ -51,7 +51,7 @@ function render(root: HTMLElement, paperId: string): void {
     return;
   }
   root.innerHTML = `
-    <article class="paper-viewer" data-paper-id="${escapeHtml(paper.id)}">
+    <article class="paper-viewer bracketed" data-paper-id="${escapeHtml(paper.id)}">
       <div class="paper-viewer-grid">
         <div class="paper-viewer-main">
           <header class="paper-viewer-header">

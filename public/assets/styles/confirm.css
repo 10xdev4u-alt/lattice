@@ -16,8 +16,9 @@
   to { opacity: 1; }
 }
 .confirm-modal {
+  position: relative;
   background: var(--bg-elev-1);
-  border: 2px solid var(--border-strong);
+  border: 2px solid var(--accent);
   border-radius: var(--r-lg);
   padding: var(--sp-5);
   max-width: 520px;
@@ -25,6 +26,19 @@
   box-shadow: var(--shadow-4);
   animation: confirm-scale var(--dur) var(--ease);
 }
+/* The write-gate is the one modal that must stop the eye: a
+   vermilion frame with scanline-anchored corner brackets. */
+.confirm-modal::before,
+.confirm-modal::after {
+  content: '';
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  border: 0 solid var(--accent);
+  pointer-events: none;
+}
+.confirm-modal::before { top: 6px; left: 6px; border-top-width: 3px; border-left-width: 3px; }
+.confirm-modal::after { bottom: 6px; right: 6px; border-bottom-width: 3px; border-right-width: 3px; }
 @keyframes confirm-scale {
   from { transform: scale(0.97); opacity: 0; }
   to { transform: scale(1); opacity: 1; }

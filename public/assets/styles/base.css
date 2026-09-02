@@ -59,9 +59,41 @@ body::after {
       transparent 3px
     );
   mix-blend-mode: multiply;
-}
-body::after {
   box-shadow: inset 0 0 180px rgba(8, 6, 16, 0.75);
+}
+
+/* ── Corner brackets: the instrument signature ────
+   Panels that opt in get HUD corner ticks — four L-marks
+   drawn with box-shadows, no pseudo-element juggling. */
+.bracketed {
+  --bracket-len: 14px;
+  --bracket-gap: 4px;
+  --bracket-color: var(--border-strong);
+  position: relative;
+}
+.bracketed::before,
+.bracketed::after {
+  content: '';
+  position: absolute;
+  inset: var(--bracket-gap);
+  pointer-events: none;
+  border: 0 solid var(--bracket-color);
+}
+.bracketed::before {
+  border-top-width: 2px;
+  border-left-width: 2px;
+  width: var(--bracket-len);
+  height: var(--bracket-len);
+}
+.bracketed::after {
+  border-bottom-width: 2px;
+  border-right-width: 2px;
+  width: var(--bracket-len);
+  height: var(--bracket-len);
+  right: var(--bracket-gap);
+  bottom: var(--bracket-gap);
+  top: auto;
+  left: auto;
 }
 
 #app {
@@ -97,8 +129,8 @@ body::after {
   align-self: center;
 }
 
-/* The wordmark: Fraunces, the journal voice. Small caps feel
-   via weight, not transform — a masthead, not a logo. */
+/* The wordmark: a terminal title — Fraunces stays (the journal
+   soul), bracketed like an instrument panel label. */
 .app-title {
   font-family: var(--font-display);
   font-size: var(--text-lg);
@@ -106,6 +138,9 @@ body::after {
   letter-spacing: var(--tracking-tight);
   margin: 0;
   color: var(--fg);
+  padding: 3px 10px;
+  border-left: 2px solid var(--accent);
+  border-right: 2px solid var(--accent);
 }
 
 /* Command-bar center: the protocol trace grows here. */
@@ -343,16 +378,6 @@ a:hover {
   padding: 0 var(--sp-2);
 }
 .report-problem:hover { color: var(--accent); }
-
-.report-problem {
-  font-size: var(--text-xs);
-  color: var(--fg-muted);
-  background: transparent;
-  border: 2px solid var(--border);
-  padding: var(--sp-1) var(--sp-3);
-}
-
-.report-problem:hover { color: var(--accent); border-color: var(--accent); }
 
 /* ── Keyboard focus ────────────────────────────── */
 
