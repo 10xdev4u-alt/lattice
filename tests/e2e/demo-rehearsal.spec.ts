@@ -19,7 +19,7 @@ test('moment 0: the boot — manuscript title, WebMCP status, 14-tool array', as
   await expect(page.locator('#webmcp-status')).toContainText(/WebMCP ready|not detected/);
   // The agent rail shows the tool count in the tabs
   const toolsTab = page.locator('[data-tab="tools"]');
-  await expect(toolsTab).toContainText(/Tools \((10|14)\)/, { timeout: 5_000 });
+  await expect(toolsTab).toContainText(/TOOLS · (10|14)/, { timeout: 5_000 });
   await toolsTab.click();
   // The Live Tool Array lists real tools with read/write markers
   const rows = page.locator('.tool-row');

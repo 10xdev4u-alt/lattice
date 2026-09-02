@@ -22,7 +22,7 @@ interface SpineStep {
   expanded: boolean;
 }
 
-let expanded = new Set<number>();
+const expanded = new Set<number>();
 
 export function mountTrailSpine(root: HTMLElement): void {
   render(root);

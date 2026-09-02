@@ -4,11 +4,11 @@ test('landing story loads and routes to the workspace', async ({ page }) => {
   await page.goto('/');
   await expect(page).toHaveTitle(/Lattice — research papers/);
   await expect(page.locator('.hero-title')).toContainText('Research papers');
-  // All 14 tools are listed
-  const toolRows = page.locator('.demo-tools li');
-  await expect(toolRows).toHaveCount(14);
+  // All 14 tools are listed in the ticker
+  const toolTicks = page.locator('.tick:not([aria-hidden])');
+  await expect(toolTicks).toHaveCount(14);
   // CTA enters the workspace
-  await page.click('.cta-primary');
+  await page.click('.hero-cta .btn-primary');
   await expect(page.locator('#app[data-state="ready"]')).toBeVisible({ timeout: 10_000 });
   await expect(page).toHaveTitle('Lattice');
 });
