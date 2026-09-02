@@ -23,3 +23,37 @@ describe('security: IPv6 normalization + blocked IP', () => {
     expect(isBlockedIp('2606:4700:4700::1111')).toBe(false);
   });
 });
+
+describe('CSP + COOP headers (server.mjs)', () => {
+  it('webmcpHeaders sets CSP, COOP, and all WebMCP headers', async () => {
+    const src = await import('node:fs').then((fs) => fs.readFileSync('server.mjs', 'utf8'));
+    for (const header of [
+      'Content-Security-Policy',
+      'Cross-Origin-Opener-Policy',
+      'Origin-Agent-Cluster',
+      'Permissions-Policy',
+      'X-Content-Type-Options',
+      'X-Frame-Options',
+      'Referrer-Policy',
+      'Strict-Transport-Security',
+    ]) {
+      expect(src).toContain(`'${header}'`);
+    }
+    // The CSP must not allow remote scripts or object embedding.
+    expect(src).toContain("script-src 'self'");
+    expect(src).toContain("object-src 'none'");
+    // connect-src keeps https: so WebLLM model downloads work.
+    expect(src).toContain("connect-src 'self' https: wss:");
+  });
+
+  it('no inline <script> blocks remain in the HTML shells (CSP-safe)', async () => {
+    const fs = await import('node:fs');
+    for (const page of ['public/index.html', 'public/share.html']) {
+      const html = fs.readFileSync(page, 'utf8');
+      // Inline scripts (non-module, no src) are CSP violations.
+      const inline = html.match(/<script>([\s\S]*?)<\/script>/g) ?? [];
+      expect(inline, `${page} has ${inline.length} inline <script> blocks`).toEqual([]);
+      expect(html).toContain('theme-guard.js');
+    }
+  });
+});

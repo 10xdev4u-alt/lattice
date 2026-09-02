@@ -21,6 +21,7 @@ const EXTRAS = [
   'landing.html',
   'landing/',
   'assets/fonts/',
+  'assets/theme-guard.js',
   'favicon.svg',
   'og.svg',
 ];

@@ -1,0 +1,11 @@
+// Theme flash guard — applies the saved theme before first paint.
+// External (not inline) so the page's Content-Security-Policy can
+// stay strict: script-src 'self' with no hashes or unsafe-inline.
+(function () {
+  try {
+    var t = localStorage.getItem('lattice.theme.v1');
+    document.documentElement.setAttribute('data-theme', t === 'light' ? 'light' : 'dark');
+  } catch (e) {
+    document.documentElement.setAttribute('data-theme', 'dark');
+  }
+})();
