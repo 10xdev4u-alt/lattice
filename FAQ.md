@@ -40,25 +40,31 @@ URL in the ChatGPT desktop app's built-in browser.
 git clone https://github.com/10xdev4u-alt/lattice
 cd lattice
 npm install
-npm run dev
-# open http://localhost:8888
+npm run build && npm start   # the built app on :8888
+# or: npm run dev            # vite on :5173, API on :8888
 ```
 
 ## How do I run it in Docker?
 
 ```
-docker build -t lattice:dev .
-docker run --rm -p 8888:8888 lattice:dev
+docker build --target runtime -t lattice:runtime .
+docker run --rm -p 8888:8888 lattice:runtime
 ```
 
 The image is multi-stage, non-root, and stays under 200MB.
 
 ## Which model is the agent using?
 
-By default, `kilo-auto/free` on the OpenAI-compatible endpoint
-at `https://api.kilo.ai/api/gateway/v1`. Swap via the Settings panel
-(Ctrl/Cmd+,), or the `LATTICE_LLM_BASE` / `LATTICE_LLM_MODEL` env
-vars. Any OpenAI-compatible endpoint works.
+A pool of free OpenAI-compatible models, tried in live-latency
+order — the head today is `liquid/lfm-2.5-2.6b:free`, rotating
+as free tiers come and go (the pool is re-probed and the order
+regenerated; dead models are removed). Swap via the Settings
+panel (Ctrl/Cmd+,), or the `LATTICE_LLM_BASE` /
+`LATTICE_LLM_MODEL` env vars. Any OpenAI-compatible endpoint
+works. Reasoning-channel answers (`message.reasoning`) are read
+natively, and if the network dies entirely the WebLLM
+offline engine (Phi-3-mini, in your browser) answers with an
+`[answered offline]` badge.
 
 ## Is the AI work reproducible?
 
@@ -115,8 +121,8 @@ filter, arrow keys to navigate, Enter to run.
 
 - **Cmd/Ctrl+K** — command palette
 - **Cmd/Ctrl+B** — toggle the paper list rail
-- **Cmd/Ctrl+R** — toggle the agent rail
 - **Cmd/Ctrl+Shift+R** — float the agent rail over the canvas
+- **Cmd/Ctrl+Shift+E** — collapse/expand the agent rail
 - **Cmd/Ctrl+,** — settings panel
 - **Cmd/Ctrl+Shift+P** — "what's in the prompt" debug view
 - **g w** — workflow trail tab
