@@ -7,17 +7,7 @@
     <meta name="description" content="A shared Lattice research session — read-only, encrypted in the URL fragment." />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="stylesheet" href="/assets/styles/lattice.css" />
-    <script>
-      // Match the app's theme before first paint.
-      (function () {
-        try {
-          var t = localStorage.getItem('lattice.theme.v1');
-          document.documentElement.setAttribute('data-theme', t === 'light' ? 'light' : 'dark');
-        } catch (e) {
-          document.documentElement.setAttribute('data-theme', 'dark');
-        }
-      })();
-    </script>
+    <script src="/assets/theme-guard.js"></script>
   </head>
   <body>
     <div id="app" data-state="loading">

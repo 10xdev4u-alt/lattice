@@ -45,22 +45,7 @@
       <button class="report-problem" data-action="report-problem">Report a problem</button>
     </footer>
     </div>
-    <script>
-      // Apply the saved theme before first paint — no flash of the
-      // wrong scheme. Default: the ink-dark manuscript.
-      (function () {
-        try {
-          var t = localStorage.getItem('lattice.theme.v1');
-          if (t === 'light' || t === 'dark') {
-            document.documentElement.setAttribute('data-theme', t);
-          } else {
-            document.documentElement.setAttribute('data-theme', 'dark');
-          }
-        } catch (e) {
-          document.documentElement.setAttribute('data-theme', 'dark');
-        }
-      })();
-    </script>
+    <script src="/assets/theme-guard.js"></script>
     <script type="module" src="/assets/main.ts"></script>
   </body>
 </html>

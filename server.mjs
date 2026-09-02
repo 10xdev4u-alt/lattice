@@ -1,11 +1,11 @@
 #!/usr/bin/env node
 /**
- * server.mjs — the Lattice server.
+ * server.mjs â the Lattice server.
  *
  * One process serves everything:
- *   - /api/*  → the function modules in api/ (each exports
+ *   - /api/*  â the function modules in api/ (each exports
  *               `default` and `config { path, method }`)
- *   - /*      → the built static site in dist/
+ *   - /*      â the built static site in dist/
  *
  * The WebMCP security headers (origin isolation + tools
  * permissions policy) apply to every response. Run with
@@ -25,7 +25,7 @@ const API_DIR = join(__dirname, 'dist-api');
 const PORT = Number(process.env.PORT ?? 8888);
 
 // Generate a fresh lattice_sid when the request doesn't already
-// carry one (cookie only — headers are never identity). The
+// carry one (cookie only â headers are never identity). The
 // handler then prefixes its own keys; this mints the cookie so
 // subsequent calls land in the same namespace.
 function ensureTenantCookie(req) {
@@ -55,12 +55,38 @@ const MIME = {
 };
 
 /** WebMCP: every response needs these. */
-function webmcpHeaders(res = new Response()) {
+/** WebMCP: every response needs these. */
+function webmcpHeaders(res = new Response(), req = null) {
   res.headers.set('Origin-Agent-Cluster', '?1');
   res.headers.set('Permissions-Policy', 'tools=(self)');
   res.headers.set('X-Content-Type-Options', 'nosniff');
   res.headers.set('X-Frame-Options', 'SAMEORIGIN');
   res.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin');
+  res.headers.set('Cross-Origin-Opener-Policy', 'same-origin');
+  // CSP: self by default. connect-src allows https:/wss: because
+  // WebLLM streams model weights from the MLC/HF CDNs — blocking
+  // that kills the offline feature. style-src 'unsafe-inline' is
+  // required: the app sets style attributes from JS (rail widths,
+  // overlays), which CSP treats as inline. No remote code/styles.
+  res.headers.set(
+    'Content-Security-Policy',
+    [
+      "default-src 'self'",
+      "script-src 'self'",
+      "style-src 'self' 'unsafe-inline'",
+      "img-src 'self' data: blob:",
+      "font-src 'self'",
+      "connect-src 'self' https: wss:",
+      "worker-src 'self' blob:",
+      "frame-ancestors 'self'",
+      "base-uri 'self'",
+      "form-action 'self'",
+      "object-src 'none'",
+    ].join('; '),
+  );
+  if (req && new URL(req.url).protocol === 'https:') {
+    res.headers.set('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
+  }
   return res;
 }
 
@@ -68,7 +94,7 @@ function webmcpHeaders(res = new Response()) {
 // API routing
 // ---------------------------------------------------------------------------
 
-/** /api/sessions/:id → /^\/api\/sessions\/(?<id>[^/]+)$/ */
+/** /api/sessions/:id â /^\/api\/sessions\/(?<id>[^/]+)$/ */
 function pathToRegex(path) {
   const pattern = path
     .split('/')
@@ -117,7 +143,7 @@ async function handleApi(req, routes) {
     const ctx = { params: match.groups ?? {} };
     try {
       const res = await route.handler(req, ctx);
-      return webmcpHeaders(res);
+      return webmcpHeaders(res, req);
     } catch (err) {
       console.error(`[api] ${route.file} error:`, err);
       return webmcpHeaders(
