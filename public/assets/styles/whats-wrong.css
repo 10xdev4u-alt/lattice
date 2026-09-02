@@ -2,7 +2,7 @@
 .whats-wrong-list { list-style: none; margin: 0; padding: 0; }
 .whats-wrong-row {
   padding: var(--sp-3);
-  border: 1px solid var(--border);
+  border: 2px solid var(--border);
   border-radius: var(--r-sm);
   margin-bottom: var(--sp-2);
   background: var(--bg-elev-1);
@@ -13,7 +13,7 @@
   font-family: var(--font-mono);
   font-size: 10px;
   background: var(--bg);
-  border: 1px solid var(--border);
+  border: 2px solid var(--border);
   border-radius: var(--r-sm);
   padding: var(--sp-1) var(--sp-2);
   margin: 0 0 var(--sp-2);

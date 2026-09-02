@@ -6,7 +6,7 @@
   font: inherit;
   background: var(--bg);
   color: var(--fg);
-  border: 1px solid var(--border);
+  border: 2px solid var(--border);
   border-radius: var(--r-sm);
   padding: var(--sp-1) var(--sp-2);
 }

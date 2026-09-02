@@ -7,7 +7,7 @@
 
 .agent-rail-actions {
   padding: var(--sp-2) var(--sp-3);
-  border-top: 1px solid var(--border);
+  border-top: 2px solid var(--border);
   display: flex;
   gap: var(--sp-2);
 }
@@ -16,7 +16,7 @@
   font-weight: 500;
   padding: var(--sp-1) var(--sp-3);
   background: var(--accent-soft);
-  border: 1px solid var(--accent);
+  border: 2px solid var(--accent);
   color: var(--accent);
   border-radius: 999px;
   cursor: pointer;
@@ -40,7 +40,7 @@
   padding: 1px var(--sp-2);
   background: transparent;
   color: var(--fg-muted);
-  border: 1px solid var(--border);
+  border: 2px solid var(--border);
   border-radius: 999px;
   cursor: pointer;
   transition: all var(--dur-fast) var(--ease);
@@ -61,7 +61,7 @@
 .feedback-btn {
   font-size: 12px;
   background: transparent;
-  border: 1px solid var(--border);
+  border: 2px solid var(--border);
   border-radius: 999px;
   padding: 1px var(--sp-2);
   cursor: pointer;
@@ -140,7 +140,7 @@
   padding: var(--sp-1) var(--sp-2);
   margin-top: var(--sp-1);
   background: rgba(217, 119, 6, 0.12);
-  border: 1px solid var(--warn);
+  border: 2px solid var(--warn);
   border-radius: var(--r-sm);
   font-size: var(--text-xs);
   color: var(--fg);
@@ -154,7 +154,7 @@
   font-weight: 500;
   padding: 1px var(--sp-2);
   background: transparent;
-  border: 1px solid var(--border);
+  border: 2px solid var(--border);
   border-radius: 999px;
   color: var(--fg);
   cursor: pointer;

@@ -5,7 +5,7 @@
   align-items: baseline;
   gap: var(--sp-1);
   background: var(--accent-soft);
-  border: 1px solid var(--accent);
+  border: 2px solid var(--accent);
   color: var(--accent);
   padding: 0 var(--sp-2);
   border-radius: 999px;
@@ -46,7 +46,7 @@
   padding: 1px var(--sp-2);
   background: transparent;
   color: var(--fg-muted);
-  border: 1px solid var(--border);
+  border: 2px solid var(--border);
   border-radius: 999px;
   cursor: pointer;
   transition: all var(--dur-fast) var(--ease);

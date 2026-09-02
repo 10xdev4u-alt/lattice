@@ -5,7 +5,7 @@
 .share-view-sub { color: var(--fg-muted); font-family: var(--font-mono); font-size: var(--text-sm); margin: 0 0 var(--sp-2); }
 .share-view-warn {
   background: var(--bg-elev-1);
-  border: 1px solid var(--warn);
+  border: 2px solid var(--warn);
   border-radius: var(--r-md);
   padding: var(--sp-3);
   font-size: var(--text-sm);
@@ -18,7 +18,7 @@
   font-family: var(--font-mono);
   font-size: var(--text-xs);
   background: var(--bg-elev-1);
-  border: 1px solid var(--border);
+  border: 2px solid var(--border);
   border-radius: var(--r-md);
   padding: var(--sp-3);
   white-space: pre-wrap;
@@ -27,7 +27,7 @@
   overflow: auto;
 }
 .share-chat-list { list-style: none; margin: 0; padding: 0; }
-.share-chat-message { padding: var(--sp-2) var(--sp-3); border-bottom: 1px solid var(--border); }
+.share-chat-message { padding: var(--sp-2) var(--sp-3); border-bottom: 2px solid var(--border); }
 .share-chat-role { font-size: var(--text-xs); color: var(--fg-muted); font-family: var(--font-mono); display: block; margin-bottom: 2px; }
 .share-chat-agent p { color: var(--agent); }
 .share-chat-user p { color: var(--fg); }

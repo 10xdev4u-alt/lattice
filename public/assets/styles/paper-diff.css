@@ -12,7 +12,7 @@
   font-size: var(--text-xs);
   line-height: 1.6;
   background: var(--bg-elev-1);
-  border: 1px solid var(--border);
+  border: 2px solid var(--border);
   border-radius: var(--r-md);
   padding: var(--sp-3);
   max-height: 60vh;

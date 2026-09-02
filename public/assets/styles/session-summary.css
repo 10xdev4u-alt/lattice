@@ -8,7 +8,7 @@
   padding: 2px 8px;
   border-radius: 999px;
   background: var(--bg);
-  border: 1px solid var(--border);
+  border: 2px solid var(--border);
   color: var(--fg);
 }
 .summary-total { background: var(--accent); color: white; border-color: var(--accent); }

@@ -7,7 +7,7 @@
   font: inherit;
   background: var(--bg);
   color: var(--fg);
-  border: 1px solid var(--border);
+  border: 2px solid var(--border);
   border-radius: var(--r-sm);
   padding: var(--sp-1) var(--sp-2);
   max-width: 240px;
@@ -23,5 +23,5 @@
 }
 .branch-diff-summary { font-size: var(--text-sm); color: var(--fg-muted); line-height: 1.5; margin-bottom: var(--sp-3); }
 .branch-diff-table { width: 100%; border-collapse: collapse; font-size: var(--text-sm); }
-.branch-diff-table th, .branch-diff-table td { padding: var(--sp-2); text-align: left; border-bottom: 1px solid var(--border); }
+.branch-diff-table th, .branch-diff-table td { padding: var(--sp-2); text-align: left; border-bottom: 2px solid var(--border); }
 .branch-diff-table th { color: var(--fg-muted); font-weight: 500; }

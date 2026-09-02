@@ -1,7 +1,7 @@
 /* Cite paper */
 .cite-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: var(--sp-2); margin: var(--sp-2) 0; }
 .cite-card {
-  border: 1px solid var(--border);
+  border: 2px solid var(--border);
   border-radius: var(--r-sm);
   padding: var(--sp-2);
   background: var(--bg-elev-1);
@@ -27,7 +27,7 @@
   font-size: 10px;
   line-height: 1.5;
   background: var(--bg);
-  border: 1px solid var(--border);
+  border: 2px solid var(--border);
   border-radius: var(--r-sm);
   padding: var(--sp-1);
   margin: 0;
@@ -42,7 +42,7 @@
   padding: var(--sp-1) var(--sp-3);
   background: var(--bg);
   color: var(--fg);
-  border: 1px solid var(--border);
+  border: 2px solid var(--border);
   border-radius: var(--r-sm);
   cursor: pointer;
 }

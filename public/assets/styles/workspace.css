@@ -35,7 +35,7 @@
   width: var(--rail-right-w);
   z-index: 30;
   box-shadow: var(--shadow-4);
-  border-left: 1px solid var(--border);
+  border-left: 2px solid var(--border);
 }
 
 .rail {
@@ -43,8 +43,8 @@
   overflow-y: auto;
   min-width: 0;
 }
-.rail-left { border-right: 1px solid var(--border); }
-.rail-right { border-left: 1px solid var(--border); }
+.rail-left { border-right: 2px solid var(--border); }
+.rail-right { border-left: 2px solid var(--border); }
 
 .canvas {
   background: var(--bg);
@@ -99,7 +99,7 @@
     right: 0;
     z-index: 40;
     background: var(--bg-elev-1);
-    border-top: 1px solid var(--border);
+    border-top: 2px solid var(--border);
     padding-bottom: env(safe-area-inset-bottom);
   }
   .rail-mobile-tabs button {
@@ -129,7 +129,7 @@
   flex-direction: column;
   gap: var(--sp-2);
   padding: var(--sp-3);
-  border-bottom: 1px solid var(--border);
+  border-bottom: 2px solid var(--border);
   position: sticky;
   top: 0;
   background: var(--bg-elev-1);
@@ -141,7 +141,7 @@
   font-size: var(--text-sm);
   background: var(--bg);
   color: var(--fg);
-  border: 1px solid var(--border);
+  border: 2px solid var(--border);
   border-radius: var(--r-sm);
   padding: var(--sp-1) var(--sp-2);
   width: 100%;
@@ -159,7 +159,7 @@
    mono arXiv id, a provenance tick in the source's own color. */
 .paper-row {
   padding: var(--sp-3) var(--sp-4);
-  border: 1px solid var(--border);
+  border: 2px solid var(--border);
   border-radius: var(--r-md);
   background: var(--bg-elev-1);
   cursor: pointer;
@@ -270,7 +270,7 @@
   padding: var(--sp-1) var(--sp-3);
   background: var(--bg-elev-1);
   color: var(--fg-muted);
-  border: 1px solid var(--border);
+  border: 2px solid var(--border);
   border-radius: 999px;
   text-decoration: none;
   cursor: pointer;
@@ -284,7 +284,7 @@
 }
 .regenerated-summary {
   background: var(--bg-elev-1);
-  border: 1px solid var(--border);
+  border: 2px solid var(--border);
   border-left: 2px solid var(--machine);
   border-radius: var(--r-md);
   padding: var(--sp-4);
@@ -326,7 +326,7 @@
   padding: var(--sp-4);
   background: var(--bg-elev-1);
   border-radius: var(--r-md);
-  border: 1px solid var(--border);
+  border: 2px solid var(--border);
 }
 .paper-viewer-placeholder code {
   background: var(--bg);
@@ -338,7 +338,7 @@
 
 .agent-rail-tabs {
   display: flex;
-  border-bottom: 1px solid var(--border);
+  border-bottom: 2px solid var(--border);
   background: var(--bg-elev-1);
   position: sticky;
   top: 0;
@@ -404,7 +404,7 @@
   display: flex;
   gap: var(--sp-2);
   padding: var(--sp-3);
-  border-top: 1px solid var(--border);
+  border-top: 2px solid var(--border);
   position: sticky;
   bottom: 0;
   background: var(--bg-elev-1);
@@ -415,7 +415,7 @@
   font-size: var(--text-sm);
   background: var(--bg);
   color: var(--fg);
-  border: 1px solid var(--border);
+  border: 2px solid var(--border);
   border-radius: var(--r-sm);
   padding: var(--sp-2) var(--sp-3);
   transition: border-color var(--dur-fast) var(--ease), box-shadow var(--dur-fast) var(--ease);
@@ -439,7 +439,7 @@
 .tool-array { list-style: none; margin: 0; padding: 0; }
 .tool-row {
   padding: var(--sp-2) var(--sp-3);
-  border-bottom: 1px solid var(--border);
+  border-bottom: 2px solid var(--border);
   font-size: var(--text-sm);
   transition: background var(--dur-fast) var(--ease);
 }
@@ -462,7 +462,7 @@
   font-size: var(--text-2xs);
   font-family: var(--font-mono);
   background: var(--bg);
-  border: 1px solid var(--border);
+  border: 2px solid var(--border);
   border-radius: 999px;
   padding: 0 var(--sp-2);
   color: var(--fg-muted);
@@ -536,7 +536,7 @@
   width: 24px;
   height: 24px;
   border-radius: 50%;
-  border: 1px solid var(--accent-soft);
+  border: 2px solid var(--accent-soft);
   background: transparent;
   color: var(--accent);
   font-family: var(--font-mono);
@@ -552,13 +552,24 @@
 }
 .empty-actions button {
   background: var(--accent);
-  color: var(--bg-elev-1);
-  border: 1px solid var(--accent);
+  color: var(--bg-sink);
+  font-family: var(--font-mono);
+  font-weight: 600;
+  border: 2px solid var(--accent);
+  box-shadow: var(--shadow-3);
   font-size: var(--text-base);
   padding: var(--sp-2) var(--sp-5);
   border-radius: var(--r-md);
+  cursor: pointer;
 }
-.empty-actions button:hover { filter: brightness(1.08); }
+.empty-actions button:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: var(--shadow-4);
+}
+.empty-actions button:active {
+  transform: translate(1px, 1px);
+  box-shadow: var(--shadow-2);
+}
 .empty-actions-quiet { margin-top: 0; }
 
 /* PDF drop target: the empty state lights up while a file hovers. */
@@ -614,7 +625,7 @@
 }
 .help-modal {
   background: var(--bg-elev-1);
-  border: 1px solid var(--border-strong);
+  border: 2px solid var(--border-strong);
   border-radius: var(--r-lg);
   padding: var(--sp-6);
   max-width: 480px;
@@ -642,7 +653,7 @@
 .help-modal kbd {
   font-family: var(--font-mono);
   background: var(--bg);
-  border: 1px solid var(--border);
+  border: 2px solid var(--border);
   border-radius: var(--r-sm);
   padding: 1px var(--sp-1);
   font-size: var(--text-xs);
@@ -664,7 +675,7 @@
   gap: var(--sp-4);
   margin-bottom: var(--sp-3);
   padding-bottom: var(--sp-3);
-  border-bottom: 1px solid var(--border);
+  border-bottom: 2px solid var(--border);
 }
 .overlay-header h2 {
   font-family: var(--font-display);

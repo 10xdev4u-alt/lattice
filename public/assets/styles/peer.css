@@ -5,7 +5,7 @@
   align-items: center;
   padding: var(--sp-3);
   background: var(--accent-soft);
-  border-bottom: 1px solid var(--border);
+  border-bottom: 2px solid var(--border);
   font-size: var(--text-sm);
 }
 .peer-banner-text { flex: 1; }

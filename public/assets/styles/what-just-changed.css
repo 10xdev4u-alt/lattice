@@ -8,7 +8,7 @@
   gap: var(--sp-2);
   padding: var(--sp-2) var(--sp-3);
   background: var(--bg-elev-1);
-  border: 1px solid var(--accent);
+  border: 2px solid var(--accent);
   border-radius: var(--r-md);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
   z-index: 50;

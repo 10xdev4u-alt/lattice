@@ -23,7 +23,27 @@ html, body {
   color: var(--bg-elev-1);
 }
 
+/* The pixel grid: a 4px dot-matrix breathing under the whole
+   app — the vortex-pixel signature. Sits under everything,
+   fades toward the bottom so the reading surfaces stay calm. */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background-image:
+    linear-gradient(var(--agent-soft) 1px, transparent 1px),
+    linear-gradient(90deg, var(--agent-soft) 1px, transparent 1px);
+  background-size: 4px 4px;
+  opacity: 0.4;
+  mask-image: linear-gradient(to bottom, black 0%, transparent 70%);
+  -webkit-mask-image: linear-gradient(to bottom, black 0%, transparent 70%);
+}
+
 #app {
+  position: relative;
+  z-index: 1;
   display: grid;
   grid-template-rows: var(--header-h) 1fr;
   height: 100vh;
@@ -37,7 +57,7 @@ html, body {
   align-items: center;
   gap: var(--sp-4);
   padding: 0 var(--sp-6);
-  border-bottom: 1px solid var(--border);
+  border-bottom: 2px solid var(--border);
   background: var(--bg-elev-1);
 }
 
@@ -104,7 +124,7 @@ html, body {
   font-size: var(--text-xs);
   padding: var(--sp-1) var(--sp-3);
   border-radius: 999px;
-  border: 1px solid var(--border);
+  border: 2px solid var(--border);
   background: transparent;
   color: var(--fg-muted);
   cursor: pointer;
@@ -171,7 +191,7 @@ button {
   font-size: var(--text-sm);
   color: inherit;
   background: none;
-  border: 1px solid var(--border);
+  border: 2px solid var(--border);
   border-radius: var(--r-sm);
   padding: var(--sp-1) var(--sp-3);
   cursor: pointer;
@@ -255,7 +275,7 @@ a:hover {
   display: flex;
   justify-content: center;
   padding: var(--sp-2);
-  border-top: 1px solid var(--border);
+  border-top: 2px solid var(--border);
   background: var(--bg-elev-1);
 }
 
@@ -263,7 +283,7 @@ a:hover {
   font-size: var(--text-xs);
   color: var(--fg-muted);
   background: transparent;
-  border: 1px solid var(--border);
+  border: 2px solid var(--border);
   padding: var(--sp-1) var(--sp-3);
 }
 

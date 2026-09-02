@@ -7,14 +7,14 @@
   font-size: var(--text-xs);
   background: var(--bg);
   color: var(--fg);
-  border: 1px solid var(--border);
+  border: 2px solid var(--border);
   border-radius: var(--r-sm);
   padding: var(--sp-1) var(--sp-2);
 }
 .feed-list { list-style: none; margin: 0; padding: 0; }
 .feed-item {
   padding: var(--sp-3) 0;
-  border-bottom: 1px solid var(--border);
+  border-bottom: 2px solid var(--border);
 }
 .feed-item-title { font-weight: 500; font-size: var(--text-sm); margin-bottom: var(--sp-1); }
 .feed-item-meta { font-size: var(--text-xs); color: var(--fg-muted); font-family: var(--font-mono); margin-bottom: var(--sp-1); }

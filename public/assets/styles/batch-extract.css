@@ -1,6 +1,6 @@
 /* Batch extract */
 .batch-extract-table { width: 100%; border-collapse: collapse; font-size: var(--text-xs); margin-top: var(--sp-2); }
 .batch-extract-table th,
-.batch-extract-table td { padding: var(--sp-2); text-align: left; border-bottom: 1px solid var(--border); vertical-align: top; }
+.batch-extract-table td { padding: var(--sp-2); text-align: left; border-bottom: 2px solid var(--border); vertical-align: top; }
 .batch-extract-table th { color: var(--fg-muted); font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em; font-size: 10px; }
 .batch-extract-table tr:hover { background: var(--bg-elev-1); }
