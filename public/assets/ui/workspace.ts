@@ -235,14 +235,19 @@ function installKeyboardShortcuts(root: HTMLElement): void {
       e.preventDefault();
       workspace.classList.toggle('rail-left-collapsed');
       announce('Paper list rail toggled');
-    } else if ((e.metaKey || e.ctrlKey) && e.key === 'r') {
-      e.preventDefault();
-      workspace.classList.toggle('rail-right-collapsed');
-      announce('Agent rail toggled');
-    } else if (e.shiftKey && (e.metaKey || e.ctrlKey) && e.key === 'r') {
+    } else if (e.shiftKey && (e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'r') {
+      // Cmd/Ctrl+Shift+R floats the agent rail. Plain Cmd/Ctrl+R
+      // is the browser reload — the most-sacred shortcut — and is
+      // left alone. (With Shift held, e.key can be 'R' or 'r'
+      // depending on layout; match case-insensitively.)
       e.preventDefault();
       workspace.classList.toggle('rail-right-floating');
       announce('Agent rail floating mode toggled');
+    } else if (e.shiftKey && (e.metaKey || e.ctrlKey) && e.key === 'e') {
+      // Cmd/Ctrl+Shift+E: expand/collapse the agent rail.
+      e.preventDefault();
+      workspace.classList.toggle('rail-right-collapsed');
+      announce('Agent rail toggled');
     } else if ((e.metaKey || e.ctrlKey) && e.key === ',') {
       e.preventDefault();
       toggleSettings(root);
@@ -415,10 +420,10 @@ export function showHelp(_root: HTMLElement | null = null): void {
       <dl>
         <dt><kbd>Ctrl/Cmd</kbd> + <kbd>B</kbd></dt>
         <dd>Toggle the paper list rail</dd>
-        <dt><kbd>Ctrl/Cmd</kbd> + <kbd>R</kbd></dt>
-        <dd>Toggle the agent rail</dd>
         <dt><kbd>Ctrl/Cmd</kbd> + <kbd>Shift</kbd> + <kbd>R</kbd></dt>
         <dd>Float the agent rail over the canvas</dd>
+        <dt><kbd>Ctrl/Cmd</kbd> + <kbd>Shift</kbd> + <kbd>E</kbd></dt>
+        <dd>Collapse / expand the agent rail</dd>
         <dt><kbd>Ctrl/Cmd</kbd> + <kbd>,</kbd></dt>
         <dd>Open the settings panel</dd>
         <dt><kbd>g</kbd> <kbd>k</kbd></dt>
