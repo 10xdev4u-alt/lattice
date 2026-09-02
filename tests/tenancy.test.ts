@@ -59,3 +59,30 @@ describe('tenant store isolation', () => {
     expect(v).toBe('ok');
   });
 });
+
+describe('cookie-only identity (x-session-id is dead)', () => {
+  it('getTenantId reads the cookie and ignores a spoofed header', async () => {
+    const { getTenantId } = await import('../api/_lib/session');
+    const withCookie = new Request('https://x.test/', {
+      headers: { cookie: 'lattice_sid=t_realcookie123' },
+    });
+    expect(getTenantId(withCookie)).toBe('t_realcookie123');
+
+    // The attack: header claims another tenant, no cookie present.
+    const spoofed = new Request('https://x.test/', {
+      headers: { 'x-session-id': 't_victim_aaaaaaaa' },
+    });
+    expect(getTenantId(spoofed)).toBeNull();
+
+    // Even WITH a cookie, the header must not override it.
+    const both = new Request('https://x.test/', {
+      headers: { 'x-session-id': 't_victim_aaaaaaaa', cookie: 'lattice_sid=t_realcookie123' },
+    });
+    expect(getTenantId(both)).toBe('t_realcookie123');
+  });
+
+  it('server cookie-minter ignores the header', async () => {
+    const src = await import('node:fs').then((fs) => fs.readFileSync('server.mjs', 'utf8'));
+    expect(src).not.toMatch(/req\.headers\.get\('x-session-id'\)/);
+  });
+});

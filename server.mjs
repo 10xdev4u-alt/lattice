@@ -25,11 +25,10 @@ const API_DIR = join(__dirname, 'dist-api');
 const PORT = Number(process.env.PORT ?? 8888);
 
 // Generate a fresh lattice_sid when the request doesn't already
-// have one (cookie or x-session-id). The handler then prefixes its
-// own keys; this header mints the cookie so subsequent calls land
-// in the same namespace.
+// carry one (cookie only — headers are never identity). The
+// handler then prefixes its own keys; this mints the cookie so
+// subsequent calls land in the same namespace.
 function ensureTenantCookie(req) {
-  if (req.headers.get('x-session-id')) return null;
   const cookie = req.headers.get('cookie') ?? '';
   if (/(?:^|;\s*)lattice_sid=/.test(cookie)) return null;
   const rand = Math.random().toString(36).slice(2, 10);
