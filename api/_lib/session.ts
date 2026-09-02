@@ -1,9 +1,10 @@
 /**
- * Session tenancy — lattice_sid cookie + x-session-id header.
+ * Session tenancy — the HttpOnly lattice_sid cookie only.
  *
- * Phase 1: header-wins, cookie fallback, no HMAC. Every key under
- * <tenant>/... when tenant present, else legacy global. Keeps FS
- * KV portable before Postgres/Oracle migration.
+ * The x-session-id header path was removed: tenant ids are
+ * timestamp-structured and guessable-ish, and a spoofable header
+ * beat the cookie, letting a curl claim any tenant's namespace.
+ * Curl callers send `-H 'Cookie: lattice_sid=<id>'` instead.
  */
 
 import type { getStore} from './store';
@@ -22,9 +23,10 @@ export function parseCookies(header: string | null): Record<string, string> {
   return out;
 }
 
+/** Tenant id from the HttpOnly cookie ONLY. Headers are never
+ *  trusted for identity — a spoofed x-session-id must not read
+ *  another tenant's namespace. */
 export function getTenantId(req: Request): string | null {
-  const hdr = req.headers.get('x-session-id');
-  if (hdr && /^[a-zA-Z0-9_-]{8,64}$/.test(hdr.trim())) return hdr.trim();
   const cookies = parseCookies(req.headers.get('cookie'));
   const c = cookies[COOKIE_NAME];
   if (c && /^[a-zA-Z0-9_-]{8,64}$/.test(c)) return c;
