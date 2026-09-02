@@ -24,6 +24,6 @@ test('the agent rail mounts with tools and log tabs', async ({ page }) => {
   await page.goto('/app/');
   await expect(page.locator('#app[data-state="ready"]')).toBeVisible({ timeout: 10_000 });
   await expect(page.locator('[data-agent-input]')).toBeVisible();
-  await expect(page.locator('[data-tab="tools"]')).toContainText(/Tools \(\d+\)/);
-  await expect(page.locator('[data-tab="log"]')).toContainText(/Log \(\d+\)/);
+  await expect(page.locator('[data-tab="tools"]')).toContainText(/TOOLS · \d+/);
+  await expect(page.locator('[data-tab="log"]')).toContainText(/TRAIL · \d+/);
 });

@@ -3,11 +3,11 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-    <meta name="color-scheme" content="light dark" />
+    <meta name="color-scheme" content="dark" />
     <title>Lattice — research papers, in conversation</title>
     <meta name="description" content="Lattice is a WebMCP-powered research workspace. Bring a paper. The agent sees it, summarizes it, and cites it. You see every step. You challenge every claim. You export the audit log as your methods appendix." />
     <meta property="og:title" content="Lattice — research papers, in conversation" />
-    <meta property="og:description" content="A WebMCP-powered research workspace where the page is the audit log. 14 typed tools. Open source." />
+    <meta property="og:description" content="A WebMCP-powered research workspace where the page is the audit log. 14 typed tools. Private offline. Open source." />
     <meta property="og:image" content="/og.svg" />
     <meta property="og:type" content="website" />
     <meta name="twitter:card" content="summary_large_image" />
@@ -15,118 +15,132 @@
     <meta name="twitter:description" content="A WebMCP-powered research workspace where the page is the audit log." />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="stylesheet" href="/assets/fonts/fraunces.css" />
-    <link rel="stylesheet" href="/assets/fonts/newsreader.css" />
     <link rel="stylesheet" href="/assets/fonts/inter.css" />
     <link rel="stylesheet" href="/assets/fonts/jetbrains.css" />
     <link rel="stylesheet" href="/landing/styles.css" />
   </head>
   <body>
-    <header class="hero">
-      <nav class="nav">
-        <a class="nav-logo" href="/">
-          <span class="logo-mark"></span>
-          <span class="logo-word">Lattice</span>
-        </a>
-        <div class="nav-links">
-          <a href="https://github.com/10xdev4u-alt/lattice">GitHub</a>
-          <a href="/app/">Open the demo</a>
-        </div>
+    <div class="pixel-grid" aria-hidden="true"></div>
+
+    <header class="nav">
+      <a class="nav-logo" href="/">
+        <span class="logo-mark" aria-hidden="true"></span>
+        <span class="logo-word">LATTICE</span>
+      </a>
+      <nav class="nav-links" aria-label="Primary">
+        <a class="nav-link" href="#features">Features</a>
+        <a class="nav-link" href="https://github.com/10xdev4u-alt/lattice">GitHub</a>
+        <a class="nav-cta" href="/app/">OPEN THE DEMO <span class="cta-arrow" aria-hidden="true">→</span></a>
       </nav>
-
-      <div class="hero-inner">
-        <div class="hero-copy">
-          <p class="eyebrow">WebMCP Challenge · Aug-Sep 2026</p>
-          <h1 class="hero-title">Research papers,<br /><em>in conversation.</em></h1>
-          <p class="hero-sub">Bring a paper. The agent sees it, summarizes it, and cites it. You see every step. You challenge every claim. You export the audit log as your methods appendix.</p>
-          <div class="hero-cta">
-            <a class="cta-primary" href="/app/">Open the demo</a>
-            <a class="cta-secondary" href="https://github.com/10xdev4u-alt/lattice">Read the source</a>
-          </div>
-          <p class="hero-meta">14 typed WebMCP tools. The page IS the audit log. <strong>SaaS 1.0</strong>: private <em>Phi-3</em> offline (WebLLM) · tenant-isolated library · BM25 + Porter · deterministic graph. Works in Chrome 149+ with the WebMCP flag, or in the ChatGPT desktop in-app browser.</p>
-        </div>
-
-        <div class="hero-demo" data-hero-demo>
-          <div class="demo-paper">
-            <p class="demo-eyebrow">Open paper</p>
-            <h3>Attention Is All You Need</h3>
-            <p class="demo-authors">Vaswani et al., 2017 · arXiv 1706.03762</p>
-            <p class="demo-abstract">The dominant sequence transduction models are based on complex recurrent or convolutional neural networks. We propose a new simple network architecture, the Transformer…</p>
-          </div>
-          <div class="demo-rail">
-            <p class="demo-eyebrow">Live Tool Array</p>
-            <ul class="demo-tools">
-              <li><code>list_papers</code><span>read</span></li>
-              <li><code>open_paper</code><span>write</span></li>
-              <li><code>search_library</code><span>read</span></li>
-              <li><code>summarize_paper</code><span>read</span></li>
-              <li><code>compare_claims</code><span>read</span></li>
-              <li><code>extract_quote</code><span>read</span></li>
-              <li><code>cite_paper</code><span>read</span></li>
-              <li><code>add_to_bibliography</code><span>write</span></li>
-              <li><code>remove_from_bibliography</code><span>write</span></li>
-              <li><code>export_bibliography</code><span>write</span></li>
-              <li><code>explain_evidence</code><span>read</span></li>
-              <li><code>show_workflow_trail</code><span>read</span></li>
-              <li><code>compose_review</code><span>write</span></li>
-              <li><code>peer_review_invite</code><span>write</span></li>
-            </ul>
-            <p class="demo-flow">Tools re-register when a paper opens. The "write" tools require your click. The audit log fills in as the agent acts. <strong>New:</strong> <span style="color:var(--agent)">Private • Phi-3</span> offline badge + <span style="color:var(--accent)">Send→Cancel</span> mid-loop.</p>
-          </div>
-        </div>
-      </div>
     </header>
 
-    <section class="value">
-      <div class="value-inner">
-        <h2>Why the AI tool you used to write your paper can't help you defend it.</h2>
-        <p>Every research AI you've tried — Elicit, Consensus, Scite, ChatGPT with ScholarGPT — gives you a polished answer or a table. None of them show you how they got there. When your committee asks "why this paper, why this quote, why this comparison," you have nothing to show.</p>
-        <p>Lattice flips it. The page is the audit log. Every claim, every tool call, every source is reviewable, replayable, citable. You can export the trail as a Markdown methods appendix and drop it into your thesis.</p>
-      </div>
-    </section>
+    <main>
+      <section class="hero">
+        <div class="hero-copy">
+          <p class="eyebrow"><span class="eyebrow-dot" aria-hidden="true"></span>WEBMCP CHALLENGE · 2026</p>
+          <h1 class="hero-title">Research papers,<br /><em>in conversation.</em></h1>
+          <p class="hero-sub">Bring a paper. The agent reads it, challenges it, cites it — and every claim it makes lands in <strong>your</strong> audit log. Reopenable. Replayable. Defensible.</p>
+          <div class="hero-cta">
+            <a class="btn-primary" href="/app/">OPEN THE DEMO <span aria-hidden="true">→</span></a>
+            <a class="btn-ghost" href="https://github.com/10xdev4u-alt/lattice">READ THE SOURCE</a>
+          </div>
+          <ul class="hero-meta">
+            <li><span class="meta-num">14</span> typed tools</li>
+            <li class="meta-div" aria-hidden="true"></li>
+            <li><span class="meta-num">0</span> API keys</li>
+            <li class="meta-div" aria-hidden="true"></li>
+            <li><span class="meta-num">100%</span> audit trail</li>
+            <li class="meta-div" aria-hidden="true"></li>
+            <li><span class="meta-num">2.1GB</span> private offline model</li>
+          </ul>
+        </div>
 
-    <section class="features">
-      <div class="features-inner">
-        <div class="feature">
-          <h3>14 typed tools, not a chat box</h3>
-          <p>Every Lattice tool has a name, a description, a JSON-Schema input, and an annotation telling the agent whether it's read-only or write. The agent can't guess what to do. It can only call what you've declared.</p>
+        <div class="hero-vortex" aria-hidden="true">
+          <canvas class="vortex-canvas" data-vortex width="560" height="560"></canvas>
+          <div class="hud hud-audit" role="presentation">
+            <p class="hud-kicker">AUDIT LOG · STEP 12</p>
+            <p class="hud-line"><code>search_library</code> <span class="hud-ms">184ms</span></p>
+            <p class="hud-line ok">✓ 3 hits · pages 137, 142, 96</p>
+          </div>
+          <div class="hud hud-cite" role="presentation">
+            <p class="hud-kicker">CITATION CHIP</p>
+            <p class="hud-line">“w = w − lr · gradient” <span class="hud-page">p.137</span></p>
+          </div>
+          <div class="hud hud-badge" role="presentation">
+            <p class="hud-kicker">OFFLINE ENGINE</p>
+            <p class="hud-line ok">● Private · Phi-3-mini · in-browser</p>
+          </div>
+          <div class="core-pulse" aria-hidden="true"></div>
         </div>
-        <div class="feature">
-          <h3>The page IS the audit log</h3>
-          <p>Open the Log tab. See every tool call, every arg, every result, every duration. Click a step. Replay it. Export it as a PRISMA-style methods appendix. This is the WebMCP #261 feature — reviewable workflow documents.</p>
-        </div>
-        <div class="feature">
-          <h3>Two agents, one page</h3>
-          <p>The peer-reviewer persona is the killer demo. Your primary agent drafts a review. A second agent — the skeptic — challenges every claim, demands citations, never writes to the document. You watch them negotiate.</p>
-        </div>
-        <div class="feature">
-          <h3>PDF and LaTeX, not just abstracts</h3>
-          <p>Drop a PDF, or paste an arXiv ID. The two-column read order is reconstructed. The per-paper search index is built. The text is yours — not a vendor's.</p>
-        </div>
-        <div class="feature">
-          <h3>Bibliographies in five formats</h3>
-          <p>CSL-JSON (the lingua franca), BibTeX, RIS, APA-Markdown, MLA-Markdown. Round-trips through Zotero, JabRef, and Pandoc.</p>
-        </div>
-        <div class="feature">
-          <h3>Open source, Apache 2.0</h3>
-          <p>The Lattice source is on GitHub. The research briefs are in the repo. The issue tracker is public. The team is an enterprise-quality open-source project.</p>
-        </div>
-      </div>
-    </section>
+      </section>
 
-    <section class="quote">
-      <blockquote>
-        "You've read 200 papers. None of the AI tools let you show your committee how you got from A to B."
-      </blockquote>
-    </section>
+      <section class="ticker" aria-label="The 14 WebMCP tools">
+        <div class="ticker-track">
+          <span class="tick">list_papers</span><span class="tick write">open_paper</span><span class="tick">search_library</span><span class="tick">summarize_paper</span><span class="tick">extract_quote</span><span class="tick">compare_claims</span><span class="tick">cite_paper</span><span class="tick write">add_to_bibliography</span><span class="tick write">remove_from_bibliography</span><span class="tick write">export_bibliography</span><span class="tick">explain_evidence</span><span class="tick">show_workflow_trail</span><span class="tick write">compose_review</span><span class="tick write">peer_review_invite</span>
+          <span class="tick" aria-hidden="true">list_papers</span><span class="tick write" aria-hidden="true">open_paper</span><span class="tick" aria-hidden="true">search_library</span><span class="tick" aria-hidden="true">summarize_paper</span><span class="tick" aria-hidden="true">extract_quote</span><span class="tick" aria-hidden="true">compare_claims</span><span class="tick" aria-hidden="true">cite_paper</span><span class="tick write" aria-hidden="true">add_to_bibliography</span><span class="tick write" aria-hidden="true">remove_from_bibliography</span><span class="tick write" aria-hidden="true">export_bibliography</span><span class="tick" aria-hidden="true">explain_evidence</span><span class="tick" aria-hidden="true">show_workflow_trail</span><span class="tick write" aria-hidden="true">compose_review</span><span class="tick write" aria-hidden="true">peer_review_invite</span>
+        </div>
+      </section>
 
-    <section class="footer-cta">
-      <h2>Try it. Click. Read the audit log. Then decide.</h2>
-      <a class="cta-primary" href="/app/">Open the demo</a>
-      <p class="footer-meta">No signup. No API key to start. Drop a PDF, or load the sample library, or paste an arXiv ID. The agent shows up.</p>
-    </section>
+      <section class="features" id="features">
+        <p class="section-kicker">// WHY IT EXISTS</p>
+        <h2 class="section-title">Every research AI gives you an answer.<br /><em>None of them show their work.</em></h2>
+        <div class="features-grid">
+          <article class="feature feature-span2">
+            <p class="feature-kicker">01 · THE PAGE IS THE AUDIT LOG</p>
+            <h3>Watch every claim become traceable</h3>
+            <p>Every tool call — args, result, duration — lands in a log you can reopen, replay, and branch. Export it as a PRISMA-style methods appendix and drop it straight into your thesis. Your committee asks <em>how you know</em>; you hand them the file.</p>
+          </article>
+          <article class="feature">
+            <p class="feature-kicker">02 · TYPED TOOLS, NOT A CHAT BOX</p>
+            <h3>14 tools with schemas</h3>
+            <p>Every tool carries a JSON-Schema input and read/write annotations. The agent can't guess — it can only call what you've declared, and writes ask permission first.</p>
+          </article>
+          <article class="feature">
+            <p class="feature-kicker">03 · TWO AGENTS, ONE PAGE</p>
+            <h3>Peer-review cage match</h3>
+            <p>Invite a skeptic persona. It challenges every claim, demands citations, never writes. You watch them negotiate — and you have the transcript.</p>
+          </article>
+          <article class="feature">
+            <p class="feature-kicker">04 · YOUR MACHINE, YOUR MODEL</p>
+            <h3>Private offline engine</h3>
+            <p>Phi-3-mini runs in your GPU via WebLLM. When the network dies, Lattice keeps answering — papers never leave the machine. 2.1GB, cached once.</p>
+          </article>
+          <article class="feature">
+            <p class="feature-kicker">05 · FULL TEXT, NOT ABSTRACTS</p>
+            <h3>Drop a PDF, get an index</h3>
+            <p>Drag any PDF in. Two-column read order is reconstructed, a BM25+Porter index is built, and every answer arrives with page-cited evidence chips.</p>
+          </article>
+          <article class="feature feature-span2">
+            <p class="feature-kicker">06 · NO LOCK-IN</p>
+            <h3>Open source · Apache 2.0 · one container</h3>
+            <p>Vanilla TypeScript, one Node process, a 57MB Docker artifact. The source, the research briefs, the issue trail — all public. A junior dev can rebuild this from first principles.</p>
+          </article>
+        </div>
+      </section>
+
+      <section class="quote">
+        <div class="quote-frame">
+          <blockquote>"You've read 200 papers. None of the AI tools let you show your committee how you got from A to B."</blockquote>
+          <p class="quote-attr">— the problem Lattice exists to kill</p>
+        </div>
+      </section>
+
+      <section class="final-cta">
+        <div class="final-cta-inner">
+          <p class="section-kicker">// 30 SECONDS TO FIRST CITATION</p>
+          <h2>Try it. Click. Read the audit log.<br /><em>Then decide.</em></h2>
+          <a class="btn-primary btn-big" href="/app/">OPEN THE DEMO <span aria-hidden="true">→</span></a>
+          <p class="cta-meta">No signup · no API key · drop a PDF or load the sample library · the agent shows up</p>
+        </div>
+        <div class="cta-glow" aria-hidden="true"></div>
+      </section>
+    </main>
 
     <footer class="footer">
-      <p>Lattice — built for the <a href="https://openai.com/webmcp-challenge">OpenAI WebMCP Challenge</a>. Apache 2.0. <a href="https://github.com/10xdev4u-alt/lattice">Source on GitHub</a>.</p>
+      <p class="footer-line">LATTICE — built for the <a href="https://openai.com/webmcp-challenge">OpenAI WebMCP Challenge</a> · Apache 2.0 · <a href="https://github.com/10xdev4u-alt/lattice">source on GitHub</a></p>
     </footer>
+
+    <script src="/assets/theme-guard.js"></script>
+    <script src="/landing/vortex.js"></script>
   </body>
 </html>

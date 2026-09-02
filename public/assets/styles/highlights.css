@@ -22,13 +22,13 @@
   border-radius: var(--r-sm);
   cursor: pointer;
   display: none;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  box-shadow: 3px 3px 0 rgba(0, 0, 0, 0.45);
 }
 .highlight-floating:hover { filter: brightness(1.1); }
 
 .highlights-panel {
   margin-top: var(--sp-4);
-  border-top: 1px solid var(--border);
+  border-top: 2px solid var(--border);
   padding-top: var(--sp-3);
 }
 .highlights-panel h3 { font-size: var(--text-sm); margin: 0 0 var(--sp-2); color: var(--fg-muted); }
@@ -36,7 +36,7 @@
   display: flex;
   gap: var(--sp-2);
   padding: var(--sp-2) 0;
-  border-bottom: 1px solid var(--border);
+  border-bottom: 2px solid var(--border);
   font-size: var(--text-xs);
 }
 .highlight-row-text { flex: 1; line-height: 1.4; }
@@ -50,7 +50,7 @@
   gap: var(--sp-2);
   padding: var(--sp-2);
   background: var(--bg);
-  border: 1px solid var(--border);
+  border: 2px solid var(--border);
   border-radius: var(--r-sm);
   margin-top: var(--sp-2);
   align-items: center;
@@ -69,7 +69,7 @@
   font-size: var(--text-xs);
   background: var(--bg);
   color: var(--fg);
-  border: 1px solid var(--border);
+  border: 2px solid var(--border);
   border-radius: var(--r-sm);
   padding: 2px 4px;
 }

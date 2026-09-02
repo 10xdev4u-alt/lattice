@@ -23,27 +23,102 @@ html, body {
   color: var(--bg-elev-1);
 }
 
+/* The pixel grid: a 4px dot-matrix breathing under the whole
+   app — the vortex-pixel signature. Sits under everything,
+   fades toward the bottom so the reading surfaces stay calm. */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background-image:
+    linear-gradient(var(--agent-soft) 1px, transparent 1px),
+    linear-gradient(90deg, var(--agent-soft) 1px, transparent 1px);
+  background-size: 4px 4px;
+  opacity: 0.4;
+  mask-image: linear-gradient(to bottom, black 0%, transparent 70%);
+  -webkit-mask-image: linear-gradient(to bottom, black 0%, transparent 70%);
+}
+
+/* The CRT layer: phosphor scanlines + a slow vignette. Fixed,
+   above the grid, below the app — every surface reads as if
+   drawn on the same phosphor tube. */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 2147483000;
+  pointer-events: none;
+  background:
+    repeating-linear-gradient(
+      to bottom,
+      rgba(0, 0, 0, 0.11),
+      rgba(0, 0, 0, 0.11) 1px,
+      transparent 1px,
+      transparent 3px
+    );
+  mix-blend-mode: multiply;
+  box-shadow: inset 0 0 180px rgba(8, 6, 16, 0.75);
+}
+
+/* ── Corner brackets: the instrument signature ────
+   Panels that opt in get HUD corner ticks — four L-marks
+   drawn with box-shadows, no pseudo-element juggling. */
+.bracketed {
+  --bracket-len: 14px;
+  --bracket-gap: 4px;
+  --bracket-color: var(--border-strong);
+  position: relative;
+}
+.bracketed::before,
+.bracketed::after {
+  content: '';
+  position: absolute;
+  inset: var(--bracket-gap);
+  pointer-events: none;
+  border: 0 solid var(--bracket-color);
+}
+.bracketed::before {
+  border-top-width: 2px;
+  border-left-width: 2px;
+  width: var(--bracket-len);
+  height: var(--bracket-len);
+}
+.bracketed::after {
+  border-bottom-width: 2px;
+  border-right-width: 2px;
+  width: var(--bracket-len);
+  height: var(--bracket-len);
+  right: var(--bracket-gap);
+  bottom: var(--bracket-gap);
+  top: auto;
+  left: auto;
+}
+
 #app {
+  position: relative;
+  z-index: 1;
   display: grid;
-  grid-template-rows: var(--header-h) 1fr;
+  grid-template-rows: var(--header-h) 1fr var(--status-h);
   height: 100vh;
   min-height: 100vh;
 }
 
-/* ── Header: the masthead ──────────────────────── */
+/* ── Header: the command bar ───────────────────── */
 
 .app-header {
   display: flex;
   align-items: center;
-  gap: var(--sp-4);
-  padding: 0 var(--sp-6);
-  border-bottom: 1px solid var(--border);
+  gap: var(--sp-5);
+  padding: 0 var(--sp-5);
+  border-bottom: 2px solid var(--border);
   background: var(--bg-elev-1);
 }
 
 .app-logo {
   display: flex;
-  align-items: baseline;
+  align-items: center;
   gap: var(--sp-3);
 }
 
@@ -54,8 +129,8 @@ html, body {
   align-self: center;
 }
 
-/* The wordmark: Fraunces, the journal voice. Small caps feel
-   via weight, not transform — a masthead, not a logo. */
+/* The wordmark: a terminal title — Fraunces stays (the journal
+   soul), bracketed like an instrument panel label. */
 .app-title {
   font-family: var(--font-display);
   font-size: var(--text-lg);
@@ -63,17 +138,32 @@ html, body {
   letter-spacing: var(--tracking-tight);
   margin: 0;
   color: var(--fg);
+  padding: 3px 10px;
+  border-left: 2px solid var(--accent);
+  border-right: 2px solid var(--accent);
+}
+
+/* Command-bar center: the protocol trace grows here. */
+.app-trace-host {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  justify-content: center;
 }
 
 .app-tagline {
   display: flex;
   align-items: center;
   gap: var(--sp-2);
-  font-size: var(--text-xs);
-  color: var(--fg-muted);
   font-family: var(--font-mono);
+  font-size: var(--text-2xs);
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+  color: var(--fg-muted);
   margin: 0;
-  margin-left: auto;
+  border: 1px solid var(--border);
+  padding: var(--sp-1) var(--sp-3);
+  background: var(--bg-sink);
 }
 
 .status-dot {
@@ -104,7 +194,7 @@ html, body {
   font-size: var(--text-xs);
   padding: var(--sp-1) var(--sp-3);
   border-radius: 999px;
-  border: 1px solid var(--border);
+  border: 2px solid var(--border);
   background: transparent;
   color: var(--fg-muted);
   cursor: pointer;
@@ -171,7 +261,7 @@ button {
   font-size: var(--text-sm);
   color: inherit;
   background: none;
-  border: 1px solid var(--border);
+  border: 2px solid var(--border);
   border-radius: var(--r-sm);
   padding: var(--sp-1) var(--sp-3);
   cursor: pointer;
@@ -249,25 +339,45 @@ a:hover {
 }
 ::-webkit-scrollbar-thumb:hover { background: var(--fg-muted); }
 
-/* ── Footer ─────────────────────────────────────── */
+/* ── Status bar: the tmux strip ─────────────────── */
 
-.app-footer {
+.statusbar {
   display: flex;
-  justify-content: center;
-  padding: var(--sp-2);
-  border-top: 1px solid var(--border);
-  background: var(--bg-elev-1);
-}
-
-.report-problem {
-  font-size: var(--text-xs);
+  align-items: center;
+  gap: var(--sp-4);
+  padding: 0 var(--sp-4);
+  height: var(--status-h);
+  border-top: 2px solid var(--border);
+  background: var(--bg-sink);
+  font-family: var(--font-mono);
+  font-size: var(--text-2xs);
+  letter-spacing: 0.06em;
   color: var(--fg-muted);
-  background: transparent;
-  border: 1px solid var(--border);
-  padding: var(--sp-1) var(--sp-3);
+  overflow: hidden;
+  white-space: nowrap;
 }
 
-.report-problem:hover { color: var(--accent); border-color: var(--accent); }
+.sb-seg { display: inline-flex; align-items: center; gap: var(--sp-2); }
+.sb-left { flex-shrink: 0; }
+.sb-center { flex: 1; justify-content: center; min-width: 0; }
+.sb-right { flex-shrink: 0; }
+.sb-strong { color: var(--fg); font-weight: 600; }
+.sb-dim { color: var(--fg-faint); }
+.sb-ok { color: var(--ok); font-weight: 600; }
+
+/* Report-problem: tucked into the status bar's far right,
+   reachable but not shouting. */
+.report-problem {
+  font-size: var(--text-2xs);
+  font-family: var(--font-mono);
+  color: var(--fg-faint);
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  letter-spacing: 0.06em;
+  padding: 0 var(--sp-2);
+}
+.report-problem:hover { color: var(--accent); }
 
 /* ── Keyboard focus ────────────────────────────── */
 

@@ -24,7 +24,7 @@
   padding: var(--sp-1) var(--sp-2);
   background: transparent;
   color: var(--fg-muted);
-  border: 1px solid var(--border);
+  border: 2px solid var(--border);
   border-radius: 999px;
   cursor: pointer;
   transition: all var(--dur-fast) var(--ease);
@@ -51,7 +51,7 @@
   padding: var(--sp-1) var(--sp-2);
   background: var(--bg);
   color: var(--fg);
-  border: 1px solid var(--border);
+  border: 2px solid var(--border);
   border-radius: var(--r-sm);
   margin: var(--sp-2) 0;
   transition: border-color var(--dur-fast) var(--ease), box-shadow var(--dur-fast) var(--ease);
@@ -99,7 +99,7 @@
   padding: var(--sp-2) var(--sp-3);
   border-radius: var(--r-md);
   background: var(--bg-elev-1);
-  border: 1px solid var(--border);
+  border: 2px solid var(--border);
   cursor: pointer;
   transition:
     background var(--dur-fast) var(--ease),
@@ -114,7 +114,7 @@
   font-weight: 500;
   color: var(--accent);
   background: var(--bg);
-  border: 1px solid var(--accent-soft);
+  border: 2px solid var(--accent-soft);
   border-radius: 999px;
   min-width: 26px;
   height: 22px;
@@ -226,7 +226,7 @@
 .trail-step-detail {
   padding: var(--sp-3) var(--sp-3) var(--sp-3) var(--sp-4);
   background: var(--bg);
-  border-top: 1px solid var(--border);
+  border-top: 2px solid var(--border);
   font-size: var(--text-xs);
 }
 .trail-step-detail dl {
@@ -247,7 +247,7 @@
   font-family: var(--font-mono);
   font-size: var(--text-2xs);
   background: var(--bg-elev-1);
-  border: 1px solid var(--border);
+  border: 2px solid var(--border);
   border-radius: var(--r-sm);
   padding: var(--sp-2);
   margin: 0;
@@ -270,7 +270,7 @@
   border-radius: 999px;
   background: transparent;
   color: var(--fg-muted);
-  border: 1px solid var(--border);
+  border: 2px solid var(--border);
   cursor: pointer;
   transition: all var(--dur-fast) var(--ease);
 }

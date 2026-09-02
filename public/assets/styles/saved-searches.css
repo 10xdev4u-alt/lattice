@@ -8,7 +8,7 @@
   font-size: var(--text-xs);
   background: var(--bg);
   color: var(--fg);
-  border: 1px solid var(--border);
+  border: 2px solid var(--border);
   border-radius: var(--r-sm);
   padding: var(--sp-1) var(--sp-2);
 }
@@ -26,7 +26,7 @@
 .saved-searches-list { list-style: none; margin: 0; padding: 0; }
 .saved-search-row {
   padding: var(--sp-2);
-  border: 1px solid var(--border);
+  border: 2px solid var(--border);
   border-radius: var(--r-sm);
   margin-bottom: var(--sp-2);
   background: var(--bg-elev-1);
@@ -41,7 +41,7 @@
   padding: var(--sp-1) var(--sp-2);
   background: transparent;
   color: var(--fg);
-  border: 1px solid var(--border);
+  border: 2px solid var(--border);
   border-radius: var(--r-sm);
   cursor: pointer;
 }
@@ -55,7 +55,7 @@
   gap: var(--sp-2);
   align-items: center;
   padding: var(--sp-1) 0;
-  border-bottom: 1px solid var(--border);
+  border-bottom: 2px solid var(--border);
   font-size: var(--text-sm);
 }
 .saved-search-result strong { flex: 1; }

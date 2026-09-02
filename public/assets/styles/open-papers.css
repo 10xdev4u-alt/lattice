@@ -5,7 +5,7 @@
   gap: var(--sp-3);
   padding: var(--sp-2) var(--sp-3);
   background: var(--bg-elev-1);
-  border-bottom: 1px solid var(--border);
+  border-bottom: 2px solid var(--border);
 }
 .open-papers-label {
   font-size: var(--text-xs);
@@ -19,7 +19,7 @@
   gap: var(--sp-2);
   padding: var(--sp-1) var(--sp-2);
   background: var(--bg);
-  border: 1px solid var(--border);
+  border: 2px solid var(--border);
   border-radius: var(--r-sm);
   cursor: pointer;
   font-size: var(--text-xs);

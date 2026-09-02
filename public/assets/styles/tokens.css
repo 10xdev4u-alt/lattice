@@ -1,11 +1,15 @@
-/* Lattice design tokens — v2 "the marked manuscript".
+/* Lattice design tokens — v3 "vortex pixel".
  *
- * The system is semantic, not decorative: color tells you WHO is
- * speaking. Ink-dark ground (lamplight on a desk at 2am),
- * paper-cream text, proofreader's red for anything a human must
+ * The system stays semantic, never decorative: color tells you
+ * WHO is speaking. Deep-void ground (the space between papers),
+ * paper-cream text, vermilion accretion for anything a human must
  * act on or a citation anchors, cool violet for the machine's
- * voice, verdigris for verified-true. Every accent has exactly
+ * voice, signal green for verified-true. Every accent has exactly
  * one meaning — no color does two jobs.
+ *
+ * Edges are pixel-crisp: 2px borders, hard offset shadows, a 4px
+ * dot-matrix breathing under the whole app. Radii are tight —
+ * this is an instrument, not a toy.
  *
  * Four type voices: Fraunces (journal — display), Newsreader
  * (reading voice — paper text; this is a reading product), Inter
@@ -13,33 +17,39 @@
  */
 
 :root {
-  /* ── Ground & ink ─────────────────────────────── */
-  --bg: #16130f;          /* warm ink-black, lamplight */
-  --bg-elev-1: #201c17;   /* card surface */
-  --bg-elev-2: #2a251f;   /* raised surface */
-  --bg-sink: #100d0a;     /* wells: chat scroller, inputs */
-  --fg: #efe7d8;          /* paper cream */
-  --fg-muted: #a29483;    /* faded ink */
-  --fg-faint: #6b6154;    /* watermark */
+  /* ── Ground & ink — the void ──────────────────── */
+  --bg: #0c0a14;          /* deep void, violet-black */
+  --bg-elev-1: #171327;   /* panel surface */
+  --bg-elev-2: #1d1834;   /* raised surface */
+  --bg-sink: #080610;     /* wells: chat scroller, inputs */
+  --fg: #f2ecdc;          /* paper cream */
+  --fg-muted: #b9b2a5;    /* faded ink */
+  --fg-faint: #6e6a7a;    /* watermark */
 
   /* ── The four voices ──────────────────────────── */
-  --accent: #e8503a;              /* proofreader's red: actions, citations, human focus */
-  --accent-soft: #e8503a26;
+  --accent: #ff4d2e;              /* vermilion accretion: actions, citations, human focus */
+  --accent-soft: #ff4d2e24;
+  --accent-deep: #c9331f;
   --agent: #8f7ff0;               /* the machine: agent messages, AI affordances */
-  --agent-soft: #8f7ff026;
-  --ok: #2f9f7b;                  /* verdigris: verified, persisted, healthy */
-  --ok-soft: #2f9f7b26;
+  --agent-soft: #8f7ff024;
+  --ok: #2fd48f;                  /* signal green: verified, persisted, healthy */
+  --ok-soft: #2fd48f24;
 
   /* Semantic aliases — use these in components */
   --human: var(--accent);
   --machine: var(--agent);
   --verified: var(--ok);
-  --err: #d64545;
+  --err: #ff5d5d;
 
   /* Provenance states (where a paper came from) */
-  --src-fetched: #c98a2d;         /* amber: pulled from arXiv */
+  --src-fetched: #e0a028;         /* amber: pulled from arXiv */
   --src-workspace: var(--agent);  /* violet: born in this workspace */
   --warn: var(--src-fetched);     /* legacy alias: amber = caution */
+
+  /* ── Pixel edges ─────────────────────────────── */
+  --border: #2a2247;
+  --border-strong: #3d3268;
+  --border-hot: #5a4a94;
 
   /* ── Type: four voices ────────────────────────── */
   --font-display: 'Fraunces', 'Iowan Old Style', Georgia, serif;
@@ -67,10 +77,10 @@
   --tracking-wide: 0.05em;
   --tracking-wider: 0.1em;
 
-  /* ── Radii: soft, paper-like ─────────────────── */
-  --r-sm: 5px;
-  --r-md: 9px;
-  --r-lg: 14px;
+  /* ── Radii: pixel-tight ──────────────────────── */
+  --r-sm: 2px;
+  --r-md: 3px;
+  --r-lg: 4px;
 
   /* ── Spacing: 4px grid ────────────────────────── */
   --sp-1: 4px;
@@ -93,66 +103,71 @@
   /* ── Layout ───────────────────────────────────── */
   --rail-left-w: 300px;
   --rail-right-w: 400px;
-  --header-h: 60px;
+  --spine-w: 184px;
+  --header-h: 56px;
+  --status-h: 28px;
   --max-content-w: 1200px;
 
-  /* ── Elevation: warm, not black ───────────────── */
-  --shadow-1: 0 1px 2px rgba(20, 12, 4, 0.35);
-  --shadow-2: 0 2px 8px rgba(20, 12, 4, 0.4);
-  --shadow-3: 0 4px 16px rgba(20, 12, 4, 0.45);
-  --shadow-4: 0 8px 32px rgba(20, 12, 4, 0.5);
-  --shadow-red: 0 0 0 1px var(--accent-soft), 0 0 20px var(--accent-soft);
+  /* ── Elevation: hard pixel offsets ───────────── */
+  --shadow-1: 0 1px 0 rgba(0, 0, 0, 0.4);
+  --shadow-2: 3px 3px 0 rgba(0, 0, 0, 0.45);
+  --shadow-3: 4px 4px 0 rgba(0, 0, 0, 0.5);
+  --shadow-4: 6px 6px 0 rgba(0, 0, 0, 0.55);
+  --shadow-red: 4px 4px 0 var(--accent-deep);
 }
 
-/* ── Daylight: the same manuscript, morning desk ── */
+/* ── Daylight: the same instrument, morning lab ─── */
 @media (prefers-color-scheme: light) {
   :root:not([data-theme="dark"]) {
-    --bg: #f6f1e7;        /* warm paper */
+    --bg: #f4f1ea;        /* cool paper */
     --bg-elev-1: #fffdf7;
-    --bg-elev-2: #f0eadd;
-    --bg-sink: #ede6d8;
-    --fg: #241f18;
-    --fg-muted: #6d6355;
-    --fg-faint: #a39781;
-    --accent: #c2331f;    /* the same red, deeper for paper */
-    --accent-soft: #c2331f1e;
+    --bg-elev-2: #efecf4;
+    --bg-sink: #e8e4de;
+    --fg: #1a1626;
+    --fg-muted: #5f5a6e;
+    --fg-faint: #a39a92;
+    --accent: #d63a1e;    /* the same vermilion, deeper for paper */
+    --accent-soft: #d63a1e1c;
+    --accent-deep: #a52a14;
     --agent: #5f4dc9;
     --agent-soft: #5f4dc917;
-    --ok: #1d7a5c;
-    --ok-soft: #1d7a5c1c;
+    --ok: #14946a;
+    --ok-soft: #14946a1c;
     --err: #bb2d2d;
     --src-fetched: #9a6a1a;
-    --border: #e0d6c3;
-    --border-strong: #cbbfa8;
-    --shadow-1: 0 1px 2px rgba(60, 42, 16, 0.08);
-    --shadow-2: 0 2px 8px rgba(60, 42, 16, 0.1);
-    --shadow-3: 0 4px 16px rgba(60, 42, 16, 0.12);
-    --shadow-4: 0 8px 32px rgba(60, 42, 16, 0.14);
+    --border: #d8d4ce;
+    --border-strong: #b8b2c4;
+    --border-hot: #9086b8;
+    --shadow-1: 0 1px 0 rgba(40, 32, 20, 0.1);
+    --shadow-2: 3px 3px 0 rgba(40, 32, 20, 0.12);
+    --shadow-3: 4px 4px 0 rgba(40, 32, 20, 0.14);
+    --shadow-4: 6px 6px 0 rgba(40, 32, 20, 0.16);
+    --shadow-red: 4px 4px 0 var(--accent-deep);
   }
 }
 
 :root[data-theme="dark"] {
-  --bg: #16130f;
-  --bg-elev-1: #201c17;
-  --bg-elev-2: #2a251f;
-  --bg-sink: #100d0a;
-  --fg: #efe7d8;
-  --fg-muted: #a29483;
-  --fg-faint: #6b6154;
-  --border: #382f26;
-  --border-strong: #4d4136;
+  --bg: #0c0a14;
+  --bg-elev-1: #171327;
+  --bg-elev-2: #1d1834;
+  --bg-sink: #080610;
+  --fg: #f2ecdc;
+  --fg-muted: #b9b2a5;
+  --fg-faint: #6e6a7a;
+  --border: #2a2247;
+  --border-strong: #3d3268;
 }
 
 :root[data-theme="light"] {
-  --bg: #f6f1e7;
+  --bg: #f4f1ea;
   --bg-elev-1: #fffdf7;
-  --bg-elev-2: #f0eadd;
-  --bg-sink: #ede6d8;
-  --fg: #241f18;
-  --fg-muted: #6d6355;
-  --fg-faint: #a39781;
-  --border: #e0d6c3;
-  --border-strong: #cbbfa8;
+  --bg-elev-2: #efecf4;
+  --bg-sink: #e8e4de;
+  --fg: #1a1626;
+  --fg-muted: #5f5a6e;
+  --fg-faint: #a39a92;
+  --border: #d8d4ce;
+  --border-strong: #b8b2c4;
 }
 
 @media (prefers-reduced-motion: reduce) {

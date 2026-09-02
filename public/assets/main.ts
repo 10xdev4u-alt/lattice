@@ -45,6 +45,12 @@ async function main(): Promise<void> {
 
   mountWorkspace(document.getElementById('app-main') as HTMLElement | null);
 
+  // The tmux strip: session, counts, runtime, clock.
+  void import('./ui/status-bar').then(({ mountStatusBar }) => {
+    const host = document.getElementById('status-bar-host');
+    if (host) mountStatusBar(host);
+  });
+
   // Hydrate the client library from the server store — the server
   // is the source of truth. Papers ingested server-side (a past
   // session, another tab) appear in the rail on boot; the
@@ -136,17 +142,7 @@ async function main(): Promise<void> {
     }
   });
 
-  // Report-a-problem button: copy a diagnostic bundle to the clipboard.
-  document.querySelector<HTMLButtonElement>('[data-action="report-problem"]')?.addEventListener('click', async () => {
-    const { copyDiagnosticBundleToClipboard } = await import('./diagnostics');
-    const { notice } = await import('./ui/overlays');
-    const ok = await copyDiagnosticBundleToClipboard();
-    if (ok) {
-      await notice('Diagnostic bundle copied', 'Paste it into the GitHub issue.');
-    } else {
-      await notice('Could not copy', 'Use Export instead: the diagnostics module builds the same bundle.');
-    }
-  });
+  // Report-a-problem lives in the status bar now (status-bar.ts).
 
   document.getElementById('app')?.setAttribute('data-state', 'ready');
 }

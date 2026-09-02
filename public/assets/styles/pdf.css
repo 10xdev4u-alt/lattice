@@ -7,7 +7,7 @@
 }
 .pdf-page-canvas {
   background: white;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  box-shadow: 3px 3px 0 rgba(0, 0, 0, 0.4);
   max-width: 100%;
   height: auto;
 }

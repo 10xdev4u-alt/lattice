@@ -27,6 +27,7 @@ const ORDER = [
   'fonts.css',
   'base.css',
   'workspace.css',
+  'spine.css',
   'confirm.css',
   'trail.css',
   'peer.css',

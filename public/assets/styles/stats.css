@@ -18,7 +18,7 @@
 .stats-section {
   margin-bottom: var(--sp-5);
   padding-bottom: var(--sp-4);
-  border-bottom: 1px solid var(--border);
+  border-bottom: 2px solid var(--border);
 }
 .stats-section:last-child { border-bottom: none; }
 .stats-section h3 {
@@ -56,7 +56,7 @@
   min-width: 32px;
   padding: 1px var(--sp-2);
   background: var(--bg-elev-1);
-  border: 1px solid var(--border);
+  border: 2px solid var(--border);
   border-radius: 999px;
   font-family: var(--font-mono);
   font-size: var(--text-xs);
@@ -74,7 +74,7 @@
   padding: var(--sp-1) var(--sp-3);
   background: transparent;
   color: var(--fg-muted);
-  border: 1px solid var(--border);
+  border: 2px solid var(--border);
   border-radius: 999px;
   cursor: pointer;
   transition: all var(--dur-fast) var(--ease);
