@@ -36,7 +36,18 @@ interface IngestResponse {
 }
 
 const MAX_PDF_BYTES = 25 * 1024 * 1024;
+/** Base64 of a 25MB payload is ~33.4MB — reject the encoded form
+ *  before buffering it into memory at all. */
+const MAX_B64_CHARS = Math.ceil((MAX_PDF_BYTES * 4) / 3) + 1024;
 const PDF_MAGIC = Buffer.from('%PDF-', 'utf8');
+/** Extraction caps: a crafted 25MB file can declare a million
+ *  tiny pages and burn the loop for minutes. Truncate, warn,
+ *  keep the ingest useful instead of failing it. */
+const MAX_PAGES = 500;
+const MAX_TEXT_CHARS = 2_000_000;
+/** The trailer marker must be near the end for a well-formed PDF
+ *  (best-effort; some writers append junk after it). */
+const EOF_SNIFF_TAIL = 2048;
 
 export default async (req: Request, _ctx: Context): Promise<Response> => {
   if (req.method !== 'POST') {
@@ -54,6 +65,36 @@ export default async (req: Request, _ctx: Context): Promise<Response> => {
     return jsonResponse(
       { error: { code: 'MISSING_ARG', message: 'filename and contentBase64 are required.' } },
       400,
+    );
+  }
+
+  // Pre-decode cap: a 33MB+ base64 string means a >25MB file.
+  // Reject before Buffer.from() ever materializes it.
+  if (body.contentBase64.length > MAX_B64_CHARS) {
+    return jsonResponse(
+      {
+        error: {
+          code: 'FILE_TOO_LARGE',
+          message: `Encoded content is ${body.contentBase64.length} chars; max decoded is ${MAX_PDF_BYTES} bytes.`,
+        },
+      },
+      413,
+    );
+  }
+
+  // Well-formedness: the trailer marker within the last 2KB.
+  // Truncated and polyglot bombs fail here instead of inside pdfjs.
+  const tail = body.contentBase64.slice(-EOF_SNIFF_TAIL * 2);
+  if (!Buffer.from(tail, 'base64').toString('latin1').includes('%%EOF')) {
+    return jsonResponse(
+      {
+        error: {
+          code: 'TRUNCATED_PDF',
+          message: 'No %%EOF trailer near the end of the file — it looks truncated or malformed.',
+          retry_hint: 'Re-export the PDF and try again.',
+        },
+      },
+      415,
     );
   }
 
@@ -128,9 +169,27 @@ export default async (req: Request, _ctx: Context): Promise<Response> => {
       pageCount = extraction.pageCount;
       if (extraction.title) title = extraction.title;
       pages = extraction.pages;
+      // Bomb caps: truncate declared/extracted volume instead of
+      // indexing a million tiny pages or 100MB of characters.
+      if (pages.length > MAX_PAGES) {
+        warnings.push(`page_cap_applied: kept first ${MAX_PAGES} of ${pages.length} pages`);
+        pages = pages.slice(0, MAX_PAGES);
+      }
+      let totalChars = 0;
+      for (const p of pages) totalChars += p.text.length;
+      if (totalChars > MAX_TEXT_CHARS) {
+        warnings.push(`text_cap_applied: truncated to ${MAX_TEXT_CHARS} chars`);
+        let budget = MAX_TEXT_CHARS;
+        pages = pages.map((p) => {
+          if (budget <= 0) return { ...p, text: '' };
+          const take = Math.min(p.text.length, budget);
+          budget -= take;
+          return { ...p, text: p.text.slice(0, take) };
+        });
+      }
       await store.setJSON(`papers/${paperId}/text.json`, {
         extractedAt: new Date().toISOString(),
-        pages: extraction.pages,
+        pages,
         tenant: getTenantId(req) ?? 'global',
       });
       for (const w of extraction.warnings) warnings.push(w);
