@@ -1,0 +1,126 @@
+/* trail-spine — the always-visible audit column.
+   The thesis made literal: every tool call, permanently in view. */
+
+.spine-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--sp-3) var(--sp-3) var(--sp-2);
+  border-bottom: 2px solid var(--border);
+  position: sticky;
+  top: 0;
+  background: var(--bg-sink);
+  z-index: 2;
+}
+
+.spine-title {
+  font-family: var(--font-mono);
+  font-size: var(--text-2xs);
+  font-weight: 600;
+  letter-spacing: var(--tracking-wider);
+  color: var(--fg-faint);
+}
+
+.spine-count {
+  font-family: var(--font-mono);
+  font-size: var(--text-2xs);
+  font-weight: 600;
+  color: var(--accent);
+  background: var(--accent-soft);
+  border: 1px solid var(--accent);
+  padding: 1px 6px;
+  min-width: 22px;
+  text-align: center;
+}
+
+.spine-steps {
+  list-style: none;
+  margin: 0;
+  padding: var(--sp-2);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.spine-empty {
+  font-family: var(--font-mono);
+  font-size: var(--text-2xs);
+  line-height: 1.7;
+  color: var(--fg-faint);
+  padding: var(--sp-3);
+  letter-spacing: 0.04em;
+}
+
+.spine-step {
+  border: 1px solid transparent;
+}
+.spine-step:hover { border-color: var(--border); }
+
+.spine-row {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  width: 100%;
+  background: transparent;
+  border: 0;
+  padding: 5px var(--sp-2);
+  cursor: pointer;
+  text-align: left;
+}
+
+.spine-tool {
+  flex: 1;
+  font-family: var(--font-mono);
+  font-size: var(--text-2xs);
+  color: var(--fg-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.spine-ms {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  color: var(--fg-faint);
+}
+
+/* The status mark: a 6px pixel square — green ok, vermilion
+   denied, red err. Read at a glance, no labels needed. */
+.spine-mark { width: 6px; height: 6px; flex-shrink: 0; background: var(--fg-faint); }
+.spine-step[data-status="ok"] .spine-mark { background: var(--ok); box-shadow: 0 0 5px var(--ok); }
+.spine-step[data-status="denied"] .spine-mark { background: var(--accent); box-shadow: 0 0 5px var(--accent); }
+.spine-step[data-status="err"] .spine-mark { background: var(--err); box-shadow: 0 0 5px var(--err); }
+
+/* Fresh step: one-shot glow when it lands. */
+.spine-fresh { animation: spine-land 700ms var(--ease-out); }
+@keyframes spine-land {
+  0% { background: var(--accent-soft); transform: translateX(-3px); }
+  100% { background: transparent; transform: translateX(0); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .spine-fresh { animation: none; }
+}
+
+.spine-detail {
+  padding: var(--sp-2) var(--sp-2) var(--sp-3);
+}
+.spine-detail code {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: var(--text-2xs);
+  line-height: 1.6;
+  color: var(--fg-muted);
+  background: var(--bg-elev-1);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--agent);
+  padding: var(--sp-2);
+  max-height: 160px;
+  overflow: auto;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+/* Mobile: the spine is its own tab (see rail-mobile-tabs). */
+@media (max-width: 800px) {
+  .spine { border-right: 0; }
+}

@@ -50,20 +50,20 @@ body::before {
   min-height: 100vh;
 }
 
-/* ── Header: the masthead ──────────────────────── */
+/* ── Header: the command bar ───────────────────── */
 
 .app-header {
   display: flex;
   align-items: center;
-  gap: var(--sp-4);
-  padding: 0 var(--sp-6);
+  gap: var(--sp-5);
+  padding: 0 var(--sp-5);
   border-bottom: 2px solid var(--border);
   background: var(--bg-elev-1);
 }
 
 .app-logo {
   display: flex;
-  align-items: baseline;
+  align-items: center;
   gap: var(--sp-3);
 }
 
@@ -85,15 +85,27 @@ body::before {
   color: var(--fg);
 }
 
+/* Command-bar center: the protocol trace grows here. */
+.app-trace-host {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  justify-content: center;
+}
+
 .app-tagline {
   display: flex;
   align-items: center;
   gap: var(--sp-2);
-  font-size: var(--text-xs);
-  color: var(--fg-muted);
   font-family: var(--font-mono);
+  font-size: var(--text-2xs);
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+  color: var(--fg-muted);
   margin: 0;
-  margin-left: auto;
+  border: 1px solid var(--border);
+  padding: var(--sp-1) var(--sp-3);
+  background: var(--bg-sink);
 }
 
 .status-dot {

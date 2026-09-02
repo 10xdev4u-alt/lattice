@@ -15,6 +15,7 @@ import { mountAgentRail } from './agent-rail';
 import { mountEmptyState } from './empty-state';
 import { mountPeerReviewerBanner } from './peer-reviewer';
 import { mountOpenPapersToolbar } from './open-papers';
+import { mountTrailSpine } from './trail-spine';
 import { getLibrary } from '../library';
 import { announce } from '../focus';
 
@@ -24,6 +25,7 @@ export function mountWorkspace(root: HTMLElement | null): void {
     <nav class="rail-mobile-tabs" role="tablist" aria-label="Workspace sections">
       <button data-mobile-tab="library" role="tab" aria-selected="false">Library</button>
       <button data-mobile-tab="canvas" role="tab" aria-selected="true">Paper</button>
+      <button data-mobile-tab="spine" role="tab" aria-selected="false">Trail</button>
       <button data-mobile-tab="agent" role="tab" aria-selected="false">Agent</button>
     </nav>
     <div class="workspace" data-empty="${getLibrary().length === 0}">
@@ -31,6 +33,9 @@ export function mountWorkspace(root: HTMLElement | null): void {
         <div data-paper-list></div>
       </aside>
       <button class="rail-divider rail-divider-left" data-divider="left" type="button" aria-label="Resize library rail" aria-hidden="true" tabindex="-1"></button>
+      <aside class="spine" role="complementary" aria-label="Audit spine — every tool call, live">
+        <div data-trail-spine></div>
+      </aside>
       <main class="canvas" role="main">
         <div data-open-papers></div>
         <div data-canvas></div>
@@ -48,8 +53,10 @@ export function mountWorkspace(root: HTMLElement | null): void {
   const paperListRoot = root.querySelector<HTMLDivElement>('[data-paper-list]');
   const canvasRoot = root.querySelector<HTMLDivElement>('[data-canvas]');
   const agentRailRoot = root.querySelector<HTMLDivElement>('[data-agent-rail]');
+  const spineRoot = root.querySelector<HTMLDivElement>('[data-trail-spine]');
 
   if (paperListRoot) mountPaperList(paperListRoot);
+  if (spineRoot) mountTrailSpine(spineRoot);
   if (canvasRoot) {
     if (getLibrary().length === 0) {
       mountEmptyState(canvasRoot);
@@ -175,6 +182,7 @@ function installMobileTabs(root: HTMLElement): void {
   const regions = {
     library: workspace.querySelector<HTMLElement>('.rail-left'),
     canvas: workspace.querySelector<HTMLElement>('.canvas'),
+    spine: workspace.querySelector<HTMLElement>('.spine'),
     agent: workspace.querySelector<HTMLElement>('.rail-right'),
   };
 
