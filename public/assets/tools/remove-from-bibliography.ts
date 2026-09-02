@@ -27,6 +27,9 @@ export const removeFromBibliography: ToolDefinition = {
     additionalProperties: false,
   },
   annotations: {
+    // Write tool (destructive): removes a bibliography entry —
+    // the confirmation gate must fire.
+    readOnlyHint: false,
     destructiveHint: true,
     idempotentHint: true,
   },

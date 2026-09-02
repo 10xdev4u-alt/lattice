@@ -36,6 +36,9 @@ export const addToBibliography: ToolDefinition = {
     additionalProperties: false,
   },
   annotations: {
+    // Write tool: mutates the bibliography — must be explicit so
+    // the confirmation gate fires (absent = falsy = read-only).
+    readOnlyHint: false,
     destructiveHint: false,
     idempotentHint: true,
   },

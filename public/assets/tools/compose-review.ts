@@ -40,6 +40,12 @@ export const composeReview: ToolDefinition = {
     additionalProperties: false,
   },
   annotations: {
+    // A write tool: it drafts a review into the user's session.
+    // readOnlyHint MUST be false explicitly — absent is falsy,
+    // and the register harness treats falsy as read-only, which
+    // would silently skip the confirmation gate this tool's whole
+    // design depends on (audit H4).
+    readOnlyHint: false,
     destructiveHint: false,
     openWorldHint: false,
   },
