@@ -47,16 +47,17 @@ function render(root: HTMLElement, glow = false): void {
 
   root.innerHTML = `
     <div class="spine-head">
-      <span class="spine-title">AUDIT SPINE</span>
+      <span class="spine-title">▚ AUDIT LOG</span>
       <span class="spine-count" data-spine-count>${session.steps.length}</span>
     </div>
     <ol class="spine-steps" role="list" aria-label="Workflow trail">
-      ${steps.length === 0 ? `<li class="spine-empty">No calls yet.<br>Every tool the agent touches lands here — live.</li>` : ''}
+      ${steps.length === 0 ? `<li class="spine-empty">▚ no calls yet<br>▚ every tool lands here<br>▚ live ▮</li>` : ''}
       ${steps
         .map(
           (s) => `
         <li class="spine-step${s.fresh ? ' spine-fresh' : ''}" data-step-id="${s.id}" data-status="${s.status}">
           <button class="spine-row" type="button" aria-expanded="${s.expanded}">
+            <span class="spine-t">▸</span>
             <span class="spine-tool" title="${escapeHtml(s.tool)}">${escapeHtml(s.tool)}</span>
             <span class="spine-ms">${s.ms}ms</span>
             <span class="spine-mark" aria-hidden="true"></span>

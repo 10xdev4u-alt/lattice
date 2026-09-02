@@ -18,7 +18,7 @@
   font-size: var(--text-2xs);
   font-weight: 600;
   letter-spacing: var(--tracking-wider);
-  color: var(--fg-faint);
+  color: var(--accent);
 }
 
 .spine-count {
@@ -45,7 +45,7 @@
 .spine-empty {
   font-family: var(--font-mono);
   font-size: var(--text-2xs);
-  line-height: 1.7;
+  line-height: 1.9;
   color: var(--fg-faint);
   padding: var(--sp-3);
   letter-spacing: 0.04em;
@@ -53,20 +53,31 @@
 
 .spine-step {
   border: 1px solid transparent;
+  border-left: 2px solid var(--border);
 }
-.spine-step:hover { border-color: var(--border); }
+.spine-step:hover { border-color: var(--border-strong); border-left-color: var(--accent); }
 
 .spine-row {
   display: flex;
   align-items: center;
-  gap: var(--sp-2);
+  gap: var(--sp-1);
   width: 100%;
   background: transparent;
   border: 0;
-  padding: 5px var(--sp-2);
+  padding: 5px var(--sp-1) 5px var(--sp-2);
   cursor: pointer;
   text-align: left;
 }
+
+/* The prompt glyph: a terminal arrow marking each logged call. */
+.spine-t {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  color: var(--fg-faint);
+  flex-shrink: 0;
+  width: 10px;
+}
+.spine-step:hover .spine-t { color: var(--accent); }
 
 .spine-tool {
   flex: 1;

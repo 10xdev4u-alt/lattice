@@ -104,7 +104,8 @@
   --rail-left-w: 300px;
   --rail-right-w: 400px;
   --spine-w: 184px;
-  --header-h: 60px;
+  --header-h: 56px;
+  --status-h: 28px;
   --max-content-w: 1200px;
 
   /* ── Elevation: hard pixel offsets ───────────── */

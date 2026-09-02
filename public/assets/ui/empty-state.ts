@@ -16,38 +16,39 @@ import { ingestPdfFile } from '../ingest';
 export function mountEmptyState(root: HTMLElement): void {
   root.innerHTML = `
     <section class="empty-state" data-empty-drop>
-      <p class="empty-eyebrow">Research papers, in conversation</p>
-      <h2 class="empty-headline">Bring a paper.<br>Watch every claim become traceable.</h2>
+      <p class="empty-eyebrow">// THE AUDIT LOG STARTS HERE</p>
+      <h2 class="empty-headline">Drop a paper.<br><em>Watch the agent show its work.</em></h2>
       <p class="empty-lede">
-        Lattice turns your library into tools your AI agent can use — search, summarize, quote, cite, compare —
-        and logs every call in an audit trail you can replay, branch, and export as a methods appendix.
+        Most research AI hands you an answer and asks for trust. Lattice hands you the
+        <strong>receipts</strong>: every search, every quote, every citation the agent touches
+        lands in the spine on the left — reopenable, replayable, exportable as your methods appendix.
       </p>
       <div class="empty-actions">
-        <button data-action="load-sample" class="btn-primary">Load 5 classic papers</button>
-        <button data-action="paste-arxiv">Add by arXiv ID</button>
-        <button data-action="drop-pdf">Drop a PDF</button>
+        <button data-action="load-sample" class="btn-primary">LOAD 5 CLASSIC PAPERS</button>
+        <button data-action="paste-arxiv">PASTE AN ARXIV ID</button>
+        <button data-action="drop-pdf">DROP A PDF</button>
         <input type="file" accept="application/pdf,.pdf" data-pdf-input hidden />
       </div>
       <p class="empty-ingest-status" data-ingest-status aria-live="polite"></p>
       <ol class="empty-state-steps" aria-label="3-step getting started">
         <li>
           <span class="empty-step-num">1</span>
-          <span class="empty-step-text">Load the papers — their full text is fetched and indexed.</span>
+          <span class="empty-step-text"><strong>Ingest.</strong> The PDF is read, two-column order reconstructed, indexed.</span>
         </li>
         <li>
           <span class="empty-step-num">2</span>
-          <span class="empty-step-text">Open one. Per-paper tools light up for your agent.</span>
+          <span class="empty-step-text"><strong>Ask.</strong> The agent calls typed tools — and the spine fills with proof.</span>
         </li>
         <li>
           <span class="empty-step-num">3</span>
-          <span class="empty-step-text">Ask anything. Every answer arrives with its citations attached.</span>
+          <span class="empty-step-text"><strong>Export.</strong> The trail becomes a PRISMA-style methods appendix for your thesis.</span>
         </li>
       </ol>
       <div class="empty-actions empty-actions-quiet">
-        <button data-action="start-tour" class="btn-ghost">30-second tour</button>
-        <button data-action="load-session" class="btn-ghost">Load saved session</button>
-        <button data-action="compare-ingests" class="btn-ghost">Compare ingests</button>
-        <button data-action="annotations" class="btn-ghost">Annotations</button>
+        <button data-action="start-tour" class="btn-ghost">30-SECOND TOUR</button>
+        <button data-action="load-session" class="btn-ghost">LOAD SAVED SESSION</button>
+        <button data-action="compare-ingests" class="btn-ghost">COMPARE INGESTS</button>
+        <button data-action="annotations" class="btn-ghost">ANNOTATIONS</button>
       </div>
       <div data-carousel-host></div>
     </section>

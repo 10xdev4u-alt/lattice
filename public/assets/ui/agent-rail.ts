@@ -321,21 +321,21 @@ async function render(root: HTMLElement): Promise<void> {
   const toRestore = liveMessages.length > 0 ? liveMessages : persisted.map((m) => messageNode(m));
   root.innerHTML = `
     <div class="agent-rail-tabs" role="tablist">
-      <button data-tab="chat" role="tab" aria-selected="true">Chat</button>
-      <button data-tab="tools" role="tab" aria-selected="false">Tools (${tools.length})</button>
-      <button data-tab="log" role="tab" aria-selected="false">Log (${session.steps.length})</button>
+      <button data-tab="chat" role="tab" aria-selected="true">CHAT</button>
+      <button data-tab="tools" role="tab" aria-selected="false">TOOLS · ${tools.length}</button>
+      <button data-tab="log" role="tab" aria-selected="false">TRAIL · ${session.steps.length}</button>
     </div>
     <div class="agent-rail-tab" data-tab-content="chat">
       <div class="agent-chat" data-agent-chat>
-        <p class="agent-chat-empty">No messages yet. Ask the agent anything about your library.${peerActive ? ' A peer-reviewer is active.' : ''}</p>
+        <p class="agent-chat-empty">Ask the agent anything about your library.${peerActive ? ' A peer-reviewer is active.' : ''}</p>
       </div>
       <form class="agent-input" data-agent-form>
-        <input type="text" data-agent-input placeholder="Ask about your library" aria-label="Ask the agent" />
-        <button type="submit">Send</button>
+        <input type="text" data-agent-input placeholder="Ask — the spine will show every move" aria-label="Ask the agent" />
+        <button type="submit">SEND</button>
       </form>
       <div class="rate-limit-banner" data-rate-limit hidden role="status">Rate limit hit. The next attempt will wait and retry.</div>
       <div class="agent-rail-actions">
-        <button data-action="invite-reviewer">${peerActive ? 'Reviewer active (click to dismiss)' : 'Invite peer-reviewer'}</button>
+        <button data-action="invite-reviewer">${peerActive ? 'REVIEWER ACTIVE — CLICK TO DISMISS' : 'INVITE THE SKEPTIC'}</button>
       </div>
     </div>
     <div class="agent-rail-tab" data-tab-content="tools" hidden>

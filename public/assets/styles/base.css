@@ -41,11 +41,34 @@ body::before {
   -webkit-mask-image: linear-gradient(to bottom, black 0%, transparent 70%);
 }
 
+/* The CRT layer: phosphor scanlines + a slow vignette. Fixed,
+   above the grid, below the app — every surface reads as if
+   drawn on the same phosphor tube. */
+body::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: 2147483000;
+  pointer-events: none;
+  background:
+    repeating-linear-gradient(
+      to bottom,
+      rgba(0, 0, 0, 0.11),
+      rgba(0, 0, 0, 0.11) 1px,
+      transparent 1px,
+      transparent 3px
+    );
+  mix-blend-mode: multiply;
+}
+body::after {
+  box-shadow: inset 0 0 180px rgba(8, 6, 16, 0.75);
+}
+
 #app {
   position: relative;
   z-index: 1;
   display: grid;
-  grid-template-rows: var(--header-h) 1fr;
+  grid-template-rows: var(--header-h) 1fr var(--status-h);
   height: 100vh;
   min-height: 100vh;
 }
@@ -281,15 +304,45 @@ a:hover {
 }
 ::-webkit-scrollbar-thumb:hover { background: var(--fg-muted); }
 
-/* ── Footer ─────────────────────────────────────── */
+/* ── Status bar: the tmux strip ─────────────────── */
 
-.app-footer {
+.statusbar {
   display: flex;
-  justify-content: center;
-  padding: var(--sp-2);
+  align-items: center;
+  gap: var(--sp-4);
+  padding: 0 var(--sp-4);
+  height: var(--status-h);
   border-top: 2px solid var(--border);
-  background: var(--bg-elev-1);
+  background: var(--bg-sink);
+  font-family: var(--font-mono);
+  font-size: var(--text-2xs);
+  letter-spacing: 0.06em;
+  color: var(--fg-muted);
+  overflow: hidden;
+  white-space: nowrap;
 }
+
+.sb-seg { display: inline-flex; align-items: center; gap: var(--sp-2); }
+.sb-left { flex-shrink: 0; }
+.sb-center { flex: 1; justify-content: center; min-width: 0; }
+.sb-right { flex-shrink: 0; }
+.sb-strong { color: var(--fg); font-weight: 600; }
+.sb-dim { color: var(--fg-faint); }
+.sb-ok { color: var(--ok); font-weight: 600; }
+
+/* Report-problem: tucked into the status bar's far right,
+   reachable but not shouting. */
+.report-problem {
+  font-size: var(--text-2xs);
+  font-family: var(--font-mono);
+  color: var(--fg-faint);
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  letter-spacing: 0.06em;
+  padding: 0 var(--sp-2);
+}
+.report-problem:hover { color: var(--accent); }
 
 .report-problem {
   font-size: var(--text-xs);
